@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package types;
+
+option java_multiple_files = true;
+option java_outer_classname = "Types";
+option java_package = "com.shared.types";
+option go_package = "./types";
+
+message EdgeInfos {
+  repeated EdgeInfo infos = 1;
+}
+
+message EdgeInfo {
+  string uuid = 1;
+  int64 upSince = 2;
+  int64 lastMessage = 3;
+  int64 messagesSent = 4;
+  int64 messagesReceived = 5;
+  map<string, ServiceInfo> services = 6;
+}
+
+message ServiceInfo {
+  map<string, bool> uuids = 1;
+}
