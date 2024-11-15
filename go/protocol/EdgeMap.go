@@ -1,8 +1,8 @@
 package protocol
 
 import (
-	"github.com/saichler/shared/go/interfaces"
-	"github.com/saichler/shared/go/maps"
+	"github.com/saichler/shared/go/share/interfaces"
+	"github.com/saichler/shared/go/share/maps"
 	"reflect"
 )
 

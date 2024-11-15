@@ -2,14 +2,15 @@ package common
 
 import (
 	"errors"
+	"github.com/saichler/shared/go/types"
 	"net"
 	"time"
 )
 
 // Read data from socket
-func Read(conn net.Conn) ([]byte, error) {
+func Read(conn net.Conn, config *types.MessagingConfig) ([]byte, error) {
 	// read 8 bytes, e.g. long, hinting of the size of the byte array
-	sizebytes, err := ReadSize(8, conn)
+	sizebytes, err := ReadSize(8, conn, config)
 	if sizebytes == nil || err != nil {
 		return nil, err
 	}
@@ -18,15 +19,15 @@ func Read(conn net.Conn) ([]byte, error) {
 	// If the size is larger than the MAX Data Size, return an error
 	// this is to protect against overflowing the buffers
 	// When data to send is > the max data size, one needs to split the data into chunks at a higher level
-	if size > NetConfig.MaxDataSize {
+	if uint64(size) > config.MaxDataSize {
 		return nil, errors.New("Max Size Exceeded!")
 	}
 	// Read the bunch of bytes according to the size from the socket
-	data, err := ReadSize(int(size), conn)
+	data, err := ReadSize(int(size), conn, config)
 	return data, err
 }
 
-func ReadSize(size int, conn net.Conn) ([]byte, error) {
+func ReadSize(size int, conn net.Conn, config *types.MessagingConfig) ([]byte, error) {
 	data := make([]byte, size)
 	n, e := conn.Read(data)
 	if e != nil {
@@ -38,7 +39,7 @@ func ReadSize(size int, conn net.Conn) ([]byte, error) {
 			time.Sleep(time.Second)
 		}
 		data = data[0:n]
-		left, e := ReadSize(size-n, conn)
+		left, e := ReadSize(size-n, conn, config)
 		if e != nil {
 			return nil, errors.New("Failed to read packet size:" + e.Error())
 		}

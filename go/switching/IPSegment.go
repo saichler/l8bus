@@ -1,7 +1,7 @@
 package switching
 
 import (
-	logs "github.com/saichler/shared/go/interfaces"
+	logs "github.com/saichler/shared/go/share/interfaces"
 	"net"
 	"strings"
 )

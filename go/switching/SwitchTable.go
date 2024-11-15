@@ -3,8 +3,8 @@ package switching
 import (
 	"github.com/saichler/overlayK8s/go/protocol"
 	"github.com/saichler/overlayK8s/go/state"
-	"github.com/saichler/shared/go/interfaces"
-	logs "github.com/saichler/shared/go/interfaces"
+	"github.com/saichler/shared/go/share/interfaces"
+	logs "github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/types"
 	"google.golang.org/protobuf/proto"
 )

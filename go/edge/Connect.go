@@ -2,8 +2,8 @@ package edge
 
 import (
 	"github.com/google/uuid"
-	"github.com/saichler/shared/go/interfaces"
-	"github.com/saichler/shared/go/queues"
+	"github.com/saichler/shared/go/share/interfaces"
+	"github.com/saichler/shared/go/share/queues"
 	"github.com/saichler/shared/go/types"
 	"net"
 	"sync"

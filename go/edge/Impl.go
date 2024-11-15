@@ -2,11 +2,11 @@ package edge
 
 import (
 	"github.com/saichler/overlayK8s/go/state"
-	"github.com/saichler/shared/go/interfaces"
+	"github.com/saichler/shared/go/share/interfaces"
 	//This is just to not put interfaces.Debug for example
-	log "github.com/saichler/shared/go/interfaces"
-	"github.com/saichler/shared/go/queues"
-	strutil "github.com/saichler/shared/go/string_utils"
+	log "github.com/saichler/shared/go/share/interfaces"
+	"github.com/saichler/shared/go/share/queues"
+	strutil "github.com/saichler/shared/go/share/string_utils"
 	"github.com/saichler/shared/go/types"
 	"net"
 	"sync"

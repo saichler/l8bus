@@ -1,14 +1,5 @@
 package common
 
-import "github.com/saichler/my.simple/go/net/model"
-
-var NetConfig = &model.NetConfig{
-	MaxDataSize:        1024 * 1024,
-	DefaultTxQueueSize: 1000,
-	DefaultRxQueueSize: 1000,
-	DefaultSwitchPort:  50000,
-}
-
 func Bytes2Long(data []byte) int64 {
 	v1 := int64(data[0]) << 56
 	v2 := int64(data[1]) << 48

@@ -2,7 +2,7 @@ package state
 
 import (
 	"github.com/saichler/overlayK8s/go/types"
-	"github.com/saichler/shared/go/interfaces"
+	"github.com/saichler/shared/go/share/interfaces"
 	sharedTypes "github.com/saichler/shared/go/types"
 	"sync"
 	"time"
