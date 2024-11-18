@@ -2,7 +2,7 @@ package edge
 
 import (
 	"errors"
-	"github.com/saichler/overlayK8s/go/overlay/protocol"
+	"github.com/saichler/layer8/go/overlay/protocol"
 	logs "github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/share/nets"
 	"github.com/saichler/shared/go/types"

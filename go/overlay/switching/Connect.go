@@ -1,7 +1,7 @@
 package switching
 
 import (
-	"github.com/saichler/overlayK8s/go/overlay/edge"
+	"github.com/saichler/layer8/go/overlay/edge"
 	"github.com/saichler/shared/go/share/interfaces"
 )
 

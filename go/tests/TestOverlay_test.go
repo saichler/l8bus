@@ -2,8 +2,8 @@ package tests
 
 import (
 	"fmt"
-	edge2 "github.com/saichler/overlayK8s/go/overlay/edge"
-	"github.com/saichler/overlayK8s/go/overlay/switching"
+	edge2 "github.com/saichler/layer8/go/overlay/edge"
+	"github.com/saichler/layer8/go/overlay/switching"
 	"github.com/saichler/shared/go/share/defaults"
 	. "github.com/saichler/shared/go/share/interfaces"
 	"testing"

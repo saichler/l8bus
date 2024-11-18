@@ -1,8 +1,8 @@
 package switching
 
 import (
-	"github.com/saichler/overlayK8s/go/overlay/protocol"
-	"github.com/saichler/overlayK8s/go/overlay/state"
+	"github.com/saichler/layer8/go/overlay/protocol"
+	"github.com/saichler/layer8/go/overlay/state"
 	"github.com/saichler/shared/go/share/interfaces"
 	logs "github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/types"
