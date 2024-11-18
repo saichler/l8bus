@@ -1,11 +1,11 @@
 package tests
 
 import (
-	"fmt"
 	edge2 "github.com/saichler/layer8/go/overlay/edge"
 	"github.com/saichler/layer8/go/overlay/switching"
 	"github.com/saichler/shared/go/share/defaults"
 	. "github.com/saichler/shared/go/share/interfaces"
+	"github.com/saichler/shared/go/share/service_points"
 	"testing"
 	"time"
 )
@@ -21,7 +21,8 @@ func TestOverlay(t *testing.T) {
 
 	swConfig2 := SwitchConfig()
 	swConfig2.SwitchPort = 50001
-	sw2 := switching.NewSwitchService(swConfig2, StructRegistry(), ServicePoints())
+	sw2ServicePoints := service_points.NewServicePoints()
+	sw2 := switching.NewSwitchService(swConfig2, StructRegistry(), sw2ServicePoints)
 	sw2.Start()
 
 	defer func() {
@@ -34,7 +35,9 @@ func TestOverlay(t *testing.T) {
 		Fail(t, err)
 		return
 	}
-	time.Sleep(time.Millisecond * 100)
+	time.Sleep(time.Second)
+
+	Info("****************************************************************")
 
 	edge1Config := EdgeConfig()
 	eg1, err := edge2.ConnectTo("127.0.0.1", swConfig.SwitchPort, nil, StructRegistry(), ServicePoints(), edge1Config)
@@ -48,10 +51,10 @@ func TestOverlay(t *testing.T) {
 		time.Sleep(time.Second)
 	}()
 
-	fmt.Println(swConfig.Uuid)
-	fmt.Println(swConfig2.Uuid)
-	fmt.Println(edge1Config.Uuid)
+	Info("Switch 1:", swConfig.Local_Uuid)
+	Info("Switch 2:", swConfig2.Local_Uuid)
+	Info("Edge 1:", edge1Config.Local_Uuid)
 
 	time.Sleep(time.Second * 10)
-
+	Info("**********************************************************")
 }

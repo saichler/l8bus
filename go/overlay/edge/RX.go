@@ -16,7 +16,7 @@ func (edge *EdgeImpl) readFromSocket() {
 		//If therer is an error
 		if err != nil {
 			// If this is not a port from the switch side
-			if !edge.config.IsSwitch {
+			if !edge.config.IsSwitchSide {
 				// Attempt to reconnect
 				edge.attemptToReconnect()
 				// And try to read the data again

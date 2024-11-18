@@ -29,11 +29,11 @@ func NewSwitchService(switchConfig *types.MessagingConfig, registry interfaces.I
 	switchService := &SwitchService{}
 	switchService.switchConfig = switchConfig
 	switchService.servicePoints = servicePoints
-	switchService.switchTable = newSwitchTable()
 	switchService.active = true
 	switchService.registry = registry
 	uid, _ := uuid.NewUUID()
-	switchService.switchConfig.Uuid = uid.String()
+	switchService.switchConfig.Local_Uuid = uid.String()
+	switchService.switchTable = newSwitchTable(switchService.switchConfig.Local_Uuid, registry, servicePoints)
 	return switchService
 }
 
@@ -95,13 +95,14 @@ func (switchService *SwitchService) connect(conn net.Conn) {
 	}
 
 	sEdgeConfig := interfaces.EdgeSwitchConfig()
-	sEdgeConfig.Uuid = switchService.switchConfig.Uuid
+	sEdgeConfig.Local_Uuid = switchService.switchConfig.Local_Uuid
+	sEdgeConfig.IsSwitchSide = true
+
 	err = interfaces.SecurityProvider().ValidateConnection(conn, sEdgeConfig)
 	if err != nil {
 		logs.Error(err)
 		return
 	}
-	sEdgeConfig.IsSwitch = true
 
 	edge := edge.NewEdgeImpl(conn, switchService, switchService.registry, switchService.servicePoints, sEdgeConfig)
 	edge.Start()
@@ -109,7 +110,7 @@ func (switchService *SwitchService) connect(conn net.Conn) {
 }
 
 func (switchService *SwitchService) notifyNewEdge(edge interfaces.IEdge) {
-	go switchService.switchTable.addEdge(edge, switchService.switchConfig.Uuid)
+	go switchService.switchTable.addEdge(edge, switchService.switchConfig.Local_Uuid)
 }
 
 func (switchService *SwitchService) Shutdown() {
@@ -121,7 +122,7 @@ func (switchService *SwitchService) HandleData(data []byte, edge interfaces.IEdg
 	source, destination, pri := protocol.HeaderOf(data)
 	logs.Trace("Source:", source, " Destination:", destination, " Pri:", pri)
 	//The destination is the switch
-	if destination == switchService.switchConfig.Uuid {
+	if destination == switchService.switchConfig.Local_Uuid {
 		switchService.switchDataReceived(data, edge)
 		return
 	}
@@ -129,7 +130,7 @@ func (switchService *SwitchService) HandleData(data []byte, edge interfaces.IEdg
 	uuidList := switchService.switchTable.stateCenter.ServiceUuids(destination, source)
 	if uuidList != nil {
 		switchService.sendToPorts(uuidList, data)
-		if destination == state.STATE_TOPIC && source != switchService.switchConfig.Uuid {
+		if destination == state.STATE_TOPIC && source != switchService.switchConfig.Local_Uuid {
 			switchService.switchDataReceived(data, edge)
 		}
 		return

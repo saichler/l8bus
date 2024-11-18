@@ -5,7 +5,6 @@ import (
 	"github.com/saichler/shared/go/share/interfaces"
 	sharedTypes "github.com/saichler/shared/go/types"
 	"sync"
-	"time"
 )
 
 const (
@@ -15,21 +14,20 @@ const (
 var emptyServices = make([]string, 0)
 
 type StateCenter struct {
-	mtx              *sync.RWMutex
-	cond             *sync.Cond
-	messagesSent     int64
-	messagesReceived int64
-	edges            map[string]*types.EdgeInfo
-	services         map[string]*types.ServiceInfo
+	mtx                *sync.RWMutex
+	cond               *sync.Cond
+	messagesSent       int64
+	messagesReceived   int64
+	statesServicePoint *StatesServicePoint
+	desc               string
 }
 
-func NewStateCenter() *StateCenter {
+func NewStateCenter(uuid string, registry interfaces.IStructRegistry, servicePoints interfaces.IServicePoints) *StateCenter {
 	stc := &StateCenter{}
 	stc.mtx = &sync.RWMutex{}
 	stc.cond = sync.NewCond(stc.mtx)
-	stc.edges = make(map[string]*types.EdgeInfo)
-	stc.services = make(map[string]*types.ServiceInfo)
-
+	stc.statesServicePoint = NewStatesServicePoint(registry, servicePoints)
+	stc.desc = "StateCenter (" + uuid + ") - "
 	return stc
 }
 
@@ -37,58 +35,23 @@ func (stc *StateCenter) AddEdge(newEdge interfaces.IEdge) {
 	stc.mtx.Lock()
 	defer stc.mtx.Unlock()
 	config := newEdge.Config()
-	_, ok := stc.edges[config.Uuid]
+	ok := stc.statesServicePoint.edgeExist(config.RemoteUuid)
+	interfaces.Debug(stc.desc, "adding Edge ", config.RemoteUuid, " ", config.IsAdjacentASwitch)
 	if !ok {
-		edgeInfo := &types.EdgeInfo{}
-		edgeInfo.Uuid = config.Uuid
-		edgeInfo.UpSince = time.Now().Unix()
-		stc.edges[config.Uuid] = edgeInfo
-
-		serviceInfo := &types.ServiceInfo{}
-		serviceInfo.Uuids = make(map[string]bool)
-		serviceInfo.Uuids[config.Uuid] = true
-
-		edgeInfo.Services = make(map[string]*types.ServiceInfo)
-		edgeInfo.Services[config.Uuid] = serviceInfo
-
-		stateService, ok := stc.services[STATE_TOPIC]
-		if !ok {
-			stateService = &types.ServiceInfo{}
-			stateService.Uuids = make(map[string]bool)
-			stc.services[STATE_TOPIC] = stateService
-		}
-		stateService.Uuids[config.Uuid] = true
+		stc.statesServicePoint.addEdge(&config)
 	}
 }
 
 func (stc *StateCenter) ServiceUuids(destination, source string) []string {
 	stc.mtx.RLock()
 	defer stc.mtx.RUnlock()
-	service, ok := stc.services[destination]
-	if !ok {
-		return emptyServices
-	}
-	result := make([]string, len(service.Uuids))
-	i := 0
-	for uuid, _ := range service.Uuids {
-		if uuid != source {
-			result[i] = uuid
-		}
-		i++
-	}
-	return result
+	return stc.statesServicePoint.serviceUuids(destination, source)
 }
 
-func (stc *StateCenter) InfosRequest() (*sharedTypes.Request, *types.EdgeInfos) {
+func (stc *StateCenter) StateRequest() (*sharedTypes.Request, *types.States) {
 	stc.mtx.RLock()
 	defer stc.mtx.RUnlock()
-	infoes := &types.EdgeInfos{Infos: make([]*types.EdgeInfo, len(stc.edges))}
-	i := 0
-	for _, edgeInfo := range stc.edges {
-		infoes.Infos[i] = edgeInfo
-		i++
-	}
 	request := &sharedTypes.Request{}
 	request.Type = sharedTypes.Action_POST
-	return request, infoes
+	return request, stc.statesServicePoint.cloneStates()
 }

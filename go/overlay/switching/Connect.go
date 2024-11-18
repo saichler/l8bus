@@ -14,15 +14,14 @@ func (switchService *SwitchService) ConnectTo(host string, destPort uint32) erro
 
 	config := interfaces.SwitchConfig()
 	config.SwitchPort = destPort
-	config.Uuid = switchService.switchConfig.Uuid
-	config.IsSwitch = true
+	config.Local_Uuid = switchService.switchConfig.Local_Uuid
+	config.IsSwitchSide = true
+	config.IsAdjacentASwitch = true
 
 	err = interfaces.SecurityProvider().ValidateConnection(conn, config)
 	if err != nil {
 		return err
 	}
-
-	config.IsSwitch = false
 
 	edge := edge.NewEdgeImpl(conn, switchService, switchService.registry, switchService.servicePoints, config)
 
@@ -36,6 +35,7 @@ func (switchService *SwitchService) ConnectTo(host string, destPort uint32) erro
 
 	//We have only one go routing per each because we want to keep the order of incoming and outgoing messages
 	edge.Start()
+
 	switchService.notifyNewEdge(edge)
 	return nil
 }

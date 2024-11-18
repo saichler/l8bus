@@ -1,7 +1,6 @@
 package edge
 
 import (
-	"github.com/saichler/layer8/go/overlay/state"
 	"github.com/saichler/shared/go/share/interfaces"
 	//This is just to not put interfaces.Debug for example
 	log "github.com/saichler/shared/go/share/interfaces"
@@ -128,14 +127,16 @@ func (edge *EdgeImpl) reconnect() error {
 
 func (edge *EdgeImpl) Name() string {
 	name := strutil.New("")
-	if edge.config.IsSwitch {
+	if edge.config.IsSwitchSide {
 		name.Add("Switch Port ")
 	} else {
 		name.Add("Node Port ")
 	}
-	name.Add(edge.config.Uuid)
+	name.Add(edge.config.Local_Uuid)
+	name.Add("->")
+	name.Add(edge.config.RemoteUuid)
 	name.Add("[")
-	name.Add(edge.config.Addr)
+	name.Add(edge.config.Address)
 	name.Add("]")
 	return name.String()
 }
@@ -145,12 +146,13 @@ func (edge *EdgeImpl) CreatedAt() int64 {
 }
 
 func (edge *EdgeImpl) reportStatus() {
-	for edge.active {
-		time.Sleep(time.Second * 5)
-		if time.Now().Unix() > edge.lastMessageSentTime+5 {
-			edge.lastMessageSentTime = time.Now().Unix()
-			request := &types.Request{Type: types.Action_POST, Status: edge.status}
-			edge.Do(request, state.STATE_TOPIC, nil)
-		}
-	}
+	/*
+		for edge.active {
+			time.Sleep(time.Second * 5)
+			if time.Now().Unix() > edge.lastMessageSentTime+5 {
+				edge.lastMessageSentTime = time.Now().Unix()
+				request := &types.Request{Type: types.Action_POST, Status: edge.status}
+				edge.Do(request, state.STATE_TOPIC, nil)
+			}
+		}*/
 }

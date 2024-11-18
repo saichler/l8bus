@@ -22,7 +22,7 @@ func (edge *EdgeImpl) writeToSocket() {
 			// If there is an error
 			if err != nil {
 				// If this is not a port on the switch, then try to reconnect.
-				if !edge.config.IsSwitch {
+				if !edge.config.IsSwitchSide {
 					edge.attemptToReconnect()
 					err = nets.Write(data, edge.conn, edge.config)
 				} else {
@@ -53,7 +53,7 @@ func (edge *EdgeImpl) Send(data []byte) error {
 // Do is wrapping a protobuf with a secure message and send it to the switch
 func (edge *EdgeImpl) Do(request *types.Request, destination string, pb proto.Message) error {
 	// Create message payload
-	data, err := protocol.CreateMessageFor(types.Priority_P0, request, edge.config.Uuid, destination, pb)
+	data, err := protocol.CreateMessageFor(types.Priority_P0, request, edge.config.Local_Uuid, destination, pb)
 	if err != nil {
 		logs.Error("Failed to create message:", err)
 		return err

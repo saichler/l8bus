@@ -1,7 +1,6 @@
 package protocol
 
 import (
-	"errors"
 	"github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/types"
 	"google.golang.org/protobuf/proto"
@@ -61,9 +60,6 @@ func ProtoOf(msg *types.Message, registry interfaces.IStructRegistry) (proto.Mes
 }
 
 func CreateMessageFor(priority types.Priority, request *types.Request, source, dest string, pb proto.Message) ([]byte, error) {
-	if pb == nil {
-		return nil, errors.New("nil pb")
-	}
 	//first marshal the protobuf into bytes
 	data, err := proto.Marshal(pb)
 	if err != nil {

@@ -27,10 +27,10 @@ func newEdgeImpl(
 	edge.active = true
 	edge.dataListener = dataListener
 
-	if edge.config.IsSwitch {
-		edge.config.Addr = con.RemoteAddr().String()
+	if edge.config.IsSwitchSide {
+		edge.config.Address = con.RemoteAddr().String()
 	} else {
-		edge.config.Addr = con.LocalAddr().String()
+		edge.config.Address = con.LocalAddr().String()
 	}
 
 	edge.rx = queues.NewByteSliceQueue("RX", int(config.RxQueueSize))
@@ -53,14 +53,13 @@ func ConnectTo(host string,
 		return nil, err
 	}
 
-	config.Uuid = uuid.New().String()
-	config.IsSwitch = false
+	config.Local_Uuid = uuid.New().String()
+	config.IsSwitchSide = false
+
 	err = interfaces.SecurityProvider().ValidateConnection(conn, config)
 	if err != nil {
 		return nil, err
 	}
-
-	config.IsSwitch = false
 
 	edge := newEdgeImpl(conn, datalistener, registry, servicePoints, config)
 
