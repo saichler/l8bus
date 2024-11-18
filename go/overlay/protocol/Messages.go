@@ -1,6 +1,7 @@
 package protocol
 
 import (
+	"errors"
 	"github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/types"
 	"google.golang.org/protobuf/proto"
@@ -44,7 +45,7 @@ func MessageOf(data []byte) (*types.Message, error) {
 	return msg, err
 }
 
-func ProtoOf(msg *types.Message, registry interfaces.IRegistry) (proto.Message, error) {
+func ProtoOf(msg *types.Message, registry interfaces.IStructRegistry) (proto.Message, error) {
 	data, err := interfaces.SecurityProvider().Decrypt(msg.Data)
 	if err != nil {
 		return nil, err
@@ -60,6 +61,9 @@ func ProtoOf(msg *types.Message, registry interfaces.IRegistry) (proto.Message, 
 }
 
 func CreateMessageFor(priority types.Priority, request *types.Request, source, dest string, pb proto.Message) ([]byte, error) {
+	if pb == nil {
+		return nil, errors.New("nil pb")
+	}
 	//first marshal the protobuf into bytes
 	data, err := proto.Marshal(pb)
 	if err != nil {

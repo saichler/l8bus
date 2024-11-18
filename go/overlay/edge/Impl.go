@@ -1,7 +1,7 @@
 package edge
 
 import (
-	"github.com/saichler/overlayK8s/go/state"
+	"github.com/saichler/overlayK8s/go/overlay/state"
 	"github.com/saichler/shared/go/share/interfaces"
 	//This is just to not put interfaces.Debug for example
 	log "github.com/saichler/shared/go/share/interfaces"
@@ -63,19 +63,8 @@ func (edge *EdgeImpl) Start() {
 	log.Info(edge.Name(), "Started!")
 }
 
-// Addr The address of this port, either remote addr or local
-// depending on if this is the initiator of the connection
-func (edge *EdgeImpl) Addr() string {
-	return edge.config.Addr
-}
-
-// The port uuid
-func (edge *EdgeImpl) Uuid() string {
-	return edge.config.Uuid
-}
-
-func (edge *EdgeImpl) ZSide() string {
-	return edge.config.ZUuid
+func (edge *EdgeImpl) Config() types.MessagingConfig {
+	return *edge.config
 }
 
 func (edge *EdgeImpl) Shutdown() {
@@ -127,7 +116,7 @@ func (edge *EdgeImpl) reconnect() error {
 	if err != nil {
 		return err
 	}
-	edge.config.ZUuid, err = interfaces.SecurityProvider().ValidateConnection(conn, edge.config.Uuid)
+	err = interfaces.SecurityProvider().ValidateConnection(conn, edge.config)
 	if err != nil {
 		return err
 	}

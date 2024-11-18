@@ -54,7 +54,8 @@ func ConnectTo(host string,
 	}
 
 	config.Uuid = uuid.New().String()
-	config.ZUuid, err = interfaces.SecurityProvider().ValidateConnection(conn, config.Uuid)
+	config.IsSwitch = false
+	err = interfaces.SecurityProvider().ValidateConnection(conn, config)
 	if err != nil {
 		return nil, err
 	}

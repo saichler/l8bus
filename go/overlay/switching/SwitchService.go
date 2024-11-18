@@ -2,9 +2,10 @@ package switching
 
 import (
 	"errors"
-	"fmt"
-	"github.com/saichler/overlayK8s/go/edge"
-	"github.com/saichler/overlayK8s/go/protocol"
+	"github.com/google/uuid"
+	"github.com/saichler/overlayK8s/go/overlay/edge"
+	"github.com/saichler/overlayK8s/go/overlay/protocol"
+	"github.com/saichler/overlayK8s/go/overlay/state"
 	"github.com/saichler/shared/go/share/interfaces"
 	logs "github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/types"
@@ -31,6 +32,8 @@ func NewSwitchService(switchConfig *types.MessagingConfig, registry interfaces.I
 	switchService.switchTable = newSwitchTable()
 	switchService.active = true
 	switchService.registry = registry
+	uid, _ := uuid.NewUUID()
+	switchService.switchConfig.Uuid = uid.String()
 	return switchService
 }
 
@@ -93,7 +96,7 @@ func (switchService *SwitchService) connect(conn net.Conn) {
 
 	sEdgeConfig := interfaces.EdgeSwitchConfig()
 	sEdgeConfig.Uuid = switchService.switchConfig.Uuid
-	sEdgeConfig.ZUuid, err = interfaces.SecurityProvider().ValidateConnection(conn, sEdgeConfig.Uuid)
+	err = interfaces.SecurityProvider().ValidateConnection(conn, sEdgeConfig)
 	if err != nil {
 		logs.Error(err)
 		return
@@ -116,16 +119,19 @@ func (switchService *SwitchService) Shutdown() {
 
 func (switchService *SwitchService) HandleData(data []byte, edge interfaces.IEdge) {
 	source, destination, pri := protocol.HeaderOf(data)
-	fmt.Println(source, destination, pri.String())
+	logs.Trace("Source:", source, " Destination:", destination, " Pri:", pri)
 	//The destination is the switch
 	if destination == switchService.switchConfig.Uuid {
 		switchService.switchDataReceived(data, edge)
 		return
 	}
 
-	uuidList := switchService.switchTable.stateCenter.ServiceUuids(destination)
+	uuidList := switchService.switchTable.stateCenter.ServiceUuids(destination, source)
 	if uuidList != nil {
 		switchService.sendToPorts(uuidList, data)
+		if destination == state.STATE_TOPIC && source != switchService.switchConfig.Uuid {
+			switchService.switchDataReceived(data, edge)
+		}
 		return
 	}
 
@@ -140,6 +146,10 @@ func (switchService *SwitchService) HandleData(data []byte, edge interfaces.IEdg
 
 func (switchService *SwitchService) sendToPorts(uuids []string, data []byte) {
 	for _, uuid := range uuids {
+		//This is the source of the message, hence skip
+		if uuid == "" {
+			continue
+		}
 		port := switchService.switchTable.fetchEdgeByUuid(uuid)
 		if port != nil {
 			port.Send(data)

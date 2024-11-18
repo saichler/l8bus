@@ -2,8 +2,9 @@ package edge
 
 import (
 	"errors"
-	"github.com/saichler/my.simple/go/utils/logs"
-	"github.com/saichler/overlayK8s/go/protocol"
+	"github.com/saichler/overlayK8s/go/overlay/protocol"
+	logs "github.com/saichler/shared/go/share/interfaces"
+	"github.com/saichler/shared/go/share/nets"
 	"github.com/saichler/shared/go/types"
 	"google.golang.org/protobuf/proto"
 )
@@ -17,13 +18,13 @@ func (edge *EdgeImpl) writeToSocket() {
 		// if the data is not nil
 		if data != nil && edge.active {
 			//Write the data to the socket
-			err := common.Write(data, edge.conn)
+			err := nets.Write(data, edge.conn, edge.config)
 			// If there is an error
 			if err != nil {
 				// If this is not a port on the switch, then try to reconnect.
-				if !edge.isSwitch {
+				if !edge.config.IsSwitch {
 					edge.attemptToReconnect()
-					err = common.Write(data, edge.conn)
+					err = nets.Write(data, edge.conn, edge.config)
 				} else {
 					break
 				}
@@ -52,7 +53,7 @@ func (edge *EdgeImpl) Send(data []byte) error {
 // Do is wrapping a protobuf with a secure message and send it to the switch
 func (edge *EdgeImpl) Do(request *types.Request, destination string, pb proto.Message) error {
 	// Create message payload
-	data, err := protocol.CreateMessageFor(types.Priority_P0, request, edge.uuid, destination, pb)
+	data, err := protocol.CreateMessageFor(types.Priority_P0, request, edge.config.Uuid, destination, pb)
 	if err != nil {
 		logs.Error("Failed to create message:", err)
 		return err

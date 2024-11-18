@@ -1,9 +1,9 @@
 package edge
 
 import (
-	"github.com/saichler/my.simple/go/common"
-	"github.com/saichler/my.simple/go/net/protocol"
-	"github.com/saichler/my.simple/go/utils/logs"
+	"github.com/saichler/overlayK8s/go/overlay/protocol"
+	logs "github.com/saichler/shared/go/share/interfaces"
+	"github.com/saichler/shared/go/share/nets"
 )
 
 // loop and Read incoming data from the socket
@@ -11,16 +11,16 @@ func (edge *EdgeImpl) readFromSocket() {
 	// While the port is active
 	for edge.active {
 		// read data ([]byte) from socket
-		data, err := common.Read(edge.conn)
+		data, err := nets.Read(edge.conn, edge.config)
 
 		//If therer is an error
 		if err != nil {
 			// If this is not a port from the switch side
-			if !edge.isSwitch {
+			if !edge.config.IsSwitch {
 				// Attempt to reconnect
 				edge.attemptToReconnect()
 				// And try to read the data again
-				data, err = common.Read(edge.conn)
+				data, err = nets.Read(edge.conn, edge.config)
 			} else {
 				// If this is the receiving port, break and clean resources.
 				logs.Error(err)
@@ -66,7 +66,7 @@ func (edge *EdgeImpl) notifyRawDataListener() {
 					continue
 				}
 				// Otherwise call the handler per the action & the type
-				edge.servicePoints.Handle(pb, msg.Action, edge)
+				edge.servicePoints.Handle(pb, msg.Request.Type, edge)
 			}
 		}
 	}

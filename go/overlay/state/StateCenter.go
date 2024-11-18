@@ -23,29 +23,45 @@ type StateCenter struct {
 	services         map[string]*types.ServiceInfo
 }
 
+func NewStateCenter() *StateCenter {
+	stc := &StateCenter{}
+	stc.mtx = &sync.RWMutex{}
+	stc.cond = sync.NewCond(stc.mtx)
+	stc.edges = make(map[string]*types.EdgeInfo)
+	stc.services = make(map[string]*types.ServiceInfo)
+
+	return stc
+}
+
 func (stc *StateCenter) AddEdge(newEdge interfaces.IEdge) {
 	stc.mtx.Lock()
 	defer stc.mtx.Unlock()
-	_, ok := stc.edges[newEdge.Uuid()]
+	config := newEdge.Config()
+	_, ok := stc.edges[config.Uuid]
 	if !ok {
 		edgeInfo := &types.EdgeInfo{}
-		edgeInfo.Uuid = newEdge.Uuid()
+		edgeInfo.Uuid = config.Uuid
 		edgeInfo.UpSince = time.Now().Unix()
-		stc.edges[newEdge.Uuid()] = edgeInfo
+		stc.edges[config.Uuid] = edgeInfo
 
 		serviceInfo := &types.ServiceInfo{}
 		serviceInfo.Uuids = make(map[string]bool)
-		serviceInfo.Uuids[newEdge.Uuid()] = true
+		serviceInfo.Uuids[config.Uuid] = true
 
 		edgeInfo.Services = make(map[string]*types.ServiceInfo)
-		edgeInfo.Services[newEdge.Uuid()] = serviceInfo
+		edgeInfo.Services[config.Uuid] = serviceInfo
 
-		stateService := stc.services[STATE_TOPIC]
-		stateService.Uuids[newEdge.Uuid()] = true
+		stateService, ok := stc.services[STATE_TOPIC]
+		if !ok {
+			stateService = &types.ServiceInfo{}
+			stateService.Uuids = make(map[string]bool)
+			stc.services[STATE_TOPIC] = stateService
+		}
+		stateService.Uuids[config.Uuid] = true
 	}
 }
 
-func (stc *StateCenter) ServiceUuids(destination string) []string {
+func (stc *StateCenter) ServiceUuids(destination, source string) []string {
 	stc.mtx.RLock()
 	defer stc.mtx.RUnlock()
 	service, ok := stc.services[destination]
@@ -55,7 +71,9 @@ func (stc *StateCenter) ServiceUuids(destination string) []string {
 	result := make([]string, len(service.Uuids))
 	i := 0
 	for uuid, _ := range service.Uuids {
-		result[i] = uuid
+		if uuid != source {
+			result[i] = uuid
+		}
 		i++
 	}
 	return result
