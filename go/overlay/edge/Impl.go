@@ -1,6 +1,7 @@
 package edge
 
 import (
+	"github.com/saichler/layer8/go/overlay/state"
 	"github.com/saichler/shared/go/share/interfaces"
 	//This is just to not put interfaces.Debug for example
 	log "github.com/saichler/shared/go/share/interfaces"
@@ -37,6 +38,8 @@ type EdgeImpl struct {
 	lastMessageSentTime int64
 	// Pre-prepared status request to clone from
 	status *types.Status
+
+	stateServicePoint *state.StatesServicePoint
 }
 
 type ReconnectInfo struct {
@@ -155,4 +158,8 @@ func (edge *EdgeImpl) reportStatus() {
 				edge.Do(request, state.STATE_TOPIC, nil)
 			}
 		}*/
+}
+
+func (edge *EdgeImpl) State() {
+	edge.stateServicePoint.Print()
 }

@@ -179,3 +179,7 @@ func (switchService *SwitchService) switchDataReceived(data []byte, edge interfa
 	// Otherwise call the handler per the action & the type
 	switchService.servicePoints.Handle(pb, msg.Request.Type, edge)
 }
+
+func (switchService *SwitchService) Config() types.MessagingConfig {
+	return *switchService.switchConfig
+}

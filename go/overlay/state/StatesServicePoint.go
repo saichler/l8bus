@@ -3,18 +3,21 @@ package state
 import (
 	"github.com/saichler/layer8/go/types"
 	"github.com/saichler/shared/go/share/interfaces"
-	"google.golang.org/protobuf/proto"
+	"sync"
 )
 
 type StatesServicePoint struct {
+	mtx    *sync.RWMutex
 	states *types.States
 }
 
 func NewStatesServicePoint(registry interfaces.IStructRegistry, servicePoints interfaces.IServicePoints) *StatesServicePoint {
 	ssp := &StatesServicePoint{}
+	ssp.mtx = &sync.RWMutex{}
 	ssp.states = &types.States{}
 	ssp.states.Edges = make(map[string]*types.EdgeState)
-	ssp.states.Services = make(map[string]*types.Services)
+	ssp.states.Services = make(map[string]*types.ServiceState)
+
 	registry.RegisterStruct(&types.States{})
 	err := servicePoints.RegisterServicePoint(&types.States{}, ssp, registry)
 	if err != nil {
@@ -23,25 +26,9 @@ func NewStatesServicePoint(registry interfaces.IStructRegistry, servicePoints in
 	return ssp
 }
 
-func (ssp *StatesServicePoint) Post(pb proto.Message, edge interfaces.IEdge) (proto.Message, error) {
-	states := pb.(*types.States)
-	for _, edge := range states.Edges {
-		interfaces.Logger().Info("Post:", edge.Uuid)
+func (ssp *StatesServicePoint) Print() {
+	interfaces.Info("Review")
+	for _, edge := range ssp.states.Edges {
+		interfaces.Info("  ", edge.Uuid)
 	}
-	return nil, nil
-}
-func (ssp *StatesServicePoint) Put(pb proto.Message, edge interfaces.IEdge) (proto.Message, error) {
-	return nil, nil
-}
-func (ssp *StatesServicePoint) Patch(pb proto.Message, edge interfaces.IEdge) (proto.Message, error) {
-	return nil, nil
-}
-func (ssp *StatesServicePoint) Delete(pb proto.Message, edge interfaces.IEdge) (proto.Message, error) {
-	return nil, nil
-}
-func (ssp *StatesServicePoint) Get(pb proto.Message, edge interfaces.IEdge) (proto.Message, error) {
-	return nil, nil
-}
-func (ssp *StatesServicePoint) EndPoint() string {
-	return "/EdgeInfos"
 }

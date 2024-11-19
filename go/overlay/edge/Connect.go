@@ -2,6 +2,8 @@ package edge
 
 import (
 	"github.com/google/uuid"
+	"github.com/saichler/layer8/go/overlay/state"
+	types2 "github.com/saichler/layer8/go/types"
 	"github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/share/queues"
 	"github.com/saichler/shared/go/types"
@@ -35,6 +37,10 @@ func newEdgeImpl(
 
 	edge.rx = queues.NewByteSliceQueue("RX", int(config.RxQueueSize))
 	edge.tx = queues.NewByteSliceQueue("TX", int(config.TxQueueSize))
+
+	edge.registry.RegisterStruct(&types2.States{})
+	edge.stateServicePoint = state.NewStatesServicePoint(edge.registry, edge.servicePoints)
+	edge.servicePoints.RegisterServicePoint(&types2.States{}, edge.stateServicePoint, edge.registry)
 
 	return edge
 }

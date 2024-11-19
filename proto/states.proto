@@ -9,7 +9,7 @@ option go_package = "./types";
 
 message States {
   map<string, EdgeState> edges = 1;
-  map<string, Services> services = 2;
+  map<string, ServiceState> services = 2;
 }
 
 message EdgeState {
@@ -18,9 +18,9 @@ message EdgeState {
   int64 lastMessage = 3;
   int64 messagesSent = 4;
   int64 messagesReceived = 5;
-  map<string, Services> services = 6;
 }
 
-message Services {
-  map<string, bool> uuids = 1;
+message ServiceState {
+  string topic = 1;
+  map<string, bool> edges = 2;
 }
