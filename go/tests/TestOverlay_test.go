@@ -2,16 +2,44 @@ package tests
 
 import (
 	"github.com/saichler/layer8/go/overlay/edge"
+	"github.com/saichler/layer8/go/overlay/protocol"
+	"github.com/saichler/layer8/go/tests/testsp"
 	"github.com/saichler/shared/go/share/interfaces"
+	"github.com/saichler/shared/go/tests"
+	"github.com/saichler/shared/go/types"
 	"testing"
 	"time"
 )
 
 func TestOverlay(t *testing.T) {
 	defer shutdownTopology()
-	egImpl := eg1.(*edge.EdgeImpl)
-	time.Sleep(time.Second * 10)
+	time.Sleep(time.Second * 3)
 	interfaces.Info("*****************************************************************")
+	time.Sleep(time.Second * 3)
+	egImpl := eg1.(*edge.EdgeImpl)
 	egImpl.State()
+
+	egImpl = eg3.(*edge.EdgeImpl)
+	egImpl.State()
+
+	sw1.State()
+
+	pb := &tests.TestProto{}
+	data, err := protocol.CreateMessageFor(types.Priority_P0, types.Action_POST, eg1.Config().Local_Uuid, eg1.Config().RemoteUuid, testsp.TEST_TOPIC, pb)
+	if err != nil {
+		interfaces.Fail(t, err)
+		return
+	}
+	interfaces.Info("Sending data")
+	err = eg1.Send(data)
+	time.Sleep(time.Second * 3)
+
+	for eg, tsp := range tsps {
+		if tsp.PostNumber != 1 {
+			interfaces.Fail(t, eg, " Post count does not equal 1")
+			return
+		}
+	}
+
 	interfaces.Info("*****************************************************************")
 }

@@ -38,10 +38,14 @@ func newEdgeImpl(
 	edge.rx = queues.NewByteSliceQueue("RX", int(config.RxQueueSize))
 	edge.tx = queues.NewByteSliceQueue("TX", int(config.TxQueueSize))
 
-	edge.registry.RegisterStruct(&types2.States{})
-	edge.stateServicePoint = state.NewStatesServicePoint(edge.registry, edge.servicePoints)
-	edge.servicePoints.RegisterServicePoint(&types2.States{}, edge.stateServicePoint, edge.registry)
-
+	_, err := edge.registry.TypeByName("States")
+	// If there is an error, this servicepoints already registered so do nothing
+	if err != nil {
+		edge.registry.RegisterStruct(&types2.States{})
+		edge.stateServicePoint = state.NewStatesServicePoint(edge.registry, edge.servicePoints)
+		edge.servicePoints.RegisterServicePoint(&types2.States{}, edge.stateServicePoint, edge.registry)
+		edge.stateServicePoint.CreateLocalState(config)
+	}
 	return edge
 }
 
@@ -89,4 +93,8 @@ func NewEdgeImpl(
 	servicePoints interfaces.IServicePoints,
 	config *types.MessagingConfig) *EdgeImpl {
 	return newEdgeImpl(con, dataListener, registry, servicePoints, config)
+}
+
+func (edge *EdgeImpl) SetName(name string) {
+	edge.name = name
 }

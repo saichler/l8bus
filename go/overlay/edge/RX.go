@@ -66,7 +66,7 @@ func (edge *EdgeImpl) notifyRawDataListener() {
 					continue
 				}
 				// Otherwise call the handler per the action & the type
-				edge.servicePoints.Handle(pb, msg.Request.Type, edge)
+				edge.servicePoints.Handle(pb, msg.Action, edge)
 			}
 		}
 	}

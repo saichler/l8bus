@@ -7,11 +7,11 @@ import (
 )
 
 func (ssp *StatesServicePoint) Post(pb proto.Message, edge interfaces.IEdge) (proto.Message, error) {
-	interfaces.Logger().Info("POST from ", edge.Config().RemoteUuid)
 	states := pb.(*types.States)
-	ssp.mergeState(states)
+	ssp.MergeState(states)
 	return nil, nil
 }
+
 func (ssp *StatesServicePoint) Put(pb proto.Message, edge interfaces.IEdge) (proto.Message, error) {
 	return nil, nil
 }
@@ -25,5 +25,8 @@ func (ssp *StatesServicePoint) Get(pb proto.Message, edge interfaces.IEdge) (pro
 	return nil, nil
 }
 func (ssp *StatesServicePoint) EndPoint() string {
-	return "/EdgeInfos"
+	return "/States"
+}
+func (ssp *StatesServicePoint) Topic() string {
+	return STATE_TOPIC
 }

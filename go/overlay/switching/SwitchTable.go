@@ -13,17 +13,17 @@ type SwitchTable struct {
 	internalEdges *protocol.EdgeMap
 	externalEdges *protocol.EdgeMap
 	stateCenter   *state.StateCenter
-	uuid          string
+	switchUuid    string
 	desc          string
 }
 
-func newSwitchTable(uuid string, registry interfaces.IStructRegistry, points interfaces.IServicePoints) *SwitchTable {
+func newSwitchTable(switchUuid string, registry interfaces.IStructRegistry, servicePoints interfaces.IServicePoints) *SwitchTable {
 	switchTable := &SwitchTable{}
 	switchTable.internalEdges = protocol.NewEdgeMap()
 	switchTable.externalEdges = protocol.NewEdgeMap()
-	switchTable.stateCenter = state.NewStateCenter(uuid, registry, points)
-	switchTable.uuid = uuid
-	switchTable.desc = "SwitchTable (" + uuid + ") - "
+	switchTable.stateCenter = state.NewStateCenter(switchUuid, registry, servicePoints)
+	switchTable.switchUuid = switchUuid
+	switchTable.desc = "SwitchTable (" + switchUuid + ") - "
 	return switchTable
 }
 
@@ -42,11 +42,11 @@ func (switchTable *SwitchTable) allEdgeList() []interfaces.IEdge {
 	return edges
 }
 
-func (switchTable *SwitchTable) broadcast(topic string, request *types.Request, switchUuid string, pb proto.Message) {
+func (switchTable *SwitchTable) broadcast(topic string, action types.Action, pb proto.Message) {
 	edges := switchTable.allEdgeList()
 	logs.Debug(switchTable.desc, "broadcasting to ", len(edges))
 
-	data, err := protocol.CreateMessageFor(types.Priority_P0, request, switchUuid, topic, pb)
+	data, err := protocol.CreateMessageFor(types.Priority_P0, action, switchTable.switchUuid, switchTable.switchUuid, topic, pb)
 	if err != nil {
 		logs.Error("Failed to send broadcast:", err)
 		return
@@ -57,7 +57,7 @@ func (switchTable *SwitchTable) broadcast(topic string, request *types.Request, 
 	}
 }
 
-func (switchTable *SwitchTable) addEdge(edge interfaces.IEdge, switchUuid string) {
+func (switchTable *SwitchTable) addEdge(edge interfaces.IEdge) {
 	config := edge.Config()
 	//check if this port is local to the machine, e.g. not belong to public subnet
 	isLocal := ipSegment.isLocal(config.Address)
@@ -83,8 +83,8 @@ func (switchTable *SwitchTable) addEdge(edge interfaces.IEdge, switchUuid string
 		logs.Info(switchTable.desc, "added external edge:", config.RemoteUuid)
 	}
 	switchTable.stateCenter.AddEdge(edge)
-	request, infos := switchTable.stateCenter.StateRequest()
-	go switchTable.broadcast(state.STATE_TOPIC, request, switchUuid, infos)
+	states := switchTable.stateCenter.States()
+	go switchTable.broadcast(state.STATE_TOPIC, types.Action_POST, states)
 }
 
 func (switchTable *SwitchTable) fetchEdgeByUuid(id string) interfaces.IEdge {
@@ -93,4 +93,19 @@ func (switchTable *SwitchTable) fetchEdgeByUuid(id string) interfaces.IEdge {
 		p, ok = switchTable.externalEdges.Get(id)
 	}
 	return p
+}
+
+func (switchTable *SwitchTable) ServiceUuids(destination, sourceSwitch string) map[string]string {
+	uuidMap := switchTable.stateCenter.ServiceUuids(destination)
+	if uuidMap != nil && sourceSwitch != switchTable.switchUuid {
+		excludeExternal := make(map[string]string)
+		for uuid, remote := range uuidMap {
+			_, ok := switchTable.externalEdges.Get(uuid)
+			if !ok {
+				excludeExternal[uuid] = remote
+			}
+		}
+		return excludeExternal
+	}
+	return uuidMap
 }

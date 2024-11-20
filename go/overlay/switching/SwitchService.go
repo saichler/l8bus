@@ -110,7 +110,7 @@ func (switchService *SwitchService) connect(conn net.Conn) {
 }
 
 func (switchService *SwitchService) notifyNewEdge(edge interfaces.IEdge) {
-	go switchService.switchTable.addEdge(edge, switchService.switchConfig.Local_Uuid)
+	go switchService.switchTable.addEdge(edge)
 }
 
 func (switchService *SwitchService) Shutdown() {
@@ -119,18 +119,23 @@ func (switchService *SwitchService) Shutdown() {
 }
 
 func (switchService *SwitchService) HandleData(data []byte, edge interfaces.IEdge) {
-	source, destination, pri := protocol.HeaderOf(data)
-	logs.Trace("Source:", source, " Destination:", destination, " Pri:", pri)
+	logs.Trace("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+	source, sourceSwitch, destination, _ := protocol.HeaderOf(data)
+	logs.Trace("Switch      : ", switchService.switchConfig.Local_Uuid)
+	logs.Trace("Source      : ", source)
+	logs.Trace("SourceSwitch: ", sourceSwitch)
+	logs.Trace("Destination : ", destination)
+
 	//The destination is the switch
 	if destination == switchService.switchConfig.Local_Uuid {
 		switchService.switchDataReceived(data, edge)
 		return
 	}
 
-	uuidList := switchService.switchTable.stateCenter.ServiceUuids(destination, source)
-	if uuidList != nil {
-		switchService.sendToPorts(uuidList, data)
-		if destination == state.STATE_TOPIC && source != switchService.switchConfig.Local_Uuid {
+	uuidMap := switchService.switchTable.ServiceUuids(destination, sourceSwitch)
+	if uuidMap != nil {
+		switchService.sendToPorts(uuidMap, data, sourceSwitch)
+		if destination == state.STATE_TOPIC {
 			switchService.switchDataReceived(data, edge)
 		}
 		return
@@ -145,15 +150,26 @@ func (switchService *SwitchService) HandleData(data []byte, edge interfaces.IEdg
 	p.Send(data)
 }
 
-func (switchService *SwitchService) sendToPorts(uuids []string, data []byte) {
-	for _, uuid := range uuids {
-		//This is the source of the message, hence skip
-		if uuid == "" {
-			continue
-		}
+func (switchService *SwitchService) sendToPorts(uuids map[string]string, data []byte, sourceSwitch string) {
+	alreadySent := make(map[string]bool)
+	for edgeUuid, remoteUuid := range uuids {
+		uuid := edgeUuid
 		port := switchService.switchTable.fetchEdgeByUuid(uuid)
+		// Forward to extrernal adjacents only if the source switch is this switch
+		// so there is only one hope forwrding
+		if port == nil && switchService.switchConfig.Local_Uuid == sourceSwitch {
+			uuid = remoteUuid
+			port = switchService.switchTable.fetchEdgeByUuid(uuid)
+		}
 		if port != nil {
-			port.Send(data)
+			// if the port is external, it may already been forward this message
+			// so skip it.
+			_, ok := alreadySent[uuid]
+			if !ok {
+				alreadySent[uuid] = true
+				interfaces.Trace("Sending from ", switchService.switchConfig.Local_Uuid, " to ", uuid)
+				port.Send(data)
+			}
 		}
 	}
 }
@@ -177,9 +193,14 @@ func (switchService *SwitchService) switchDataReceived(data []byte, edge interfa
 		return
 	}
 	// Otherwise call the handler per the action & the type
-	switchService.servicePoints.Handle(pb, msg.Request.Type, edge)
+	logs.Info("Switch Service is: ", switchService.switchConfig.Local_Uuid)
+	switchService.servicePoints.Handle(pb, msg.Action, edge)
 }
 
 func (switchService *SwitchService) Config() types.MessagingConfig {
 	return *switchService.switchConfig
+}
+
+func (switchService *SwitchService) State() {
+	state.Print(switchService.switchTable.stateCenter.States(), switchService.switchConfig.Local_Uuid)
 }

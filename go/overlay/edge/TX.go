@@ -51,9 +51,9 @@ func (edge *EdgeImpl) Send(data []byte) error {
 }
 
 // Do is wrapping a protobuf with a secure message and send it to the switch
-func (edge *EdgeImpl) Do(request *types.Request, destination string, pb proto.Message) error {
+func (edge *EdgeImpl) Do(action types.Action, destination string, pb proto.Message) error {
 	// Create message payload
-	data, err := protocol.CreateMessageFor(types.Priority_P0, request, edge.config.Local_Uuid, destination, pb)
+	data, err := protocol.CreateMessageFor(types.Priority_P0, action, edge.config.Local_Uuid, edge.config.RemoteUuid, destination, pb)
 	if err != nil {
 		logs.Error("Failed to create message:", err)
 		return err

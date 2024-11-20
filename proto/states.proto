@@ -7,6 +7,12 @@ option java_outer_classname = "Types";
 option java_package = "com.shared.types";
 option go_package = "./types";
 
+enum State {
+  Invalid_State = 0;
+  Up = 1;
+  Down = 2;
+}
+
 message States {
   map<string, EdgeState> edges = 1;
   map<string, ServiceState> services = 2;
@@ -14,13 +20,14 @@ message States {
 
 message EdgeState {
   string uuid = 1;
-  int64 upSince = 2;
-  int64 lastMessage = 3;
-  int64 messagesSent = 4;
-  int64 messagesReceived = 5;
+  State state = 2;
+  int64 upSince = 3;
+  int64 lastMessage = 4;
+  int64 messagesSent = 5;
+  int64 messagesReceived = 6;
 }
 
 message ServiceState {
   string topic = 1;
-  map<string, bool> edges = 2;
+  map<string, string> edges = 2;
 }
