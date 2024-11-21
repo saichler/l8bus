@@ -3,11 +3,12 @@ package tests
 import (
 	"github.com/saichler/layer8/go/overlay/edge"
 	"github.com/saichler/layer8/go/overlay/switching"
-	"github.com/saichler/layer8/go/tests/testsp"
 	"github.com/saichler/shared/go/share/defaults"
 	. "github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/share/service_points"
 	"github.com/saichler/shared/go/share/struct_registry"
+	"github.com/saichler/shared/go/tests"
+	"github.com/saichler/shared/go/tests/infra"
 	"time"
 )
 
@@ -17,7 +18,7 @@ var eg1 IEdge
 var eg2 IEdge
 var eg3 IEdge
 var eg4 IEdge
-var tsps = make(map[string]*testsp.TestServicePointHandler)
+var tsps = make(map[string]*infra.TestServicePointHandler)
 
 func init() {
 	defaults.LoadDefaultImplementations()
@@ -64,12 +65,14 @@ func createEdge(port uint32, name string) IEdge {
 	egConfig := EdgeConfig()
 	egRegistry := struct_registry.NewStructRegistry()
 	egServicePoints := service_points.NewServicePoints()
-	tsps[name] = testsp.NewTestServicePointHandler(egRegistry, egServicePoints)
+	tsps[name] = infra.NewTestServicePointHandler(name)
+	egServicePoints.RegisterServicePoint(&tests.TestProto{}, tsps[name], egRegistry)
+
 	eg, err := edge.ConnectTo("127.0.0.1", port, nil, egRegistry, egServicePoints, egConfig)
 	if err != nil {
 		panic(err.Error())
 	}
-	eg.RegisterTopic(testsp.TEST_TOPIC)
+	eg.RegisterTopic(infra.TEST_TOPIC)
 	eg.Start()
 	eg.(*edge.EdgeImpl).SetName(name)
 	return eg

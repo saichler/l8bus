@@ -3,9 +3,9 @@ package tests
 import (
 	"github.com/saichler/layer8/go/overlay/edge"
 	"github.com/saichler/layer8/go/overlay/protocol"
-	"github.com/saichler/layer8/go/tests/testsp"
 	"github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/tests"
+	"github.com/saichler/shared/go/tests/infra"
 	"github.com/saichler/shared/go/types"
 	"testing"
 	"time"
@@ -25,7 +25,7 @@ func TestOverlay(t *testing.T) {
 	sw1.State()
 
 	pb := &tests.TestProto{}
-	data, err := protocol.CreateMessageFor(types.Priority_P0, types.Action_POST, eg1.Config().Local_Uuid, eg1.Config().RemoteUuid, testsp.TEST_TOPIC, pb)
+	data, err := protocol.CreateMessageFor(types.Priority_P0, types.Action_POST, eg1.Config().Local_Uuid, eg1.Config().RemoteUuid, infra.TEST_TOPIC, pb)
 	if err != nil {
 		interfaces.Fail(t, err)
 		return

@@ -142,7 +142,7 @@ func (switchService *SwitchService) HandleData(data []byte, edge interfaces.IEdg
 	}
 
 	//The destination is a single port
-	p := switchService.switchTable.fetchEdgeByUuid(destination)
+	_, p := switchService.switchTable.edges.getEdge(destination, "", false)
 	if p == nil {
 		logs.Error("Cannot find destination port for ", destination)
 		return
@@ -153,21 +153,15 @@ func (switchService *SwitchService) HandleData(data []byte, edge interfaces.IEdg
 func (switchService *SwitchService) sendToPorts(uuids map[string]string, data []byte, sourceSwitch string) {
 	alreadySent := make(map[string]bool)
 	for edgeUuid, remoteUuid := range uuids {
-		uuid := edgeUuid
-		port := switchService.switchTable.fetchEdgeByUuid(uuid)
-		// Forward to extrernal adjacents only if the source switch is this switch
-		// so there is only one hope forwrding
-		if port == nil && switchService.switchConfig.Local_Uuid == sourceSwitch {
-			uuid = remoteUuid
-			port = switchService.switchTable.fetchEdgeByUuid(uuid)
-		}
+		usedUuid, port := switchService.switchTable.edges.getEdge(edgeUuid, remoteUuid,
+			switchService.switchConfig.Local_Uuid == sourceSwitch)
 		if port != nil {
 			// if the port is external, it may already been forward this message
 			// so skip it.
-			_, ok := alreadySent[uuid]
+			_, ok := alreadySent[usedUuid]
 			if !ok {
-				alreadySent[uuid] = true
-				interfaces.Trace("Sending from ", switchService.switchConfig.Local_Uuid, " to ", uuid)
+				alreadySent[usedUuid] = true
+				interfaces.Trace("Sending from ", switchService.switchConfig.Local_Uuid, " to ", usedUuid)
 				port.Send(data)
 			}
 		}

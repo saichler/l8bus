@@ -5,7 +5,6 @@ import (
 	"github.com/saichler/shared/go/types"
 	"google.golang.org/protobuf/proto"
 	"reflect"
-	"sync"
 	"sync/atomic"
 )
 
@@ -44,13 +43,9 @@ func HeaderOf(data []byte) (string, string, string, types.Priority) {
 	return source, sourceSwitch, string(dest), pri
 }
 
-var protoMarshalSync = &sync.Mutex{}
-
 func MessageOf(data []byte) (*types.Message, error) {
 	msg := &types.Message{}
-	protoMarshalSync.Lock()
-	err := proto.Unmarshal(data[109:], msg)
-	protoMarshalSync.Unlock()
+	err := Unmarshal(data[109:], msg)
 	if err != nil {
 		panic(err)
 	}
@@ -94,9 +89,7 @@ func CreateMessageFor(priority types.Priority, action types.Action, source, sour
 	msg.Type = reflect.ValueOf(pb).Elem().Type().Name()
 	msg.Action = action
 	//Now serialize the message
-	protoMarshalSync.Lock()
-	msgData, err := proto.Marshal(msg)
-	protoMarshalSync.Unlock()
+	msgData, err := Marshal(msg)
 	if err != nil {
 		return nil, err
 	}
