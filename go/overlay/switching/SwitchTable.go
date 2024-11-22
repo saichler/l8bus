@@ -10,26 +10,23 @@ import (
 )
 
 type SwitchTable struct {
-	edges       *Edges
-	stateCenter *state.StateCenter
-	switchUuid  string
-	desc        string
+	edges         *Edges
+	switchService *SwitchService
+	desc          string
 }
 
-func newSwitchTable(switchUuid string, registry interfaces.IStructRegistry, servicePoints interfaces.IServicePoints) *SwitchTable {
+func newSwitchTable(switchService *SwitchService) *SwitchTable {
 	switchTable := &SwitchTable{}
 	switchTable.edges = newEdges()
-	switchTable.stateCenter = state.NewStateCenter(switchUuid, registry, servicePoints)
-	switchTable.switchUuid = switchUuid
-	switchTable.desc = "SwitchTable (" + switchUuid + ") - "
+	switchTable.switchService = switchService
+	switchTable.desc = "SwitchTable (" + switchService.switchConfig.Local_Uuid + ") - "
 	return switchTable
 }
 
 func (switchTable *SwitchTable) broadcast(topic string, action types.Action, pb proto.Message) {
 	edges := switchTable.edges.all()
 	logs.Debug(switchTable.desc, "broadcasting to ", len(edges))
-
-	data, err := protocol.CreateMessageFor(types.Priority_P0, action, switchTable.switchUuid, switchTable.switchUuid, topic, pb)
+	data, err := protocol.CreateMessageFor(types.Priority_P0, action, switchTable.switchService.switchConfig.Local_Uuid, switchTable.switchService.switchConfig.Local_Uuid, topic, pb)
 	if err != nil {
 		logs.Error("Failed to send broadcast:", err)
 		return
@@ -53,14 +50,14 @@ func (switchTable *SwitchTable) addEdge(edge interfaces.IEdge) {
 		switchTable.edges.addExternal(config.RemoteUuid, edge)
 		logs.Info(switchTable.desc, "added external edge:", config.RemoteUuid)
 	}
-	switchTable.stateCenter.AddEdge(edge)
-	states := switchTable.stateCenter.States()
+	switchTable.switchService.statesServicePoint().AddNewSwitchEdge(&config, switchTable.desc)
+	states := switchTable.switchService.statesServicePoint().CloneStates()
 	go switchTable.broadcast(state.STATE_TOPIC, types.Action_POST, states)
 }
 
 func (switchTable *SwitchTable) ServiceUuids(destination, sourceSwitch string) map[string]string {
-	uuidsMap := switchTable.stateCenter.ServiceUuids(destination)
-	if uuidsMap != nil && sourceSwitch != switchTable.switchUuid {
+	uuidsMap := switchTable.switchService.statesServicePoint().ServiceUuids(destination)
+	if uuidsMap != nil && sourceSwitch != switchTable.switchService.switchConfig.Local_Uuid {
 		// When the message source is not within this switch,
 		// we should not publish to adjacent as the overlay is o one hope
 		// publish.

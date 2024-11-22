@@ -6,6 +6,7 @@ import (
 	"github.com/saichler/layer8/go/overlay/edge"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/layer8/go/overlay/state"
+	types2 "github.com/saichler/layer8/go/types"
 	"github.com/saichler/shared/go/share/interfaces"
 	logs "github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/types"
@@ -33,7 +34,12 @@ func NewSwitchService(switchConfig *types.MessagingConfig, registry interfaces.I
 	switchService.registry = registry
 	uid, _ := uuid.NewUUID()
 	switchService.switchConfig.Local_Uuid = uid.String()
-	switchService.switchTable = newSwitchTable(switchService.switchConfig.Local_Uuid, registry, servicePoints)
+	switchService.switchTable = newSwitchTable(switchService)
+
+	registry.RegisterStruct(&types2.States{})
+	sp := state.NewStatesServicePoint(registry, servicePoints)
+	servicePoints.RegisterServicePoint(&types2.States{}, sp, registry)
+
 	return switchService
 }
 
@@ -104,7 +110,7 @@ func (switchService *SwitchService) connect(conn net.Conn) {
 		return
 	}
 
-	edge := edge.NewEdgeImpl(conn, switchService, switchService.registry, switchService.servicePoints, sEdgeConfig)
+	edge := edge.NewEdgeImpl(conn, switchService, switchService.registry, nil, sEdgeConfig)
 	edge.Start()
 	switchService.notifyNewEdge(edge)
 }
@@ -196,5 +202,13 @@ func (switchService *SwitchService) Config() types.MessagingConfig {
 }
 
 func (switchService *SwitchService) State() {
-	state.Print(switchService.switchTable.stateCenter.States(), switchService.switchConfig.Local_Uuid)
+	switchService.statesServicePoint().CloneStates()
+}
+
+func (switchService *SwitchService) statesServicePoint() *state.StatesServicePoint {
+	sp, ok := switchService.servicePoints.ServicePointHandler("States")
+	if !ok {
+		return nil
+	}
+	return sp.(*state.StatesServicePoint)
 }

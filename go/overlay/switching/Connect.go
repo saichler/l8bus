@@ -23,7 +23,7 @@ func (switchService *SwitchService) ConnectTo(host string, destPort uint32) erro
 		return err
 	}
 
-	edge := edge.NewEdgeImpl(conn, switchService, switchService.registry, switchService.servicePoints, config)
+	edge := edge.NewEdgeImpl(conn, switchService, switchService.registry, nil, config)
 
 	//Below attributes are only for the port initiating the connection
 	/* @TODO implement reconnect between switches

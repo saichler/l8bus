@@ -48,19 +48,6 @@ func (ssp *StatesServicePoint) States() types.States {
 	return *ssp.states
 }
 
-func Print(states *types.States, uuid string) {
-	interfaces.Info("Review ", uuid)
-	for _, edge := range states.Edges {
-		interfaces.Info("  ", edge.Uuid)
-	}
-	for topic, service := range states.Services {
-		interfaces.Info("  ", topic)
-		for uuid, _ := range service.Edges {
-			interfaces.Info("      ", uuid)
-		}
-	}
-}
-
 func (ssp *StatesServicePoint) RegisterTopic(topic string) {
 	ssp.mtx.Lock()
 	defer ssp.mtx.Unlock()

@@ -42,9 +42,9 @@ func newEdgeImpl(
 	// If there is an error, this servicepoints already registered so do nothing
 	if err != nil {
 		edge.registry.RegisterStruct(&types2.States{})
-		edge.stateServicePoint = state.NewStatesServicePoint(edge.registry, edge.servicePoints)
-		edge.servicePoints.RegisterServicePoint(&types2.States{}, edge.stateServicePoint, edge.registry)
-		edge.stateServicePoint.CreateLocalState(config)
+		sp := state.NewStatesServicePoint(edge.registry, edge.servicePoints)
+		edge.servicePoints.RegisterServicePoint(&types2.States{}, sp, edge.registry)
+		sp.CreateLocalState(config)
 	}
 	return edge
 }

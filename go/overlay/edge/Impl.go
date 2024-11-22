@@ -3,6 +3,7 @@ package edge
 import (
 	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/layer8/go/overlay/state"
+	types2 "github.com/saichler/layer8/go/types"
 	"github.com/saichler/shared/go/share/interfaces"
 	//This is just to not put interfaces.Debug for example
 	log "github.com/saichler/shared/go/share/interfaces"
@@ -38,8 +39,7 @@ type EdgeImpl struct {
 	// Last Message Sent
 	lastMessageSentTime int64
 
-	stateServicePoint *state.StatesServicePoint
-	name              string
+	name string
 }
 
 type ReconnectInfo struct {
@@ -55,8 +55,8 @@ type ReconnectInfo struct {
 
 func (edge *EdgeImpl) Start() {
 	//Update the switch uuid in the list of services, if this is an edge connection
-	if edge.stateServicePoint != nil {
-		edge.stateServicePoint.UpdateTopicsSwitch(edge.config.RemoteUuid)
+	if edge.servicePoint() != nil {
+		edge.servicePoint().UpdateTopicsSwitch(edge.config.RemoteUuid)
 	}
 	// Start loop reading from the socket
 	go edge.readFromSocket()
@@ -67,6 +67,17 @@ func (edge *EdgeImpl) Start() {
 
 	go edge.reportStatus()
 	log.Info(edge.Name(), "Started!")
+}
+
+func (edge *EdgeImpl) servicePoint() *state.StatesServicePoint {
+	if edge.servicePoints == nil {
+		return nil
+	}
+	sp, ok := edge.servicePoints.ServicePointHandler("States")
+	if !ok {
+		return nil
+	}
+	return sp.(*state.StatesServicePoint)
 }
 
 func (edge *EdgeImpl) Config() types.MessagingConfig {
@@ -168,15 +179,13 @@ func (edge *EdgeImpl) reportStatus() {
 	}
 }
 
-func (edge *EdgeImpl) State() {
-	s := edge.stateServicePoint.States()
-	state.Print(&s, edge.config.Local_Uuid)
+func (edge *EdgeImpl) State() *types2.States {
+	return edge.servicePoint().CloneStates()
 }
 
 func (edge *EdgeImpl) PublishState() {
-	state := edge.stateServicePoint.LocalState()
-	edge.stateServicePoint.MergeState(&state)
-	data, err := protocol.CreateMessageFor(types.Priority_P0, types.Action_POST, edge.config.Local_Uuid, edge.config.RemoteUuid, edge.stateServicePoint.Topic(), &state)
+	state := edge.servicePoint().LocalState()
+	data, err := protocol.CreateMessageFor(types.Priority_P0, types.Action_POST, edge.config.Local_Uuid, edge.config.RemoteUuid, edge.servicePoint().Topic(), &state)
 	if err != nil {
 		log.Error("Failed to create state message: ", err)
 		return
@@ -189,5 +198,5 @@ func (edge *EdgeImpl) PublishState() {
 }
 
 func (edge *EdgeImpl) RegisterTopic(topic string) {
-	edge.stateServicePoint.RegisterTopic(topic)
+	edge.servicePoint().RegisterTopic(topic)
 }
