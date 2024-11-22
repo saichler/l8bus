@@ -124,6 +124,11 @@ func (switchService *SwitchService) Shutdown() {
 }
 
 func (switchService *SwitchService) HandleData(data []byte, edge interfaces.IEdge) {
+	// in case the logger sync is enabled, this will make sure this method logs are grouped together.
+	// if the logger sync is not enabled, this will do nothing.
+	interfaces.Logger().LoggerLock()
+	defer interfaces.Logger().LoggerUnlock()
+	
 	interfaces.Trace("********** Swith Service - HandleData **********")
 	source, sourceSwitch, destination, _ := protocol.HeaderOf(data)
 	interfaces.Trace("** Switch      : ", switchService.switchConfig.Local_Uuid)

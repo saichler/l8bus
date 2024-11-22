@@ -22,6 +22,8 @@ var tsps = make(map[string]*infra.TestServicePointHandler)
 
 func init() {
 	defaults.LoadDefaultImplementations()
+	Logger().SetLogLevel(Trace_Level)
+	Logger().EnableLoggerSync(true)
 	setupTopology()
 }
 
