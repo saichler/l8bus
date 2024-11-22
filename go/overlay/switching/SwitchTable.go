@@ -23,12 +23,11 @@ func newSwitchTable(switchService *SwitchService) *SwitchTable {
 	return switchTable
 }
 
-func (switchTable *SwitchTable) broadcast(topic string, action types.Action, pb proto.Message) {
+func (switchTable *SwitchTable) sendToAll(topic string, action types.Action, pb proto.Message) {
 	edges := switchTable.edges.all()
-	logs.Debug(switchTable.desc, "broadcasting to ", len(edges))
 	data, err := protocol.CreateMessageFor(types.Priority_P0, action, switchTable.switchService.switchConfig.Local_Uuid, switchTable.switchService.switchConfig.Local_Uuid, topic, pb)
 	if err != nil {
-		logs.Error("Failed to send broadcast:", err)
+		logs.Error("Failed to create message to send to all: ", err)
 		return
 	}
 	for _, edge := range edges {
@@ -52,7 +51,7 @@ func (switchTable *SwitchTable) addEdge(edge interfaces.IEdge) {
 	}
 	switchTable.switchService.statesServicePoint().AddNewSwitchEdge(&config, switchTable.desc)
 	states := switchTable.switchService.statesServicePoint().CloneStates()
-	go switchTable.broadcast(state.STATE_TOPIC, types.Action_POST, states)
+	go switchTable.sendToAll(state.STATE_TOPIC, types.Action_POST, states)
 }
 
 func (switchTable *SwitchTable) ServiceUuids(destination, sourceSwitch string) map[string]string {

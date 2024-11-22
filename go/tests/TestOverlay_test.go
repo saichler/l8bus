@@ -3,6 +3,7 @@ package tests
 import (
 	"github.com/saichler/layer8/go/overlay/edge"
 	"github.com/saichler/layer8/go/overlay/protocol"
+	"github.com/saichler/layer8/go/overlay/state"
 	"github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/tests"
 	"github.com/saichler/shared/go/tests/infra"
@@ -17,12 +18,12 @@ func TestOverlay(t *testing.T) {
 	interfaces.Info("*****************************************************************")
 	time.Sleep(time.Second * 3)
 	egImpl := eg1.(*edge.EdgeImpl)
-	egImpl.State()
+	state.Print(egImpl.State(), egImpl.Config().Local_Uuid)
 
 	egImpl = eg3.(*edge.EdgeImpl)
-	egImpl.State()
+	state.Print(egImpl.State(), egImpl.Config().Local_Uuid)
 
-	sw1.State()
+	state.Print(sw1.State(), sw1.Config().Local_Uuid)
 
 	pb := &tests.TestProto{}
 	data, err := protocol.CreateMessageFor(types.Priority_P0, types.Action_POST, eg1.Config().Local_Uuid, eg1.Config().RemoteUuid, infra.TEST_TOPIC, pb)

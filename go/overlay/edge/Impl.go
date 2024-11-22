@@ -39,7 +39,8 @@ type EdgeImpl struct {
 	// Last Message Sent
 	lastMessageSentTime int64
 
-	name string
+	name       string
+	localState *types2.States
 }
 
 type ReconnectInfo struct {
@@ -55,8 +56,8 @@ type ReconnectInfo struct {
 
 func (edge *EdgeImpl) Start() {
 	//Update the switch uuid in the list of services, if this is an edge connection
-	if edge.servicePoint() != nil {
-		edge.servicePoint().UpdateTopicsSwitch(edge.config.RemoteUuid)
+	if edge.localState != nil {
+		edge.updateRemoteUuid()
 	}
 	// Start loop reading from the socket
 	go edge.readFromSocket()
@@ -184,8 +185,8 @@ func (edge *EdgeImpl) State() *types2.States {
 }
 
 func (edge *EdgeImpl) PublishState() {
-	state := edge.servicePoint().LocalState()
-	data, err := protocol.CreateMessageFor(types.Priority_P0, types.Action_POST, edge.config.Local_Uuid, edge.config.RemoteUuid, edge.servicePoint().Topic(), &state)
+	data, err := protocol.CreateMessageFor(types.Priority_P0, types.Action_POST,
+		edge.config.Local_Uuid, edge.config.RemoteUuid, edge.servicePoint().Topic(), edge.localState)
 	if err != nil {
 		log.Error("Failed to create state message: ", err)
 		return
@@ -195,8 +196,4 @@ func (edge *EdgeImpl) PublishState() {
 		log.Error("Failed to send state: ", err)
 		return
 	}
-}
-
-func (edge *EdgeImpl) RegisterTopic(topic string) {
-	edge.servicePoint().RegisterTopic(topic)
 }

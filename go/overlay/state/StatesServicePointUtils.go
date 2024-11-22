@@ -8,10 +8,11 @@ import (
 )
 
 const (
-	STATE_TOPIC = "STATE"
+	STATE_TOPIC    = "STATE"
+	STATE_ENDPOINT = "/" + STATE_TOPIC
 )
 
-func createStatesFromConfig(config *types.MessagingConfig, isEdge bool) *types2.States {
+func CreateStatesFromConfig(config *types.MessagingConfig, isEdge bool) *types2.States {
 	edgeState := &types2.EdgeState{}
 	if isEdge {
 		edgeState.Uuid = config.Local_Uuid

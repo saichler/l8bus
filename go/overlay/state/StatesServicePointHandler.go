@@ -25,7 +25,7 @@ func (ssp *StatesServicePoint) Get(pb proto.Message, edge interfaces.IEdge) (pro
 	return nil, nil
 }
 func (ssp *StatesServicePoint) EndPoint() string {
-	return "/States"
+	return STATE_ENDPOINT
 }
 func (ssp *StatesServicePoint) Topic() string {
 	return STATE_TOPIC

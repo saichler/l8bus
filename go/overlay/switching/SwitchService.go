@@ -8,7 +8,6 @@ import (
 	"github.com/saichler/layer8/go/overlay/state"
 	types2 "github.com/saichler/layer8/go/types"
 	"github.com/saichler/shared/go/share/interfaces"
-	logs "github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/types"
 	"google.golang.org/protobuf/proto"
 	"net"
@@ -68,27 +67,27 @@ func (switchService *SwitchService) start(err *error) {
 	}
 
 	for switchService.active {
-		logs.Info("Waiting for connections...")
+		interfaces.Info("Waiting for connections...")
 		switchService.ready = true
 		conn, e := switchService.socket.Accept()
 		if e != nil && switchService.active {
-			logs.Error("Failed to accept socket connection:", err)
+			interfaces.Error("Failed to accept socket connection:", err)
 			continue
 		}
 		if switchService.active {
-			logs.Info("Accepted socket connection...")
+			interfaces.Info("Accepted socket connection...")
 			go switchService.connect(conn)
 		}
 	}
-	logs.Warning("Switch Service has ended")
+	interfaces.Warning("Switch Service has ended")
 }
 
 func (switchService *SwitchService) bind() error {
 	socket, e := net.Listen("tcp", ":"+strconv.Itoa(int(switchService.switchConfig.SwitchPort)))
 	if e != nil {
-		return logs.Error("Unable to bind to port ", switchService.switchConfig.SwitchPort, e.Error())
+		return interfaces.Error("Unable to bind to port ", switchService.switchConfig.SwitchPort, e.Error())
 	}
-	logs.Info("Bind Successfully to port ", switchService.switchConfig.SwitchPort)
+	interfaces.Info("Bind Successfully to port ", switchService.switchConfig.SwitchPort)
 	switchService.socket = socket
 	return nil
 }
@@ -96,7 +95,7 @@ func (switchService *SwitchService) bind() error {
 func (switchService *SwitchService) connect(conn net.Conn) {
 	err := interfaces.SecurityProvider().CanAccept(conn)
 	if err != nil {
-		logs.Error(err)
+		interfaces.Error(err)
 		return
 	}
 
@@ -106,7 +105,7 @@ func (switchService *SwitchService) connect(conn net.Conn) {
 
 	err = interfaces.SecurityProvider().ValidateConnection(conn, sEdgeConfig)
 	if err != nil {
-		logs.Error(err)
+		interfaces.Error(err)
 		return
 	}
 
@@ -125,12 +124,12 @@ func (switchService *SwitchService) Shutdown() {
 }
 
 func (switchService *SwitchService) HandleData(data []byte, edge interfaces.IEdge) {
-	logs.Trace("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+	interfaces.Trace("********** Swith Service - HandleData **********")
 	source, sourceSwitch, destination, _ := protocol.HeaderOf(data)
-	logs.Trace("Switch      : ", switchService.switchConfig.Local_Uuid)
-	logs.Trace("Source      : ", source)
-	logs.Trace("SourceSwitch: ", sourceSwitch)
-	logs.Trace("Destination : ", destination)
+	interfaces.Trace("** Switch      : ", switchService.switchConfig.Local_Uuid)
+	interfaces.Trace("** Source      : ", source)
+	interfaces.Trace("** SourceSwitch: ", sourceSwitch)
+	interfaces.Trace("** Destination : ", destination)
 
 	//The destination is the switch
 	if destination == switchService.switchConfig.Local_Uuid {
@@ -150,7 +149,7 @@ func (switchService *SwitchService) HandleData(data []byte, edge interfaces.IEdg
 	//The destination is a single port
 	_, p := switchService.switchTable.edges.getEdge(destination, "", false)
 	if p == nil {
-		logs.Error("Cannot find destination port for ", destination)
+		interfaces.Error("Cannot find destination port for ", destination)
 		return
 	}
 	p.Send(data)
@@ -184,16 +183,16 @@ func (switchService *SwitchService) PortShutdown(edge interfaces.IEdge) {
 func (switchService *SwitchService) switchDataReceived(data []byte, edge interfaces.IEdge) {
 	msg, err := protocol.MessageOf(data)
 	if err != nil {
-		logs.Error(err)
+		interfaces.Error(err)
 		return
 	}
 	pb, err := protocol.ProtoOf(msg, switchService.registry)
 	if err != nil {
-		logs.Error(err)
+		interfaces.Error(err)
 		return
 	}
 	// Otherwise call the handler per the action & the type
-	logs.Info("Switch Service is: ", switchService.switchConfig.Local_Uuid)
+	interfaces.Info("Switch Service is: ", switchService.switchConfig.Local_Uuid)
 	switchService.servicePoints.Handle(pb, msg.Action, edge)
 }
 
@@ -201,8 +200,8 @@ func (switchService *SwitchService) Config() types.MessagingConfig {
 	return *switchService.switchConfig
 }
 
-func (switchService *SwitchService) State() {
-	switchService.statesServicePoint().CloneStates()
+func (switchService *SwitchService) State() *types2.States {
+	return switchService.statesServicePoint().CloneStates()
 }
 
 func (switchService *SwitchService) statesServicePoint() *state.StatesServicePoint {

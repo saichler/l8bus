@@ -44,7 +44,7 @@ func newEdgeImpl(
 		edge.registry.RegisterStruct(&types2.States{})
 		sp := state.NewStatesServicePoint(edge.registry, edge.servicePoints)
 		edge.servicePoints.RegisterServicePoint(&types2.States{}, sp, edge.registry)
-		sp.CreateLocalState(config)
+		edge.localState = state.CreateStatesFromConfig(edge.config, true)
 	}
 	return edge
 }

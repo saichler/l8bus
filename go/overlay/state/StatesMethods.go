@@ -14,7 +14,7 @@ func (ssp *StatesServicePoint) edgeExist(uuid string) bool {
 }
 
 func (ssp *StatesServicePoint) addEdgeFromConfig(config *types.MessagingConfig, isEdge bool) {
-	ssp.MergeState(createStatesFromConfig(config, isEdge))
+	ssp.MergeState(CreateStatesFromConfig(config, isEdge))
 }
 
 func (ssp *StatesServicePoint) MergeState(states *types2.States) {
