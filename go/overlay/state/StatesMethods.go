@@ -39,16 +39,13 @@ func (ssp *StatesServicePoint) MergeState(states *types2.States) {
 			ssp.states.Services[topic] = serviceState
 		} else {
 			for uuid, zSide := range serviceState.Edges {
-				if uuid == zSide {
-					panic("Remote and local are the same")
-				}
 				ssp.states.Services[topic].Edges[uuid] = zSide
 			}
 		}
 	}
 }
 
-func (ssp *StatesServicePoint) ServiceUuids(destination string) map[string]string {
+func (ssp *StatesServicePoint) ServiceUuids(destination string) map[string]bool {
 	ssp.mtx.RLock()
 	defer ssp.mtx.RUnlock()
 	service, ok := ssp.states.Services[destination]
@@ -90,4 +87,15 @@ func (ssp *StatesServicePoint) AddNewSwitchEdge(config *types.MessagingConfig, s
 	if !ok {
 		ssp.addEdgeFromConfig(config, false)
 	}
+}
+
+func (ssp *StatesServicePoint) FindSwitch(edgeUuid string) string {
+	ssp.mtx.RLock()
+	defer ssp.mtx.RUnlock()
+	edge, ok := ssp.states.Edges[edgeUuid]
+	if ok {
+		return edge.SwitchUuid
+	}
+	panic(edgeUuid)
+	return ""
 }

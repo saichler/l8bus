@@ -36,10 +36,25 @@ func TestOverlay(t *testing.T) {
 	time.Sleep(time.Second * 3)
 
 	for eg, tsp := range tsps {
-		if tsp.PostNumber != 1 {
+		if tsp.PostNumber != 1 && eg != "eg5" {
 			interfaces.Fail(t, eg, " Post count does not equal 1")
 			return
+		} else if tsp.PostNumber != 0 && eg == "eg5" {
+			interfaces.Fail(t, eg, " Post count does not equal 0")
+			return
 		}
+	}
+
+	data, err = protocol.CreateMessageFor(types.Priority_P0, types.Action_POST, eg2.Config().Local_Uuid, eg2.Config().RemoteUuid, eg3.Config().Local_Uuid, pb)
+	if err != nil {
+		interfaces.Fail(t, err)
+		return
+	}
+	err = eg2.Send(data)
+	time.Sleep(time.Second)
+
+	if tsps["eg3"].PostNumber != 2 {
+		interfaces.Fail(t, "eg3", " Post count does not equal 2")
 	}
 
 	interfaces.Info("*****************************************************************")

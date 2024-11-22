@@ -16,19 +16,18 @@ func CreateStatesFromConfig(config *types.MessagingConfig, isEdge bool) *types2.
 	edgeState := &types2.EdgeState{}
 	if isEdge {
 		edgeState.Uuid = config.Local_Uuid
+		edgeState.SwitchUuid = config.RemoteUuid
 	} else {
 		edgeState.Uuid = config.RemoteUuid
+		edgeState.SwitchUuid = config.Local_Uuid
 	}
 	edgeState.UpSince = time.Now().Unix()
 
 	serviceState := &types2.ServiceState{}
 	serviceState.Topic = STATE_TOPIC
-	serviceState.Edges = make(map[string]string)
-	if isEdge {
-		serviceState.Edges[edgeState.Uuid] = config.RemoteUuid
-	} else {
-		serviceState.Edges[edgeState.Uuid] = config.Local_Uuid
-	}
+	serviceState.Edges = make(map[string]bool)
+	serviceState.Edges[edgeState.Uuid] = true
+
 	states := &types2.States{}
 	states.Edges = make(map[string]*types2.EdgeState)
 	states.Services = make(map[string]*types2.ServiceState)
@@ -42,9 +41,9 @@ func cloneEdge(edge types2.EdgeState) *types2.EdgeState {
 }
 
 func cloneService(service types2.ServiceState) *types2.ServiceState {
-	m := make(map[string]string)
-	for uuid, zSide := range service.Edges {
-		m[uuid] = zSide
+	m := make(map[string]bool)
+	for uuid, exist := range service.Edges {
+		m[uuid] = exist
 	}
 	service.Edges = m
 	return &service

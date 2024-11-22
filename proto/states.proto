@@ -20,14 +20,15 @@ message States {
 
 message EdgeState {
   string uuid = 1;
-  State state = 2;
-  int64 upSince = 3;
-  int64 lastMessage = 4;
-  int64 messagesSent = 5;
-  int64 messagesReceived = 6;
+  string switchUuid = 2;
+  State state = 3;
+  int64 upSince = 4;
+  int64 lastMessage = 5;
+  int64 messagesSent = 6;
+  int64 messagesReceived = 7;
 }
 
 message ServiceState {
   string topic = 1;
-  map<string, string> edges = 2;
+  map<string, bool> edges = 2;
 }

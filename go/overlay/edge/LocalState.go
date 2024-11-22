@@ -6,19 +6,12 @@ import (
 
 func (edge *EdgeImpl) RegisterTopic(topic string) {
 	edge.localState.Services[topic] = &types.ServiceState{}
-	edge.localState.Services[topic].Edges = make(map[string]string)
-	edge.localState.Services[topic].Edges[edge.config.Local_Uuid] = ""
+	edge.localState.Services[topic].Edges = make(map[string]bool)
+	edge.localState.Services[topic].Edges[edge.config.Local_Uuid] = true
 }
 
 func (edge *EdgeImpl) updateRemoteUuid() {
-	updatedMap := make(map[string]*types.ServiceState)
-	for topic, state := range edge.localState.Services {
-		updatedMap[topic] = &types.ServiceState{}
-		updatedMap[topic].Topic = topic
-		updatedMap[topic].Edges = make(map[string]string)
-		for edgeUuid, _ := range state.Edges {
-			updatedMap[topic].Edges[edgeUuid] = edge.config.RemoteUuid
-		}
+	for _, state := range edge.localState.Edges {
+		state.SwitchUuid = edge.config.RemoteUuid
 	}
-	edge.localState.Services = updatedMap
 }

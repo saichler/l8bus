@@ -24,6 +24,8 @@ type EdgeImpl struct {
 	tx *queues.ByteSliceQueue
 	// The connection
 	conn net.Conn
+	// Conn mtx
+	connMtx *sync.Mutex
 	// is the port active
 	active bool
 	// The incoming data listener
@@ -55,10 +57,6 @@ type ReconnectInfo struct {
 }
 
 func (edge *EdgeImpl) Start() {
-	//Update the switch uuid in the list of services, if this is an edge connection
-	if edge.localState != nil {
-		edge.updateRemoteUuid()
-	}
 	// Start loop reading from the socket
 	go edge.readFromSocket()
 	// Start loop reading from the TX queue and writing to the socket

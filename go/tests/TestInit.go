@@ -18,22 +18,24 @@ var eg1 IEdge
 var eg2 IEdge
 var eg3 IEdge
 var eg4 IEdge
+var eg5 IEdge
 var tsps = make(map[string]*infra.TestServicePointHandler)
 
 func init() {
 	defaults.LoadDefaultImplementations()
 	Logger().SetLogLevel(Trace_Level)
-	Logger().EnableLoggerSync(true)
+	//Logger().EnableLoggerSync(true)
 	setupTopology()
 }
 
 func setupTopology() {
 	sw1 = createSwitch(50000)
 	sw2 = createSwitch(50001)
-	eg1 = createEdge(50000, "eg1")
-	eg2 = createEdge(50000, "eg2")
-	eg3 = createEdge(50001, "eg3")
-	eg4 = createEdge(50001, "eg4")
+	eg1 = createEdge(50000, "eg1", true)
+	eg2 = createEdge(50000, "eg2", true)
+	eg3 = createEdge(50001, "eg3", true)
+	eg4 = createEdge(50001, "eg4", true)
+	eg5 = createEdge(50000, "eg5", false)
 	time.Sleep(time.Second)
 	connectSwitches(sw1, sw2)
 	time.Sleep(time.Second)
@@ -63,7 +65,7 @@ func createSwitch(port uint32) *switching.SwitchService {
 	return sw
 }
 
-func createEdge(port uint32, name string) IEdge {
+func createEdge(port uint32, name string, addTestTopic bool) IEdge {
 	egConfig := EdgeConfig()
 	egRegistry := struct_registry.NewStructRegistry()
 	egServicePoints := service_points.NewServicePoints()
@@ -74,8 +76,9 @@ func createEdge(port uint32, name string) IEdge {
 	if err != nil {
 		panic(err.Error())
 	}
-	eg.RegisterTopic(infra.TEST_TOPIC)
-	eg.Start()
+	if addTestTopic {
+		eg.RegisterTopic(infra.TEST_TOPIC)
+	}
 	eg.(*edge.EdgeImpl).SetName(name)
 	return eg
 }

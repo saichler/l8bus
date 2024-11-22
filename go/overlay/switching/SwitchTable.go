@@ -12,6 +12,7 @@ import (
 type SwitchTable struct {
 	edges         *Edges
 	switchService *SwitchService
+	routes        map[string]string
 	desc          string
 }
 
@@ -45,6 +46,9 @@ func (switchTable *SwitchTable) addEdge(edge interfaces.IEdge) {
 		switchTable.edges.addInternal(config.RemoteUuid, edge)
 		logs.Info(switchTable.desc, "added internal edge:", config.RemoteUuid)
 	} else {
+		if switchTable.switchService.switchConfig.Local_Uuid == config.RemoteUuid {
+			panic("Remote")
+		}
 		// otherwise, add it to the external edges
 		switchTable.edges.addExternal(config.RemoteUuid, edge)
 		logs.Info(switchTable.desc, "added external edge:", config.RemoteUuid)
@@ -54,7 +58,7 @@ func (switchTable *SwitchTable) addEdge(edge interfaces.IEdge) {
 	go switchTable.sendToAll(state.STATE_TOPIC, types.Action_POST, states)
 }
 
-func (switchTable *SwitchTable) ServiceUuids(destination, sourceSwitch string) map[string]string {
+func (switchTable *SwitchTable) ServiceUuids(destination, sourceSwitch string) map[string]bool {
 	uuidsMap := switchTable.switchService.statesServicePoint().ServiceUuids(destination)
 	if uuidsMap != nil && sourceSwitch != switchTable.switchService.switchConfig.Local_Uuid {
 		// When the message source is not within this switch,

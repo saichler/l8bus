@@ -128,7 +128,7 @@ func (switchService *SwitchService) HandleData(data []byte, edge interfaces.IEdg
 	// if the logger sync is not enabled, this will do nothing.
 	interfaces.Logger().LoggerLock()
 	defer interfaces.Logger().LoggerUnlock()
-	
+
 	interfaces.Trace("********** Swith Service - HandleData **********")
 	source, sourceSwitch, destination, _ := protocol.HeaderOf(data)
 	interfaces.Trace("** Switch      : ", switchService.switchConfig.Local_Uuid)
@@ -152,7 +152,7 @@ func (switchService *SwitchService) HandleData(data []byte, edge interfaces.IEdg
 	}
 
 	//The destination is a single port
-	_, p := switchService.switchTable.edges.getEdge(destination, "", false)
+	_, p := switchService.switchTable.edges.getEdge(destination, switchService.statesServicePoint(), true)
 	if p == nil {
 		interfaces.Error("Cannot find destination port for ", destination)
 		return
@@ -160,10 +160,10 @@ func (switchService *SwitchService) HandleData(data []byte, edge interfaces.IEdg
 	p.Send(data)
 }
 
-func (switchService *SwitchService) sendToPorts(uuids map[string]string, data []byte, sourceSwitch string) {
+func (switchService *SwitchService) sendToPorts(uuids map[string]bool, data []byte, sourceSwitch string) {
 	alreadySent := make(map[string]bool)
-	for edgeUuid, remoteUuid := range uuids {
-		usedUuid, port := switchService.switchTable.edges.getEdge(edgeUuid, remoteUuid,
+	for edgeUuid, _ := range uuids {
+		usedUuid, port := switchService.switchTable.edges.getEdge(edgeUuid, switchService.statesServicePoint(),
 			switchService.switchConfig.Local_Uuid == sourceSwitch)
 		if port != nil {
 			// if the port is external, it may already been forward this message

@@ -26,6 +26,7 @@ func newEdgeImpl(
 	edge.servicePoints = servicePoints
 	edge.createdAtTime = time.Now().Unix()
 	edge.conn = con
+	edge.connMtx = &sync.Mutex{}
 	edge.active = true
 	edge.dataListener = dataListener
 
@@ -79,6 +80,9 @@ func ConnectTo(host string,
 		port:         destPort,
 		reconnectMtx: &sync.Mutex{},
 	}
+
+	//Update the switch uuid in the list of services, if this is an edge connection
+	edge.updateRemoteUuid()
 
 	//We have only one go routing per each because we want to keep the order of incoming and outgoing messages
 	edge.Start()
