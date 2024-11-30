@@ -173,6 +173,9 @@ func (edge *EdgeImpl) reportStatus() {
 		time.Sleep(time.Second * time.Duration(edge.config.SendStateIntervalSeconds))
 		if time.Now().Unix() > edge.lastMessageSentTime+edge.config.SendStateIntervalSeconds {
 			edge.lastMessageSentTime = time.Now().Unix()
+			if edge.localState == nil {
+				break
+			}
 			edge.PublishState()
 		}
 	}

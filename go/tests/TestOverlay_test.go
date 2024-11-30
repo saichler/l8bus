@@ -2,7 +2,6 @@ package tests
 
 import (
 	"github.com/saichler/layer8/go/overlay/edge"
-	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/layer8/go/overlay/state"
 	"github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/tests"
@@ -26,14 +25,13 @@ func TestOverlay(t *testing.T) {
 	state.Print(sw1.State(), sw1.Config().Local_Uuid)
 
 	pb := &tests.TestProto{}
-	data, err := protocol.CreateMessageFor(types.Priority_P0, types.Action_POST, eg1.Config().Local_Uuid, eg1.Config().RemoteUuid, infra.TEST_TOPIC, pb)
+	interfaces.Info("Sending data")
+	err := eg1.Do(types.Action_POST, infra.TEST_TOPIC, pb)
 	if err != nil {
 		interfaces.Fail(t, err)
 		return
 	}
-	interfaces.Info("Sending data")
-	err = eg1.Send(data)
-	time.Sleep(time.Second * 3)
+	time.Sleep(time.Second)
 
 	for eg, tsp := range tsps {
 		if tsp.PostNumber != 1 && eg != "eg5" {
@@ -45,12 +43,11 @@ func TestOverlay(t *testing.T) {
 		}
 	}
 
-	data, err = protocol.CreateMessageFor(types.Priority_P0, types.Action_POST, eg2.Config().Local_Uuid, eg2.Config().RemoteUuid, eg3.Config().Local_Uuid, pb)
+	err = eg2.Do(types.Action_POST, eg3.Config().Local_Uuid, pb)
 	if err != nil {
 		interfaces.Fail(t, err)
 		return
 	}
-	err = eg2.Send(data)
 	time.Sleep(time.Second)
 
 	if tsps["eg3"].PostNumber != 2 {
@@ -58,4 +55,41 @@ func TestOverlay(t *testing.T) {
 	}
 
 	interfaces.Info("*****************************************************************")
+	interfaces.Logger().SetLogLevel(interfaces.Info_Level)
+	exp := 1002
+	scaleTest(1000, exp, 2, t)
+	exp += 10000
+	scaleTest(10000, exp, 2, t)
+	exp += 100000
+	scaleTest(100000, exp, 5, t)
+	exp += 1000000
+	scaleTest(1000000, exp, 5, t)
+}
+
+func scaleTest(size, exp int, timeout int64, t *testing.T) {
+	start := time.Now().Unix()
+	for i := 0; i < size; i++ {
+		pb := &tests.TestProto{}
+		pb.Int32 = int32(i)
+		err := eg2.Do(types.Action_POST, eg3.Config().Local_Uuid, pb)
+		if err != nil {
+			interfaces.Fail(t, err)
+			return
+		}
+	}
+
+	eg3 := tsps["eg3"]
+
+	now := time.Now().Unix()
+	for eg3.PostNumber < exp {
+		if time.Now().Unix()-timeout >= now {
+			break
+		}
+		time.Sleep(time.Millisecond * 100)
+	}
+	end := time.Now().Unix()
+	interfaces.Info("Scale test for ", size, " took ", (end - start), " seconds")
+	if eg3.PostNumber != exp {
+		interfaces.Fail(t, "eg3", " Post count does not equal to ", exp, ":", eg3.PostNumber)
+	}
 }

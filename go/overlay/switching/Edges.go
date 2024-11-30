@@ -61,7 +61,11 @@ func (edges *Edges) getEdge(edgeUuid string, servicePoint *state.StatesServicePo
 		if remoteUuid == "" {
 			remoteUuid = servicePoint.FindSwitch(edgeUuid)
 			if remoteUuid != "" {
+				edges.mtx.RUnlock()
+				edges.mtx.Lock()
 				edges.routes[edgeUuid] = remoteUuid
+				edges.mtx.Unlock()
+				edges.mtx.RLock()
 			}
 		}
 
