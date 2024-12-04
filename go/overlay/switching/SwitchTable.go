@@ -26,7 +26,9 @@ func newSwitchTable(switchService *SwitchService) *SwitchTable {
 
 func (switchTable *SwitchTable) sendToAll(topic string, action types.Action, pb proto.Message) {
 	edges := switchTable.edges.all()
-	data, err := protocol.CreateMessageFor(types.Priority_P0, action, switchTable.switchService.switchConfig.Local_Uuid, switchTable.switchService.switchConfig.Local_Uuid, topic, pb)
+	data, err := protocol.CreateMessageFor(types.Priority_P0, action, switchTable.switchService.switchConfig.Local_Uuid,
+		switchTable.switchService.switchConfig.Local_Uuid, topic, pb,
+		switchTable.switchService.registry)
 	if err != nil {
 		logs.Error("Failed to create message to send to all: ", err)
 		return

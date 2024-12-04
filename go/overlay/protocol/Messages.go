@@ -43,13 +43,12 @@ func HeaderOf(data []byte) (string, string, string, types.Priority) {
 	return source, sourceSwitch, string(dest), pri
 }
 
-func MessageOf(data []byte) (*types.Message, error) {
-	msg := &types.Message{}
-	err := Unmarshal(data[109:], msg)
+func MessageOf(data []byte, registry interfaces.IStructRegistry) (*types.Message, error) {
+	msg, err := registry.Unmarshal("Message", data[109:])
 	if err != nil {
 		panic(err)
 	}
-	return msg, err
+	return msg.(*types.Message), err
 }
 
 func ProtoOf(msg *types.Message, registry interfaces.IStructRegistry) (proto.Message, error) {
@@ -58,16 +57,17 @@ func ProtoOf(msg *types.Message, registry interfaces.IStructRegistry) (proto.Mes
 		return nil, err
 	}
 
-	pb, err := registry.NewProtobufInstance(msg.Type)
+	pbIns, _, err := registry.NewInstance(msg.Type)
 	if err != nil {
 		return nil, err
 	}
 
+	pb := pbIns.(proto.Message)
 	err = proto.Unmarshal(data, pb)
 	return pb, err
 }
 
-func CreateMessageFor(priority types.Priority, action types.Action, source, sourceSwitch, dest string, pb proto.Message) ([]byte, error) {
+func CreateMessageFor(priority types.Priority, action types.Action, source, sourceSwitch, dest string, pb proto.Message, registry interfaces.IStructRegistry) ([]byte, error) {
 	//first marshal the protobuf into bytes
 	data, err := proto.Marshal(pb)
 	if err != nil {
@@ -89,7 +89,7 @@ func CreateMessageFor(priority types.Priority, action types.Action, source, sour
 	msg.Type = reflect.ValueOf(pb).Elem().Type().Name()
 	msg.Action = action
 	//Now serialize the message
-	msgData, err := Marshal(msg)
+	msgData, err := registry.Marshal(msg)
 	if err != nil {
 		return nil, err
 	}

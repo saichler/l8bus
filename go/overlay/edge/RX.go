@@ -55,7 +55,7 @@ func (edge *EdgeImpl) notifyRawDataListener() {
 			if edge.dataListener != nil {
 				edge.dataListener.HandleData(data, edge)
 			} else {
-				msg, err := protocol.MessageOf(data)
+				msg, err := protocol.MessageOf(data, edge.registry)
 				if err != nil {
 					logs.Error(err)
 					continue

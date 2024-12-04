@@ -18,7 +18,7 @@ func NewStatesServicePoint(registry interfaces.IStructRegistry, servicePoints in
 	ssp.states.Edges = make(map[string]*types.EdgeState)
 	ssp.states.Services = make(map[string]*types.ServiceState)
 
-	registry.RegisterStruct(&types.States{})
+	registry.RegisterStruct(&types.States{}, nil)
 	err := servicePoints.RegisterServicePoint(&types.States{}, ssp, registry)
 	if err != nil {
 		panic(err)

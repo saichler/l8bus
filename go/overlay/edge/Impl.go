@@ -187,7 +187,8 @@ func (edge *EdgeImpl) State() *types2.States {
 
 func (edge *EdgeImpl) PublishState() {
 	data, err := protocol.CreateMessageFor(types.Priority_P0, types.Action_POST,
-		edge.config.Local_Uuid, edge.config.RemoteUuid, edge.servicePoint().Topic(), edge.localState)
+		edge.config.Local_Uuid, edge.config.RemoteUuid,
+		edge.servicePoint().Topic(), edge.localState, edge.registry)
 	if err != nil {
 		log.Error("Failed to create state message: ", err)
 		return

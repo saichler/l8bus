@@ -35,7 +35,7 @@ func NewSwitchService(switchConfig *types.MessagingConfig, registry interfaces.I
 	switchService.switchConfig.Local_Uuid = uid.String()
 	switchService.switchTable = newSwitchTable(switchService)
 
-	registry.RegisterStruct(&types2.States{})
+	registry.RegisterStruct(&types2.States{}, nil)
 	sp := state.NewStatesServicePoint(registry, servicePoints)
 	servicePoints.RegisterServicePoint(&types2.States{}, sp, registry)
 
@@ -186,7 +186,7 @@ func (switchService *SwitchService) PortShutdown(edge interfaces.IEdge) {
 }
 
 func (switchService *SwitchService) switchDataReceived(data []byte, edge interfaces.IEdge) {
-	msg, err := protocol.MessageOf(data)
+	msg, err := protocol.MessageOf(data, switchService.registry)
 	if err != nil {
 		interfaces.Error(err)
 		return
