@@ -21,11 +21,11 @@ type SwitchService struct {
 	active        bool
 	ready         bool
 	switchTable   *SwitchTable
-	registry      interfaces.IStructRegistry
+	registry      interfaces.ITypeRegistry
 	servicePoints interfaces.IServicePoints
 }
 
-func NewSwitchService(switchConfig *types.MessagingConfig, registry interfaces.IStructRegistry, servicePoints interfaces.IServicePoints) *SwitchService {
+func NewSwitchService(switchConfig *types.MessagingConfig, registry interfaces.ITypeRegistry, servicePoints interfaces.IServicePoints) *SwitchService {
 	switchService := &SwitchService{}
 	switchService.switchConfig = switchConfig
 	switchService.servicePoints = servicePoints
@@ -35,7 +35,7 @@ func NewSwitchService(switchConfig *types.MessagingConfig, registry interfaces.I
 	switchService.switchConfig.Local_Uuid = uid.String()
 	switchService.switchTable = newSwitchTable(switchService)
 
-	registry.RegisterStruct(&types2.States{}, nil)
+	registry.Register(&types2.States{})
 	sp := state.NewStatesServicePoint(registry, servicePoints)
 	servicePoints.RegisterServicePoint(&types2.States{}, sp, registry)
 

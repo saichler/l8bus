@@ -6,7 +6,7 @@ import (
 	"github.com/saichler/shared/go/share/defaults"
 	. "github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/share/service_points"
-	"github.com/saichler/shared/go/share/struct_registry"
+	"github.com/saichler/shared/go/share/type_registry"
 	"github.com/saichler/shared/go/tests"
 	"github.com/saichler/shared/go/tests/infra"
 	"time"
@@ -58,7 +58,7 @@ func shutdownTopology() {
 func createSwitch(port uint32) *switching.SwitchService {
 	swConfig := SwitchConfig()
 	swConfig.SwitchPort = port
-	swRegistry := struct_registry.NewStructRegistry()
+	swRegistry := type_registry.NewTypeRegistry()
 	swServicePoints := service_points.NewServicePoints()
 	sw := switching.NewSwitchService(swConfig, swRegistry, swServicePoints)
 	sw.Start()
@@ -67,7 +67,7 @@ func createSwitch(port uint32) *switching.SwitchService {
 
 func createEdge(port uint32, name string, addTestTopic bool) IEdge {
 	egConfig := EdgeConfig()
-	egRegistry := struct_registry.NewStructRegistry()
+	egRegistry := type_registry.NewTypeRegistry()
 	egServicePoints := service_points.NewServicePoints()
 	tsps[name] = infra.NewTestServicePointHandler(name)
 	egServicePoints.RegisterServicePoint(&tests.TestProto{}, tsps[name], egRegistry)

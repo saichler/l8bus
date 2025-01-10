@@ -1,6 +1,7 @@
 package protocol
 
 import (
+	"github.com/saichler/serializer/go/serializers"
 	"github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/types"
 	"google.golang.org/protobuf/proto"
@@ -10,6 +11,11 @@ import (
 
 // Running sequence number for the messages
 var sequence atomic.Int32
+var mar interfaces.Serializer
+
+func init() {
+	mar = serializers.Default
+}
 
 func GenerateHeader(msg *types.Message) []byte {
 	header := make([]byte, 109)
@@ -43,21 +49,26 @@ func HeaderOf(data []byte) (string, string, string, types.Priority) {
 	return source, sourceSwitch, string(dest), pri
 }
 
-func MessageOf(data []byte, registry interfaces.IStructRegistry) (*types.Message, error) {
-	msg, err := registry.Unmarshal("Message", data[109:])
+func MessageOf(data []byte, registry interfaces.ITypeRegistry) (*types.Message, error) {
+	msg, err := mar.Unmarshal(data[109:], "Message", registry)
 	if err != nil {
 		panic(err)
 	}
 	return msg.(*types.Message), err
 }
 
-func ProtoOf(msg *types.Message, registry interfaces.IStructRegistry) (proto.Message, error) {
+func ProtoOf(msg *types.Message, registry interfaces.ITypeRegistry) (proto.Message, error) {
 	data, err := interfaces.SecurityProvider().Decrypt(msg.Data)
 	if err != nil {
 		return nil, err
 	}
 
-	pbIns, _, err := registry.NewInstance(msg.Type)
+	info, err := registry.TypeInfo(msg.Type)
+	if err != nil {
+		panic(err)
+		return nil, interfaces.Error(err)
+	}
+	pbIns, err := info.NewInstance()
 	if err != nil {
 		return nil, err
 	}
@@ -67,9 +78,9 @@ func ProtoOf(msg *types.Message, registry interfaces.IStructRegistry) (proto.Mes
 	return pb, err
 }
 
-func CreateMessageFor(priority types.Priority, action types.Action, source, sourceSwitch, dest string, pb proto.Message, registry interfaces.IStructRegistry) ([]byte, error) {
+func CreateMessageFor(priority types.Priority, action types.Action, source, sourceSwitch, dest string, pb proto.Message, registry interfaces.ITypeRegistry) ([]byte, error) {
 	//first marshal the protobuf into bytes
-	data, err := proto.Marshal(pb)
+	data, err := mar.Marshal(pb, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +100,7 @@ func CreateMessageFor(priority types.Priority, action types.Action, source, sour
 	msg.Type = reflect.ValueOf(pb).Elem().Type().Name()
 	msg.Action = action
 	//Now serialize the message
-	msgData, err := registry.Marshal(msg)
+	msgData, err := mar.Marshal(msg, nil)
 	if err != nil {
 		return nil, err
 	}

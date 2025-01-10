@@ -11,14 +11,14 @@ type StatesServicePoint struct {
 	states *types.States
 }
 
-func NewStatesServicePoint(registry interfaces.IStructRegistry, servicePoints interfaces.IServicePoints) *StatesServicePoint {
+func NewStatesServicePoint(registry interfaces.ITypeRegistry, servicePoints interfaces.IServicePoints) *StatesServicePoint {
 	ssp := &StatesServicePoint{}
 	ssp.mtx = &sync.RWMutex{}
 	ssp.states = &types.States{}
 	ssp.states.Edges = make(map[string]*types.EdgeState)
 	ssp.states.Services = make(map[string]*types.ServiceState)
 
-	registry.RegisterStruct(&types.States{}, nil)
+	registry.Register(&types.States{})
 	err := servicePoints.RegisterServicePoint(&types.States{}, ssp, registry)
 	if err != nil {
 		panic(err)

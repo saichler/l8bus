@@ -31,7 +31,7 @@ type EdgeImpl struct {
 	// The incoming data listener
 	dataListener interfaces.IDatatListener
 	// The used registry
-	registry interfaces.IStructRegistry
+	registry interfaces.ITypeRegistry
 	// Service Points
 	servicePoints interfaces.IServicePoints
 	//edge reconnect info, only valid if the port is the initiating side

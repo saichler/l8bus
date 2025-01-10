@@ -16,11 +16,11 @@ import (
 func newEdgeImpl(
 	con net.Conn,
 	dataListener interfaces.IDatatListener,
-	registry interfaces.IStructRegistry,
+	registry interfaces.ITypeRegistry,
 	servicePoints interfaces.IServicePoints,
 	config *types.MessagingConfig) *EdgeImpl {
 
-	registry.RegisterStruct(&types.Message{}, nil)
+	registry.Register(&types.Message{})
 
 	edge := &EdgeImpl{}
 	edge.config = config
@@ -41,10 +41,10 @@ func newEdgeImpl(
 	edge.rx = queues.NewByteSliceQueue("RX", int(config.RxQueueSize))
 	edge.tx = queues.NewByteSliceQueue("TX", int(config.TxQueueSize))
 
-	_, _, err := edge.registry.TypeByName("States")
+	_, err := edge.registry.TypeInfo("States")
 	// If there is an error, this servicepoints already registered so do nothing
 	if err != nil {
-		edge.registry.RegisterStruct(&types2.States{}, nil)
+		edge.registry.Register(&types2.States{})
 		sp := state.NewStatesServicePoint(edge.registry, edge.servicePoints)
 		edge.servicePoints.RegisterServicePoint(&types2.States{}, sp, edge.registry)
 		edge.localState = state.CreateStatesFromConfig(edge.config, true)
@@ -56,7 +56,7 @@ func newEdgeImpl(
 func ConnectTo(host string,
 	destPort uint32,
 	datalistener interfaces.IDatatListener,
-	registry interfaces.IStructRegistry,
+	registry interfaces.ITypeRegistry,
 	servicePoints interfaces.IServicePoints,
 	config *types.MessagingConfig) (interfaces.IEdge, error) {
 
@@ -95,7 +95,7 @@ func ConnectTo(host string,
 func NewEdgeImpl(
 	con net.Conn,
 	dataListener interfaces.IDatatListener,
-	registry interfaces.IStructRegistry,
+	registry interfaces.ITypeRegistry,
 	servicePoints interfaces.IServicePoints,
 	config *types.MessagingConfig) *EdgeImpl {
 	return newEdgeImpl(con, dataListener, registry, servicePoints, config)
