@@ -1,15 +1,25 @@
 package tests
 
 import (
+	"crypto/md5"
+	"encoding/base64"
 	"github.com/saichler/layer8/go/overlay/edge"
 	"github.com/saichler/layer8/go/overlay/switching"
-	"github.com/saichler/shared/go/share/defaults"
 	. "github.com/saichler/shared/go/share/interfaces"
+	"github.com/saichler/shared/go/share/logger"
 	"github.com/saichler/shared/go/share/service_points"
+	"github.com/saichler/shared/go/share/shallow_security"
 	"github.com/saichler/shared/go/share/type_registry"
 	"github.com/saichler/shared/go/tests"
 	"github.com/saichler/shared/go/tests/infra"
 	"time"
+)
+
+const (
+	DEFAULT_MAX_DATA_SIZE     = 1024 * 1024
+	DEFAULT_EDGE_QUEUE_SIZE   = 10000
+	DEFAULT_SWITCH_QUEUE_SIZE = 50000
+	DEFAULT_SWITCH_PORT       = 50000
 )
 
 var sw1 *switching.SwitchService
@@ -22,9 +32,8 @@ var eg5 IEdge
 var tsps = make(map[string]*infra.TestServicePointHandler)
 
 func init() {
-	defaults.LoadDefaultImplementations()
+	SetLogger(logger.NewLoggerImpl(&logger.FmtLogMethod{}))
 	Logger().SetLogLevel(Trace_Level)
-	//Logger().EnableLoggerSync(true)
 	setupTopology()
 }
 
@@ -55,24 +64,49 @@ func shutdownTopology() {
 	time.Sleep(time.Second)
 }
 
+func createSecurityProvider() ISecurityProvider {
+	hash := md5.New()
+	secret := "Default Security Provider"
+	hash.Write([]byte(secret))
+	kHash := hash.Sum(nil)
+	k := base64.StdEncoding.EncodeToString(kHash)
+	return shallow_security.NewShallowSecurityProvider(k, secret)
+}
+
+func createProviders() *Providers {
+	providers := NewProviders(
+		type_registry.NewTypeRegistry(),
+		createSecurityProvider(),
+		service_points.NewServicePoints(),
+		logger.NewLoggerImpl(&logger.FmtLogMethod{}))
+	a := NewMessageConfig(DEFAULT_MAX_DATA_SIZE, DEFAULT_EDGE_QUEUE_SIZE,
+		DEFAULT_EDGE_QUEUE_SIZE, DEFAULT_SWITCH_PORT, true, 30)
+	b := NewMessageConfig(DEFAULT_MAX_DATA_SIZE, DEFAULT_EDGE_QUEUE_SIZE,
+		DEFAULT_EDGE_QUEUE_SIZE, DEFAULT_SWITCH_PORT, false, 0)
+	c := NewMessageConfig(DEFAULT_MAX_DATA_SIZE, DEFAULT_SWITCH_QUEUE_SIZE,
+		DEFAULT_SWITCH_QUEUE_SIZE, DEFAULT_SWITCH_PORT, true, 30)
+	providers.SetDefaultMessageConfig(a, c, b)
+	return providers
+}
+
 func createSwitch(port uint32) *switching.SwitchService {
-	swConfig := SwitchConfig()
+	providers := createProviders()
+	swc := providers.Switch()
+	swConfig := &swc
 	swConfig.SwitchPort = port
-	swRegistry := type_registry.NewTypeRegistry()
-	swServicePoints := service_points.NewServicePoints()
-	sw := switching.NewSwitchService(swConfig, swRegistry, swServicePoints)
+	sw := switching.NewSwitchService(swConfig, providers)
 	sw.Start()
 	return sw
 }
 
 func createEdge(port uint32, name string, addTestTopic bool) IEdge {
-	egConfig := EdgeConfig()
-	egRegistry := type_registry.NewTypeRegistry()
-	egServicePoints := service_points.NewServicePoints()
+	providers := createProviders()
+	egc := providers.EdgeConfig()
+	egConfig := &egc
 	tsps[name] = infra.NewTestServicePointHandler(name)
-	egServicePoints.RegisterServicePoint(&tests.TestProto{}, tsps[name], egRegistry)
+	providers.ServicePoints().RegisterServicePoint(&tests.TestProto{}, tsps[name], providers.Registry())
 
-	eg, err := edge.ConnectTo("127.0.0.1", port, nil, egRegistry, egServicePoints, egConfig)
+	eg, err := edge.ConnectTo("127.0.0.1", port, nil, nil, egConfig, providers)
 	if err != nil {
 		panic(err.Error())
 	}

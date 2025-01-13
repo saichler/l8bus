@@ -1,3 +1,5 @@
+//go:build unit
+
 package tests
 
 import (
@@ -55,41 +57,4 @@ func TestOverlay(t *testing.T) {
 	}
 
 	interfaces.Info("*****************************************************************")
-	interfaces.Logger().SetLogLevel(interfaces.Info_Level)
-	exp := 1002
-	scaleTest(1000, exp, 2, t)
-	exp += 10000
-	scaleTest(10000, exp, 2, t)
-	exp += 100000
-	scaleTest(100000, exp, 5, t)
-	exp += 1000000
-	scaleTest(1000000, exp, 5, t)
-}
-
-func scaleTest(size, exp int, timeout int64, t *testing.T) {
-	start := time.Now().Unix()
-	for i := 0; i < size; i++ {
-		pb := &tests.TestProto{}
-		pb.Int32 = int32(i)
-		err := eg2.Do(types.Action_POST, eg3.Config().Local_Uuid, pb)
-		if err != nil {
-			interfaces.Fail(t, err)
-			return
-		}
-	}
-
-	eg3 := tsps["eg3"]
-
-	now := time.Now().Unix()
-	for eg3.PostNumber < exp {
-		if time.Now().Unix()-timeout >= now {
-			break
-		}
-		time.Sleep(time.Millisecond * 100)
-	}
-	end := time.Now().Unix()
-	interfaces.Info("Scale test for ", size, " took ", (end - start), " seconds")
-	if eg3.PostNumber != exp {
-		interfaces.Fail(t, "eg3", " Post count does not equal to ", exp, ":", eg3.PostNumber)
-	}
 }

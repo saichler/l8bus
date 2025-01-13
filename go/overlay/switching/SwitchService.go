@@ -16,28 +16,26 @@ import (
 )
 
 type SwitchService struct {
-	switchConfig  *types.MessagingConfig
-	socket        net.Listener
-	active        bool
-	ready         bool
-	switchTable   *SwitchTable
-	registry      interfaces.ITypeRegistry
-	servicePoints interfaces.IServicePoints
+	switchConfig *types.MessagingConfig
+	socket       net.Listener
+	active       bool
+	ready        bool
+	switchTable  *SwitchTable
+	protocol     *protocol.Protocol
 }
 
-func NewSwitchService(switchConfig *types.MessagingConfig, registry interfaces.ITypeRegistry, servicePoints interfaces.IServicePoints) *SwitchService {
+func NewSwitchService(switchConfig *types.MessagingConfig, providers *interfaces.Providers) *SwitchService {
 	switchService := &SwitchService{}
 	switchService.switchConfig = switchConfig
-	switchService.servicePoints = servicePoints
+	switchService.protocol = protocol.New(providers, nil)
 	switchService.active = true
-	switchService.registry = registry
 	uid, _ := uuid.NewUUID()
 	switchService.switchConfig.Local_Uuid = uid.String()
 	switchService.switchTable = newSwitchTable(switchService)
 
-	registry.Register(&types2.States{})
-	sp := state.NewStatesServicePoint(registry, servicePoints)
-	servicePoints.RegisterServicePoint(&types2.States{}, sp, registry)
+	providers.Registry().Register(&types2.States{})
+	sp := state.NewStatesServicePoint(providers.Registry(), providers.ServicePoints())
+	providers.ServicePoints().RegisterServicePoint(&types2.States{}, sp, providers.Registry())
 
 	return switchService
 }
@@ -93,23 +91,25 @@ func (switchService *SwitchService) bind() error {
 }
 
 func (switchService *SwitchService) connect(conn net.Conn) {
-	err := interfaces.SecurityProvider().CanAccept(conn)
+	sec := switchService.protocol.Providers().Security()
+	err := sec.CanAccept(conn)
 	if err != nil {
 		interfaces.Error(err)
 		return
 	}
 
-	sEdgeConfig := interfaces.EdgeSwitchConfig()
+	edgeC := switchService.protocol.Providers().EdgeSwitch()
+	sEdgeConfig := &edgeC
 	sEdgeConfig.Local_Uuid = switchService.switchConfig.Local_Uuid
 	sEdgeConfig.IsSwitchSide = true
 
-	err = interfaces.SecurityProvider().ValidateConnection(conn, sEdgeConfig)
+	err = sec.ValidateConnection(conn, sEdgeConfig)
 	if err != nil {
 		interfaces.Error(err)
 		return
 	}
 
-	edge := edge.NewEdgeImpl(conn, switchService, switchService.registry, nil, sEdgeConfig)
+	edge := edge.NewEdgeImpl(conn, switchService, nil, sEdgeConfig, switchService.protocol.Providers())
 	edge.Start()
 	switchService.notifyNewEdge(edge)
 }
@@ -186,19 +186,19 @@ func (switchService *SwitchService) PortShutdown(edge interfaces.IEdge) {
 }
 
 func (switchService *SwitchService) switchDataReceived(data []byte, edge interfaces.IEdge) {
-	msg, err := protocol.MessageOf(data, switchService.registry)
+	msg, err := switchService.protocol.MessageOf(data)
 	if err != nil {
 		interfaces.Error(err)
 		return
 	}
-	pb, err := protocol.ProtoOf(msg, switchService.registry)
+	pb, err := switchService.protocol.ProtoOf(msg)
 	if err != nil {
 		interfaces.Error(err)
 		return
 	}
 	// Otherwise call the handler per the action & the type
 	interfaces.Info("Switch Service is: ", switchService.switchConfig.Local_Uuid)
-	switchService.servicePoints.Handle(pb, msg.Action, edge)
+	switchService.protocol.Providers().ServicePoints().Handle(pb, msg.Action, edge)
 }
 
 func (switchService *SwitchService) Config() types.MessagingConfig {
@@ -210,7 +210,7 @@ func (switchService *SwitchService) State() *types2.States {
 }
 
 func (switchService *SwitchService) statesServicePoint() *state.StatesServicePoint {
-	sp, ok := switchService.servicePoints.ServicePointHandler("States")
+	sp, ok := switchService.protocol.Providers().ServicePoints().ServicePointHandler("States")
 	if !ok {
 		return nil
 	}

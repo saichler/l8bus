@@ -30,10 +30,8 @@ type EdgeImpl struct {
 	active bool
 	// The incoming data listener
 	dataListener interfaces.IDatatListener
-	// The used registry
-	registry interfaces.ITypeRegistry
-	// Service Points
-	servicePoints interfaces.IServicePoints
+	// The Protocol containing the registry, serializer & security provider
+	protocol *protocol.Protocol
 	//edge reconnect info, only valid if the port is the initiating side
 	reconnectInfo *ReconnectInfo
 	// created at
@@ -69,10 +67,11 @@ func (edge *EdgeImpl) Start() {
 }
 
 func (edge *EdgeImpl) servicePoint() *state.StatesServicePoint {
-	if edge.servicePoints == nil {
+	servicePoints := edge.protocol.Providers().ServicePoints()
+	if servicePoints == nil {
 		return nil
 	}
-	sp, ok := edge.servicePoints.ServicePointHandler("States")
+	sp, ok := servicePoints.ServicePointHandler("States")
 	if !ok {
 		return nil
 	}
@@ -128,11 +127,12 @@ func (edge *EdgeImpl) attemptToReconnect() {
 
 func (edge *EdgeImpl) reconnect() error {
 	// Dial the destination and validate the secret and key
-	conn, err := interfaces.SecurityProvider().CanDial(edge.reconnectInfo.host, edge.reconnectInfo.port)
+	secure := edge.protocol.Providers().Security()
+	conn, err := secure.CanDial(edge.reconnectInfo.host, edge.reconnectInfo.port)
 	if err != nil {
 		return err
 	}
-	err = interfaces.SecurityProvider().ValidateConnection(conn, edge.config)
+	err = secure.ValidateConnection(conn, edge.config)
 	if err != nil {
 		return err
 	}
@@ -186,9 +186,9 @@ func (edge *EdgeImpl) State() *types2.States {
 }
 
 func (edge *EdgeImpl) PublishState() {
-	data, err := protocol.CreateMessageFor(types.Priority_P0, types.Action_POST,
+	data, err := edge.protocol.CreateMessageFor(types.Priority_P0, types.Action_POST,
 		edge.config.Local_Uuid, edge.config.RemoteUuid,
-		edge.servicePoint().Topic(), edge.localState, edge.registry)
+		edge.servicePoint().Topic(), edge.localState)
 	if err != nil {
 		log.Error("Failed to create state message: ", err)
 		return

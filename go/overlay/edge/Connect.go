@@ -2,6 +2,7 @@ package edge
 
 import (
 	"github.com/google/uuid"
+	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/layer8/go/overlay/state"
 	types2 "github.com/saichler/layer8/go/types"
 	"github.com/saichler/shared/go/share/interfaces"
@@ -16,16 +17,13 @@ import (
 func newEdgeImpl(
 	con net.Conn,
 	dataListener interfaces.IDatatListener,
-	registry interfaces.ITypeRegistry,
-	servicePoints interfaces.IServicePoints,
-	config *types.MessagingConfig) *EdgeImpl {
-
-	registry.Register(&types.Message{})
+	serializer interfaces.Serializer,
+	config *types.MessagingConfig,
+	providers *interfaces.Providers) *EdgeImpl {
 
 	edge := &EdgeImpl{}
 	edge.config = config
-	edge.registry = registry
-	edge.servicePoints = servicePoints
+	edge.protocol = protocol.New(providers, serializer)
 	edge.createdAtTime = time.Now().Unix()
 	edge.conn = con
 	edge.connMtx = &sync.Mutex{}
@@ -41,12 +39,15 @@ func newEdgeImpl(
 	edge.rx = queues.NewByteSliceQueue("RX", int(config.RxQueueSize))
 	edge.tx = queues.NewByteSliceQueue("TX", int(config.TxQueueSize))
 
-	_, err := edge.registry.TypeInfo("States")
+	registry := providers.Registry()
+	registry.Register(&types.Message{})
+
+	_, err := registry.TypeInfo("States")
 	// If there is an error, this servicepoints already registered so do nothing
 	if err != nil {
-		edge.registry.Register(&types2.States{})
-		sp := state.NewStatesServicePoint(edge.registry, edge.servicePoints)
-		edge.servicePoints.RegisterServicePoint(&types2.States{}, sp, edge.registry)
+		registry.Register(&types2.States{})
+		sp := state.NewStatesServicePoint(registry, providers.ServicePoints())
+		providers.ServicePoints().RegisterServicePoint(&types2.States{}, sp, registry)
 		edge.localState = state.CreateStatesFromConfig(edge.config, true)
 	}
 	return edge
@@ -56,12 +57,12 @@ func newEdgeImpl(
 func ConnectTo(host string,
 	destPort uint32,
 	datalistener interfaces.IDatatListener,
-	registry interfaces.ITypeRegistry,
-	servicePoints interfaces.IServicePoints,
-	config *types.MessagingConfig) (interfaces.IEdge, error) {
+	serializer interfaces.Serializer,
+	config *types.MessagingConfig,
+	providers *interfaces.Providers) (interfaces.IEdge, error) {
 
 	// Dial the destination and validate the secret and key
-	conn, err := interfaces.SecurityProvider().CanDial(host, destPort)
+	conn, err := providers.Security().CanDial(host, destPort)
 	if err != nil {
 		return nil, err
 	}
@@ -69,12 +70,12 @@ func ConnectTo(host string,
 	config.Local_Uuid = uuid.New().String()
 	config.IsSwitchSide = false
 
-	err = interfaces.SecurityProvider().ValidateConnection(conn, config)
+	err = providers.Security().ValidateConnection(conn, config)
 	if err != nil {
 		return nil, err
 	}
 
-	edge := newEdgeImpl(conn, datalistener, registry, servicePoints, config)
+	edge := newEdgeImpl(conn, datalistener, serializer, config, providers)
 
 	//Below attributes are only for the port initiating the connection
 	edge.reconnectInfo = &ReconnectInfo{
@@ -95,10 +96,10 @@ func ConnectTo(host string,
 func NewEdgeImpl(
 	con net.Conn,
 	dataListener interfaces.IDatatListener,
-	registry interfaces.ITypeRegistry,
-	servicePoints interfaces.IServicePoints,
-	config *types.MessagingConfig) *EdgeImpl {
-	return newEdgeImpl(con, dataListener, registry, servicePoints, config)
+	serializer interfaces.Serializer,
+	config *types.MessagingConfig,
+	providers *interfaces.Providers) *EdgeImpl {
+	return newEdgeImpl(con, dataListener, serializer, config, providers)
 }
 
 func (edge *EdgeImpl) SetName(name string) {

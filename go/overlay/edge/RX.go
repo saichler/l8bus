@@ -1,7 +1,6 @@
 package edge
 
 import (
-	"github.com/saichler/layer8/go/overlay/protocol"
 	logs "github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/share/nets"
 )
@@ -55,18 +54,18 @@ func (edge *EdgeImpl) notifyRawDataListener() {
 			if edge.dataListener != nil {
 				edge.dataListener.HandleData(data, edge)
 			} else {
-				msg, err := protocol.MessageOf(data, edge.registry)
+				msg, err := edge.protocol.MessageOf(data)
 				if err != nil {
 					logs.Error(err)
 					continue
 				}
-				pb, err := protocol.ProtoOf(msg, edge.registry)
+				pb, err := edge.protocol.ProtoOf(msg)
 				if err != nil {
 					logs.Error(err)
 					continue
 				}
 				// Otherwise call the handler per the action & the type
-				edge.servicePoints.Handle(pb, msg.Action, edge)
+				edge.protocol.Providers().ServicePoints().Handle(pb, msg.Action, edge)
 			}
 		}
 	}

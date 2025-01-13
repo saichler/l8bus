@@ -1,7 +1,6 @@
 package switching
 
 import (
-	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/layer8/go/overlay/state"
 	"github.com/saichler/shared/go/share/interfaces"
 	logs "github.com/saichler/shared/go/share/interfaces"
@@ -26,9 +25,8 @@ func newSwitchTable(switchService *SwitchService) *SwitchTable {
 
 func (switchTable *SwitchTable) sendToAll(topic string, action types.Action, pb proto.Message) {
 	edges := switchTable.edges.all()
-	data, err := protocol.CreateMessageFor(types.Priority_P0, action, switchTable.switchService.switchConfig.Local_Uuid,
-		switchTable.switchService.switchConfig.Local_Uuid, topic, pb,
-		switchTable.switchService.registry)
+	data, err := switchTable.switchService.protocol.CreateMessageFor(types.Priority_P0, action, switchTable.switchService.switchConfig.Local_Uuid,
+		switchTable.switchService.switchConfig.Local_Uuid, topic, pb)
 	if err != nil {
 		logs.Error("Failed to create message to send to all: ", err)
 		return
