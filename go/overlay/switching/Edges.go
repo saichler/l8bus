@@ -27,6 +27,7 @@ func (edges *Edges) addInternal(uuid string, edge interfaces.IEdge) {
 	defer edges.mtx.Unlock()
 	exist, ok := edges.internal[uuid]
 	if ok {
+		interfaces.Info("Internal Edge ", uuid, " already exists, shutting down")
 		exist.Shutdown()
 	}
 	edges.internal[uuid] = edge
@@ -38,6 +39,7 @@ func (edges *Edges) addExternal(uuid string, edge interfaces.IEdge) {
 	defer edges.mtx.Unlock()
 	exist, ok := edges.external[uuid]
 	if ok {
+		interfaces.Info("External Edge ", uuid, " already exists, shutting down")
 		exist.Shutdown()
 	}
 	edges.external[uuid] = edge

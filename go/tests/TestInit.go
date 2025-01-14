@@ -34,7 +34,6 @@ var tsps = make(map[string]*infra.TestServicePointHandler)
 func init() {
 	SetLogger(logger.NewLoggerImpl(&logger.FmtLogMethod{}))
 	Logger().SetLogLevel(Trace_Level)
-	setupTopology()
 }
 
 func setupTopology() {
@@ -45,13 +44,14 @@ func setupTopology() {
 	eg3 = createEdge(50001, "eg3", true)
 	eg4 = createEdge(50001, "eg4", true)
 	eg5 = createEdge(50000, "eg5", false)
-	time.Sleep(time.Second)
+	sleep()
 	connectSwitches(sw1, sw2)
-	time.Sleep(time.Second)
+	sleep()
 	eg1.PublishState()
 	eg2.PublishState()
 	eg3.PublishState()
 	eg4.PublishState()
+	sleep()
 }
 
 func shutdownTopology() {
@@ -61,7 +61,7 @@ func shutdownTopology() {
 	eg1.Shutdown()
 	sw2.Shutdown()
 	sw1.Shutdown()
-	time.Sleep(time.Second)
+	sleep()
 }
 
 func createSecurityProvider() ISecurityProvider {
@@ -119,4 +119,8 @@ func createEdge(port uint32, name string, addTestTopic bool) IEdge {
 
 func connectSwitches(s1, s2 *switching.SwitchService) {
 	s1.ConnectTo("127.0.0.1", s2.Config().SwitchPort)
+}
+
+func sleep() {
+	time.Sleep(time.Millisecond * 100)
 }

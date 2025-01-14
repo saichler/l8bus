@@ -97,6 +97,9 @@ func (edge *EdgeImpl) Shutdown() {
 }
 
 func (edge *EdgeImpl) attemptToReconnect() {
+	if edge.conn != nil {
+		edge.conn.Close()
+	}
 	// Should not be a valid scenario, however bugs do happen
 	if edge.reconnectInfo == nil {
 		return
@@ -108,7 +111,6 @@ func (edge *EdgeImpl) attemptToReconnect() {
 		return
 	}
 	for {
-		time.Sleep(time.Second * 5)
 		log.Warning("Connection issues, trying to reconnect to switch")
 
 		err := edge.reconnect()
@@ -121,6 +123,7 @@ func (edge *EdgeImpl) attemptToReconnect() {
 			break
 		}
 
+		time.Sleep(time.Second * 5)
 	}
 	log.Info("Reconnected!")
 }

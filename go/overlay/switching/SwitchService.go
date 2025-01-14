@@ -157,7 +157,10 @@ func (switchService *SwitchService) HandleData(data []byte, edge interfaces.IEdg
 		interfaces.Error("Cannot find destination port for ", destination)
 		return
 	}
-	p.Send(data)
+	err := p.Send(data)
+	if err != nil {
+		interfaces.Error("Error sending data:", err)
+	}
 }
 
 func (switchService *SwitchService) sendToPorts(uuids map[string]bool, data []byte, sourceSwitch string) {

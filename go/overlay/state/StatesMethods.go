@@ -53,7 +53,11 @@ func (ssp *StatesServicePoint) ServiceUuids(destination string) map[string]bool 
 		interfaces.Debug("No Services found for destination: ", destination)
 		return nil
 	}
-	return service.Edges
+	result := make(map[string]bool)
+	for k, v := range service.Edges {
+		result[k] = v
+	}
+	return result
 }
 
 func (ssp *StatesServicePoint) CloneStates() *types2.States {

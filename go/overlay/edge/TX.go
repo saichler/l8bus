@@ -33,6 +33,7 @@ func (edge *EdgeImpl) writeToSocket() {
 			break
 		}
 	}
+	logs.Info("*** Connection Write for ", edge.Name(), " ended.")
 	logs.Debug("Connection Write for ", edge.Name(), " ended.")
 	edge.Shutdown()
 }
