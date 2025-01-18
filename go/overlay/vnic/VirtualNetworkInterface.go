@@ -10,6 +10,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"net"
 	"sync"
+	"time"
 )
 
 type VirtualNetworkInterface struct {
@@ -29,6 +30,8 @@ type VirtualNetworkInterface struct {
 	name string
 	// Indicates if this vnic in on the switch internal, hence need no keep alive
 	IsSwitch bool
+	// Last reconnect attempt
+	last_reconnect_attempt int64
 }
 
 func NewVirtualNetworkInterface(resources interfaces.IResources, conn net.Conn) *VirtualNetworkInterface {
@@ -62,6 +65,11 @@ func (vnic *VirtualNetworkInterface) Start() {
 }
 
 func (vnic *VirtualNetworkInterface) connectToSwitch() {
+	vnic.connect()
+	vnic.components.start()
+}
+
+func (vnic *VirtualNetworkInterface) connect() {
 	// Dial the destination and validate the secret and key
 	destination := protocol.MachineIP
 	if protocol.UsingContainers {
@@ -83,8 +91,6 @@ func (vnic *VirtualNetworkInterface) connectToSwitch() {
 	}
 	vnic.conn = conn
 	vnic.resources.Config().Address = conn.LocalAddr().String()
-
-	vnic.components.start()
 }
 
 func (vnic *VirtualNetworkInterface) receiveConnection() {
@@ -117,5 +123,20 @@ func (vnic *VirtualNetworkInterface) Resources() interfaces.IResources {
 }
 
 func (vnic *VirtualNetworkInterface) reconnect() {
+	vnic.connMtx.Lock()
+	defer vnic.connMtx.Unlock()
+	if time.Now().Unix()-vnic.last_reconnect_attempt < 5 {
+		return
+	}
+	vnic.last_reconnect_attempt = time.Now().Unix()
 
+	vnic.resources.Logger().Info("***** Reconnecting to the switch *****")
+
+	if vnic.conn != nil {
+		vnic.conn.Close()
+	}
+
+	vnic.connect()
+
+	vnic.resources.Logger().Info("***** Reconnected to the switch *****")
 }
