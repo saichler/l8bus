@@ -4,7 +4,7 @@
 ### Process to Process data share made secure & easy.
 # Prolog
 Until the early 21st century, developing an application ment code was expected to run in a single process. 
-Shared data & services between threads was usually done via a **Singleton** and the challenges with  
+Shared data & services between threads was usually done via a **Singleton** and the challenges with 
 **Security** & **Concurrency** were mainly with external API and integrations.
 
 Roughly around 2013, **Containers** started to pick up with the concept of **Micro Services**. 
