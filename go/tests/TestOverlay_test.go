@@ -1,15 +1,12 @@
-//go:build unit
-
 package tests
 
 import (
-	"github.com/saichler/layer8/go/overlay/edge"
-	"github.com/saichler/layer8/go/overlay/state"
-	"github.com/saichler/shared/go/share/interfaces"
+	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/shared/go/tests"
 	"github.com/saichler/shared/go/tests/infra"
 	"github.com/saichler/shared/go/types"
 	"testing"
+	"time"
 )
 
 func TestMain(m *testing.M) {
@@ -19,7 +16,7 @@ func TestMain(m *testing.M) {
 }
 
 func reset(name string) {
-	interfaces.Info("*** ", name, " end ***")
+	log.Info("*** ", name, " end ***")
 	for _, t := range tsps {
 		t.PostNumber = 0
 		t.DeleteNumber = 0
@@ -39,14 +36,9 @@ func tear() {
 
 func TestPrintTopology(t *testing.T) {
 	defer reset("TestPrintTopology")
-	egImpl := eg1.(*edge.EdgeImpl)
-	interfaces.Info("Edge 1")
-	state.Print(egImpl.State(), egImpl.Config().Local_Uuid)
-	interfaces.Info("Edge 3")
-	egImpl = eg3.(*edge.EdgeImpl)
-	state.Print(egImpl.State(), egImpl.Config().Local_Uuid)
-	interfaces.Info("Switch 1")
-	state.Print(sw1.State(), sw1.Config().Local_Uuid)
+	health.Health(eg1.Resources()).Print()
+	health.Health(eg3.Resources()).Print()
+	health.Health(sw1.Resources()).Print()
 }
 
 func TestSendMultiCast(t *testing.T) {
@@ -54,17 +46,17 @@ func TestSendMultiCast(t *testing.T) {
 	pb := &tests.TestProto{}
 	err := eg1.Do(types.Action_POST, infra.TEST_TOPIC, pb)
 	if err != nil {
-		interfaces.Fail(t, err)
+		log.Fail(t, err)
 		return
 	}
 	sleep()
 
 	for eg, tsp := range tsps {
 		if tsp.PostNumber != 1 && eg != "eg5" {
-			interfaces.Fail(t, eg, " Post count does not equal 1")
+			log.Fail(t, eg, " Post count does not equal 1")
 			return
 		} else if tsp.PostNumber != 0 && eg == "eg5" {
-			interfaces.Fail(t, eg, " Post count does not equal 0")
+			log.Fail(t, eg, " Post count does not equal 0")
 			return
 		}
 	}
@@ -73,15 +65,15 @@ func TestSendMultiCast(t *testing.T) {
 func TestUniCast(t *testing.T) {
 	defer reset("TestUniCast")
 	pb := &tests.TestProto{}
-	err := eg2.Do(types.Action_POST, eg3.Config().Local_Uuid, pb)
+	err := eg2.Do(types.Action_POST, eg3.Resources().Config().Local_Uuid, pb)
 	if err != nil {
-		interfaces.Fail(t, err)
+		log.Fail(t, err)
 		return
 	}
 	sleep()
 
 	if tsps["eg3"].PostNumber != 1 {
-		interfaces.Fail(t, "eg3", " Post count does not equal 1")
+		log.Fail(t, "eg3", " Post count does not equal 1")
 		return
 	}
 }
@@ -89,35 +81,37 @@ func TestUniCast(t *testing.T) {
 func TestReconnect(t *testing.T) {
 	defer reset("TestReconnect")
 	pb := &tests.TestProto{}
-	err := eg5.Do(types.Action_POST, eg3.Config().Local_Uuid, pb)
+	err := eg5.Do(types.Action_POST, eg3.Resources().Config().Local_Uuid, pb)
 	if err != nil {
-		interfaces.Fail(t, err)
+		log.Fail(t, err)
 		return
 	}
 	sleep()
 
 	if tsps["eg3"].PostNumber != 1 {
-		interfaces.Fail(t, "eg3", " Post count does not equal 1")
+		log.Fail(t, "eg3", " Post count does not equal 1")
 		return
 	}
 
-	interfaces.Info("********* Starting Reconnect Test")
+	log.Info("********* Starting Reconnect Test")
 
 	//Create a larger than max data
 	//sending it will disconnect the socket and attempt a reconnect
-	data := make([]byte, eg5.Config().MaxDataSize+1)
+	data := make([]byte, eg5.Resources().Config().MaxDataSize+1)
 	eg5.Send(data)
-	sleep()
 
-	err = eg5.Do(types.Action_POST, eg3.Config().Local_Uuid, pb)
+	err = eg5.Do(types.Action_POST, eg3.Resources().Config().Local_Uuid, pb)
+	err = eg5.Do(types.Action_POST, eg3.Resources().Config().Local_Uuid, pb)
+	err = eg5.Do(types.Action_POST, eg3.Resources().Config().Local_Uuid, pb)
 	if err != nil {
-		interfaces.Fail(t, err)
+		log.Fail(t, err)
 		return
 	}
+
 	sleep()
 
-	if tsps["eg3"].PostNumber != 2 {
-		interfaces.Fail(t, "eg3", " Post count does not equal 2 after reconnect")
+	if tsps["eg3"].PostNumber != 4 {
+		log.Fail(t, "eg3", " Post count does not equal 4 after reconnect")
 		return
 	}
 }
@@ -125,23 +119,26 @@ func TestReconnect(t *testing.T) {
 func TestDestinationUnreachable(t *testing.T) {
 	defer reset("TestDestinationUnreachable")
 	pb := &tests.TestProto{}
-	err := eg2.Do(types.Action_POST, eg5.Config().Local_Uuid, pb)
+	err := eg2.Do(types.Action_POST, eg4.Resources().Config().Local_Uuid, pb)
 	if err != nil {
-		interfaces.Fail(t, err)
+		log.Fail(t, err)
 		return
 	}
 	sleep()
 
-	if tsps["eg5"].PostNumber != 1 {
-		interfaces.Fail(t, "eg5", " Post count does not equal 1")
+	if tsps["eg4"].PostNumber != 1 {
+		log.Fail(t, "eg4", " Post count does not equal 1")
 		return
 	}
 
-	eg5.Shutdown()
-	sleep()
-	err = eg2.Do(types.Action_POST, eg5.Config().Local_Uuid, pb)
+	log.Info("********* Shutting Down")
+	eg4.Shutdown()
+
+	time.Sleep(time.Second * 7)
+
+	err = eg2.Do(types.Action_POST, eg4.Resources().Config().Local_Uuid, pb)
 	if err != nil {
-		interfaces.Fail(t, err)
+		log.Fail(t, err)
 		return
 	}
 	sleep()

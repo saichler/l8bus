@@ -1,12 +1,14 @@
-package switching
+package protocol
 
 import (
-	logs "github.com/saichler/shared/go/share/interfaces"
+	"errors"
 	"net"
 	"strings"
 )
 
-var ipSegment = newIpAddressSegment()
+var IpSegment = newIpAddressSegment()
+var UsingContainers = true
+var MachineIP = "127.0.0.1"
 
 // IPSegment Let the switching know if the incoming ip belongs to this machine/vm or is it external machine/vm.
 type IPSegment struct {
@@ -17,9 +19,9 @@ type IPSegment struct {
 // Initialize
 func newIpAddressSegment() *IPSegment {
 	ias := &IPSegment{}
-	lip, err := localIps()
+	lip, err := LocalIps()
 	if err != nil {
-		logs.Error(err)
+		panic(err)
 	}
 	ias.ip2IfName = lip
 	ias.initSegment()
@@ -32,34 +34,45 @@ func (ias *IPSegment) initSegment() {
 	ias.subnet2Local = make(map[string]bool)
 	for ip, name := range ias.ip2IfName {
 		if name == "lo" {
-			ias.subnet2Local[subnet(ip)] = true
-		} else if name[0:3] == "eth" || name[0:3] == "ens" {
-			ias.subnet2Local[subnet(ip)] = false
+			ias.subnet2Local[Subnet(ip)] = true
+		} else if name[0:3] == "eth" ||
+			name[0:3] == "ens" ||
+			name[0:3] == "en0" {
+			ias.subnet2Local[Subnet(ip)] = false
+			if MachineIP == "127.0.0.1" {
+				MachineIP = ip
+			} else if strings.Contains(MachineIP, ":") {
+				MachineIP = ip
+			}
 		} else {
-			ias.subnet2Local[subnet(ip)] = true
+			ias.subnet2Local[Subnet(ip)] = true
 		}
 	}
 }
 
 // Check if this ip's subnet is within the local subnet list
-func (ias *IPSegment) isLocal(ip string) bool {
-	return ias.subnet2Local[subnet(ip)]
+func (ias *IPSegment) IsLocal(ip string) bool {
+	ip = IP(ip)
+	if ip == MachineIP {
+		return true
+	}
+	return ias.subnet2Local[Subnet(ip)]
 }
 
 // look for the subnet facing public networking, e.g. the ip on eth0 & etc.
 // @TODO - Add support for multiple NICs
-func (ias *IPSegment) externalSubnet() string {
+func (ias *IPSegment) ExternalSubnet() string {
 	for subnet, isLocal := range ias.subnet2Local {
 		if !isLocal {
 			return subnet
 		}
 	}
-	return "No External Subnet"
+	return ""
 }
 
 // substr the subnet from an ip
 // @TODO - add support for ipv6
-func subnet(ip string) string {
+func Subnet(ip string) string {
 	index2 := strings.LastIndex(ip, ".")
 	if index2 != -1 {
 		return ip[0:index2]
@@ -67,17 +80,29 @@ func subnet(ip string) string {
 	return ip
 }
 
+func IP(ip string) string {
+	index := strings.Index(ip, "/")
+	if index != -1 {
+		return ip[0:index]
+	}
+	index = strings.LastIndex(ip, ":")
+	if index != -1 {
+		return ip[0:index]
+	}
+	return ip
+}
+
 // Iterate over the machine interfaces and map the ip to the interface name
-func localIps() (map[string]string, error) {
+func LocalIps() (map[string]string, error) {
 	netIfs, err := net.Interfaces()
 	if err != nil {
-		return nil, logs.Error("Could not fetch local interfaces:", err.Error())
+		return nil, errors.New("Could not fetch local interfaces: " + err.Error())
 	}
 	result := make(map[string]string)
 	for _, netIf := range netIfs {
 		addrs, err := netIf.Addrs()
 		if err != nil {
-			logs.Error("Failed to fetch addresses for net interface:", err.Error())
+			//logs.Error("Failed to fetch addresses for net interface:", err.Error())
 			continue
 		}
 		for _, addr := range addrs {

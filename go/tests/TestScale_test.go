@@ -1,10 +1,9 @@
-//go:build scale
-
 package tests
 
 import (
 	"github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/tests"
+	"github.com/saichler/shared/go/tests/infra"
 	"github.com/saichler/shared/go/types"
 	"testing"
 	"time"
@@ -15,9 +14,9 @@ func scaleTest(size, exp int, timeout int64, t *testing.T) bool {
 	for i := 0; i < size; i++ {
 		pb := &tests.TestProto{}
 		pb.Int32 = int32(i)
-		err := eg2.Do(types.Action_POST, eg3.Config().Local_Uuid, pb)
+		err := eg2.Do(types.Action_POST, eg3.Resources().Config().Local_Uuid, pb)
 		if err != nil {
-			interfaces.Fail(t, err)
+			log.Fail(t, err)
 			return false
 		}
 	}
@@ -32,21 +31,23 @@ func scaleTest(size, exp int, timeout int64, t *testing.T) bool {
 		time.Sleep(time.Millisecond * 100)
 	}
 	end := time.Now().Unix()
-	interfaces.Info("Scale test for ", size, " took ", (end - start), " seconds")
+	log.Info("Scale test for ", size, " took ", (end - start), " seconds")
 	if eg3.PostNumber != exp {
-		interfaces.Fail(t, "eg3", " Post count does not equal to ", exp, ":", eg3.PostNumber)
+		log.Fail(t, "eg3", " Post count does not equal to ", exp, ":", eg3.PostNumber)
 		return false
 	}
 	return true
 }
 
 func TestScale(t *testing.T) {
-	interfaces.Logger().SetLogLevel(interfaces.Info_Level)
+	log.SetLogLevel(interfaces.Info_Level)
+	infra.Log.SetLogLevel(interfaces.Info_Level)
 	exp := 1000
 	ok := scaleTest(1000, exp, 2, t)
 	if !ok {
 		return
 	}
+	
 	exp += 10000
 	ok = scaleTest(10000, exp, 2, t)
 	if !ok {

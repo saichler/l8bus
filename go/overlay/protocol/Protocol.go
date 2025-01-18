@@ -11,15 +11,14 @@ import (
 
 type Protocol struct {
 	sequence   atomic.Int32
-	serializer interfaces.Serializer
-	providers  *interfaces.Providers
+	resources  interfaces.IResources
+	serializer interfaces.ISerializer
 }
 
-func New(providers *interfaces.Providers,
-	serializer interfaces.Serializer) *Protocol {
+func New(resources interfaces.IResources) *Protocol {
 	p := &Protocol{}
-	p.providers = providers
-	p.serializer = serializer
+	p.resources = resources
+	p.serializer = p.resources.Serializer(interfaces.BINARY)
 	if p.serializer == nil {
 		p.serializer = &serializers.ProtoBuffBinary{}
 	}
@@ -27,7 +26,7 @@ func New(providers *interfaces.Providers,
 }
 
 func (this *Protocol) MessageOf(data []byte) (*types.Message, error) {
-	msg, err := this.serializer.Unmarshal(data[109:], "Message", this.providers.Registry())
+	msg, err := this.serializer.Unmarshal(data[109:], "Message", this.resources.Registry())
 	if err != nil {
 		panic(err)
 	}
@@ -35,15 +34,14 @@ func (this *Protocol) MessageOf(data []byte) (*types.Message, error) {
 }
 
 func (this *Protocol) ProtoOf(msg *types.Message) (proto.Message, error) {
-	data, err := this.providers.Security().Decrypt(msg.Data)
+	data, err := this.resources.Security().Decrypt(msg.Data)
 	if err != nil {
 		return nil, err
 	}
 
-	info, err := this.providers.Registry().TypeInfo(msg.Type)
+	info, err := this.resources.Registry().Info(msg.Type)
 	if err != nil {
-		panic(err)
-		return nil, interfaces.Error(err)
+		return nil, this.resources.Logger().Error(err)
 	}
 	pbIns, err := info.NewInstance()
 	if err != nil {
@@ -62,7 +60,7 @@ func (this *Protocol) CreateMessageFor(priority types.Priority, action types.Act
 		return nil, err
 	}
 	//Encode the data
-	encData, err := this.providers.Security().Encrypt(data)
+	encData, err := this.resources.Security().Encrypt(data)
 	if err != nil {
 		return nil, err
 	}
@@ -86,12 +84,4 @@ func (this *Protocol) CreateMessageFor(priority types.Priority, action types.Act
 	//Append the msgData to the header
 	header = append(header, msgData...)
 	return header, nil
-}
-
-func (this *Protocol) Serializer() interfaces.Serializer {
-	return this.serializer
-}
-
-func (this *Protocol) Providers() *interfaces.Providers {
-	return this.providers
 }
