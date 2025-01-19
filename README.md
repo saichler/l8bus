@@ -31,16 +31,28 @@ becomes seemless, easy & expedited.
 ![alt text](https://github.com/saichler/layer8/blob/main/layer8.png)
 
 ## Challenges
-It all starts with identifying the new **Micro Services** challenges:
-### - Service Location/Address
-Multiple processes/containers means they need to communicate with each 
-other via the **Network**. 
-Communicating via the **Network** requires an address/host/ip (kind of like a phone number). 
+It all starts with identifying the new **Micro Services** challenges. 
+The following is some of the new challenges area and challenge questions, 
+with the layer8 approach of solving those challenges.
 
+### - Security
+Multiple processes/containers means they need to communicate with each
+other via the **Network**. Over the network immediatly raises the following:
+- ***How do you make sure the communication is allowed?*** 
+
+    A: ***Security Provider*** - Layer 8 provides a security provider interface, being utilized throught the components.
+- ***How do you make sure the communication is secured?*** 
+
+    A: Any data shared over the wire via layer8 is encrypted by the ***Security Provider***.
+- ***Reading the code, I see there is only Shallow Security Provider?***
+    
+    A: Yes, Layer8 is abstracting security so anyone can provide the ***Security Provider***. 
+
+### - Service Location/Address 
+Communicating via the **Network** requires an address/host/ip (kind of like a phone number).
 - ***How do you know the address?***
 - ***How do you attend multiple addresses for the same service?***
-
-How do you push & handle this information between multiple services?
+- ***How do you push & handle this information between multiple services?***
 
 ### - Service API
 Networking is basically sending/receiving bytes. 
