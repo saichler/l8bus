@@ -20,9 +20,15 @@ As they need to exchange data, back and forth, between the processes to deliver 
 **Micro Services** use Networking to internally communicate and exchange this data, 
 in other words, the era of **Internal Application Communication** has begun.
 
+The new challenges, introduced with **Internal Application Communication**,
+are large, expensive and hard to maintain, costing companies/projects
+significant amount of **$$$$$** (educated guess is around hundred of millions per project), 
+which is leading to an insight that there is a missing layer in the traditional **OSI Model**
+that needs to standardize, simplify & secure those challenges, 
+hence scientifically reducing the time & cost of developing a Micro Serives based application.
 ![alt text](https://github.com/saichler/layer8/blob/main/osi8.png)
 
-# New Challenges...
+# Deep dive into the details
 To simplify and emphasize the **Challenges**, will use an analogy to a **Person** and a **Job**.
  
 ```
