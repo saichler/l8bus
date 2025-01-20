@@ -17,7 +17,10 @@ into **Multiple Processes**, each fulfilling a logical part of the **Application
 **Micro Services** need to work together, as one, to facade a single application to the user. 
 As they need to exchange data, back and forth, between the processes to deliver the 
 **Application** functionality, 
-**Micro Services** use Networking to internally communicate and exchange this data.
+**Micro Services** use Networking to internally communicate and exchange this data, 
+in other words, the era of **Internal Application Communication** has begun.
+
+![alt text](https://github.com/saichler/layer8/blob/main/osi8.png)
 
 # New Challenges...
 To simplify and emphasize the **Challenges**, will use an analogy to a **Person** and a **Job**.
