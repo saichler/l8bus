@@ -22,6 +22,20 @@ As they need to exchange data, back and forth, between the processes to deliver 
 **Micro Services** use Networking to internally communicate and exchange this data.
 
 # New Challenges...
+To simplify and emphasize the **Challenges**, will use an analogy to a **Person** and a **Job**.
+ 
+```
+Before: 
+  A single Person used to do the Job.
+```
+```
+After:
+  With Micro Services, the Job is broken to several Tasks, 
+  each is assigned to a different Person, that sits in a different room.
+```
+Several people, each doing a part of the **Job** usually means they will complete the **Job** faster, 
+enabling a bigger throughput of done **Jobs**. ***However...
+Basic prerequisite is needed before they reach this idle point...***
 
 What was seamless inside a single **Application** process, became a huge, painful, challenge, consuming $$$$$$ 
 
