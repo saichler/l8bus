@@ -1,18 +1,31 @@
 # **Work In Progress**
 
-# Introducing Layer 8 into the OSI model
+# Introducing Layer 8, Micro Service into the OSI model
 
 # Overview
 Roughly until 2013, an **Application** code was usually running inside a single process. 
 Shared data & services between threads was usually done via a **Singleton** and the challenges with 
 **Security**, **Concurrency** & **Scalability** within the **Application** 
 were mainly with external API and integrations.
-The traditional **OSI** model of the seven layers of networking model, ends with the **Application layer**, 
+The traditional **OSI** model of the seven layers of networking, ends with the **Application layer**, 
 which was **"satisfactory"** for the challenges of **Application** development.
 ![alt text](https://github.com/saichler/layer8/blob/main/osi.png)
 
+Since 2013, **Containers** started to pick up, splitting, what once was a **single** process, **Application** 
+into **Multiple Processes**, each fulfilling a logical part of the **Application** and 
+**Servicing** internal functionality for the **Application**. 
 
-Roughly around 2013, **Containers** started to pick up with the concept of **Micro Services**. 
+### This is known as **Micro Services**. 
+**Micro Services** need to work together, as one, to facade a single application to the user. 
+As they need to exchange data, back and forth, between the processes to deliver the 
+**Application** functionality, 
+**Micro Services** use Networking to internally communicate and exchange this data.
+
+# New Challenges...
+
+What was seamless inside a single **Application** process, became a huge, painful, challenge, consuming $$$$$$ 
+
+,, each, logically, has an area of responsibility within the Application. with the concept of **Micro Services**. 
 The Micro Services concept is splitting the code base, once running in a **single** process, into 
 **multiple processes deployed on multiple machines**.
 In other words, software was **"broken"** into small pices, each running in its own process/container and distributed on multiple machines.
