@@ -26,9 +26,10 @@ significant amount of **$$$$$** (educated guess is around hundred of millions pe
 which is leading to an insight that there is a missing layer in the traditional **OSI Model**
 that needs to standardize, simplify & secure those challenges, 
 hence scientifically reducing the time & cost of developing a Micro Serives based application.
+### This is Layer 8, The Micro Services Layer
 ![alt text](https://github.com/saichler/layer8/blob/main/osi8.png)
 
-# Deep dive into the details
+# Please Explain?!
 To simplify and emphasize the **Challenges**, will use an analogy to a **Person** and a **Job**.
  
 ```
