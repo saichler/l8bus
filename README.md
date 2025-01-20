@@ -1,11 +1,16 @@
 # **Work In Progress**
 
-# Layer8
-### Process to Process data share made secure & easy.
-# Prolog
-Until the early 21st century, developing an application ment code was expected to run in a single process. 
+# Introducing Layer 8 into the OSI model
+
+# Overview
+Roughly until 2013, an **Application** code was usually running inside a single process. 
 Shared data & services between threads was usually done via a **Singleton** and the challenges with 
-**Security** & **Concurrency** were mainly with external API and integrations.
+**Security**, **Concurrency** & **Scalability** within the **Application** 
+were mainly with external API and integrations.
+The traditional **OSI** model of the seven layers of networking model, ends with the **Application layer**, 
+which was **"satisfactory"** for the challenges of **Application** development.
+![alt text](https://github.com/saichler/layer8/blob/main/osi.png)
+
 
 Roughly around 2013, **Containers** started to pick up with the concept of **Micro Services**. 
 The Micro Services concept is splitting the code base, once running in a **single** process, into 
