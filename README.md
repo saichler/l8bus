@@ -1,6 +1,4 @@
-# **Work In Progress**
-
-# Introducing Layer 8, Micro Service into the OSI model
+# ***Introducing Layer 8, Micro Service Layer into the OSI model***
 
 # Overview
 Roughly until 2013, an **Application** code was usually running inside a single process. 
