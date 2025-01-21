@@ -38,37 +38,38 @@ Before:
 ```
 ```
 After:
-  With Micro Services, the Job is broken to several Tasks, 
-  each is assigned to a different Person, that sits in a different room.
+  With Micro Services, the Job is divided into several Tasks & Services,
+  each is assigned to a different Person/s. Each Person sits in a different room.
 ```
 Several people, each doing a part of the **Job** usually means they will complete the **Job** faster, 
-enabling a bigger throughput of done **Jobs**. ***However...
+enabling a bigger throughput of **Jobs** being done. ***However...
 Basic prerequisite is needed before they reach this idle point...***
 
-What was seamless inside a single **Application** process, became a huge, painful, challenge, consuming $$$$$$ 
+## The Team
+A **Task/Service** of a **Job** has **owners**. 
+**Owners** and not **Owner** as we have at least two, or more, people that can do that 
+Task/Service for **High Availability** sake. **Arbitrary**, say there are 6 Tasks/Services, 
+there will be at least **12 people** in the **Team**.
 
-,, each, logically, has an area of responsibility within the Application. with the concept of **Micro Services**. 
-The Micro Services concept is splitting the code base, once running in a **single** process, into 
-**multiple processes deployed on multiple machines**.
-In other words, software was **"broken"** into small pices, each running in its own process/container and distributed on multiple machines.
+<sub>**Remember!** Each person is sitting in a different room, so we have 12 rooms.</sub>
 
-While **Micro Servicing** software derives abstraction, scalability and easier maintainability, it presents new 
-challenges that did not exist before... Data location, sharing, concurrency & security became a common
-infrastructure challenge as now processes need to share and exchange data **via the Network**. 
-  
+### Initially
+We need to establish an internal communication infrastructure so team members
+will be able to phone and share information with each other.
 
-## Overview
-The new challenges of **Micro Services** were not met with a standard infrastructure, 
-instead each adapting project, using software design for the 
-**single process era, re-inventing the wheel...** The outcome 
-is a **Billion $$$** of developing & maintaining software infrastructure, 
-again and again, for each project.
+### Rooms
+Because rooms have different sizes and amenities, they are dynamically allocated to
+a **Person** daily, and they don't have a landline with a fix number.
 
-**Layer8** in trying to encapsulate the **Micro Services** infrastructure challenges into 
-an agnostic, simple & maintainable framework, so developing **Micro Services** base application 
-becomes seemless, easy & expedited.
+### Phones
+When a **Person** is being assing a room, he picks up a phone from the pool, start using the
+room, and return the phone at the end of the day. In other words, each day, the **Person**
+has a **new Phone number**.
+
 
 ![alt text](https://github.com/saichler/layer8/blob/main/layer8.png)
+
+# Work in progress from this point...
 
 ## Challenges
 It all starts with identifying the new **Micro Services** challenges. 
