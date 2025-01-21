@@ -26,7 +26,7 @@ significant amount of **$$$$$** (educated guess is around hundred of millions pe
 which is leading to an insight that there is a missing layer in the traditional **OSI Model**
 that needs to standardize, simplify & secure those challenges, 
 hence scientifically reducing the time & cost of developing a Micro Serives based application.
-### This is Layer 8, The Micro Services Layer
+### This is the Layer 8, The Micro Services Layer
 ![alt text](https://github.com/saichler/layer8/blob/main/osi8.png)
 
 # Please Explain?!
@@ -45,7 +45,7 @@ Several people, each doing a part of the **Job** usually means they will complet
 enabling a bigger throughput of **Jobs** being done. ***However...
 Basic prerequisite is needed before they reach this idle point...***
 
-## The Team
+### The Team
 A **Task/Service** of a **Job** has **owners**. 
 **Owners** and not **Owner** as we have at least two, or more, people that can do that 
 Task/Service for **High Availability** sake. **Arbitrary**, say there are 6 Tasks/Services, 
@@ -62,14 +62,23 @@ Because rooms have different sizes and amenities, they are dynamically allocated
 a **Person** daily, and they don't have a landline with a fix number.
 
 ### Phones
-When a **Person** is being assing a room, he picks up a phone from the pool, start using the
-room, and return the phone at the end of the day. In other words, each day, the **Person**
-has a **new Phone number**.
+When a **Person** is being assigned a room, he picks up a phone from the pool, 
+start using the room, and return the phone at the end of the day. 
+In other words, each day, the **Person** has a **new Phone number**.
 
+## Challenge #1 - Phone Numbers
+While the team can use phone numbers to communicate with each other, 
+it's not practical. Phone numbers might change midday, and they will need to 
+frequently go back and forth to the billboard to be updated with the latest list.
+Another challenge is "Which phone number to use for the service?", we have at least two
+**Persons** that can provide the service.
+
+# <Work in progress, following is just some notes...>
+
+# Layer 8 Solution
 
 ![alt text](https://github.com/saichler/layer8/blob/main/layer8.png)
 
-# Work in progress from this point...
 
 ## Challenges
 It all starts with identifying the new **Micro Services** challenges. 
