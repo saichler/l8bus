@@ -95,7 +95,7 @@ lifecycle**.
 
 ## Integration
 When a **Person** integrating with another **Person**, they need to establish and agree on
-the was they interact with each other, this is called **API** (Application Programming Interface). 
+the way they interact with each other, this is called **API** (Application Programming Interface). 
 API includes:
 - **Words (Protocol & Serialization)**
 While both know english, They need to agree on **words** that derive the conversation. 
