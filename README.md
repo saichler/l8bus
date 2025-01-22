@@ -64,14 +64,37 @@ a **Person** daily, and they don't have a landline with a fix number.
 ### Phones
 When a **Person** is being assigned a room, he picks up a phone from the pool, 
 start using the room, and return the phone at the end of the day. 
-In other words, each day, the **Person** has a **new Phone number**.
+In other words, each day, the **Person** might have a **new Phone number**.
 
-## Challenge #1 - Phone Numbers
+## Challenge #1 - Phone Numbers (IP Addresses)
 While the team can use phone numbers to communicate with each other, 
-it's not practical. Phone numbers might change midday, and they will need to 
-frequently go back and forth to the billboard to be updated with the latest list.
-Another challenge is "Which phone number to use for the service?", we have at least two
-**Persons** that can provide the service.
+it's not practical. Phone numbers keep changing... **They will need to set up 
+some system to frequently sync/notify phone number changes.**
+
+## Challenge #2 - Hire Coordinators (CNI, Core DNS & Kube Proxy)
+To overcome challenge #1, we need to hire 3 more people:
+- **A Phone manager (CNI)**
+  Hand, and collect the phone from each **Person**, making sure they work.
+- **A Service to Phones coordinator (DNS)**
+  Keep track of which phone numbers provide which service so a Person can call
+  the DNS and request a phone for a service.
+- **A Service to Rooms coordinator (Kube Proxy)**
+  In case People need to share documents, which room currently belongs to which
+  **Person**.
+
+# Challenge #3 - Internal Integration
+Now that the communication layer between the **Team Members** (OSI model Layer 7 - Application) 
+was established, we reach the end of the **"Guided" OSI Model**, and left with the greatest challenge
+of them all, **Internal Integration**.
+
+**Internal Integration** occurs when two team members, or more, are brought together to collaborate
+and provide a service to external consumers/customers. 
+With the missing OSI Layer 8, **Internal Integration** is treated as **Integration**, 
+which is **the most painful, time-consuming, heavy maintenance, money consuming element in the software
+lifecycle**.
+
+## Integration
+
 
 # <Work in progress, following is just some notes...>
 
