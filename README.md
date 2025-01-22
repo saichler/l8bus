@@ -25,7 +25,7 @@ are large, expensive and hard to maintain, costing companies/projects
 significant amount of **$$$$$** (educated guess is around hundred of millions per project), 
 which is leading to an insight that there is a missing layer in the traditional **OSI Model**
 that needs to standardize, simplify & secure those challenges, 
-hence scientifically reducing the time & cost of developing a Micro Serives based application.
+hence significantly reducing the time & cost of developing a Micro Serives based application.
 ### This is the Layer 8, The Micro Services Layer
 ![alt text](https://github.com/saichler/layer8/blob/main/osi8.png)
 
@@ -94,6 +94,30 @@ which is **the most painful, time-consuming, heavy maintenance, money consuming 
 lifecycle**.
 
 ## Integration
+When a **Person** integrating with another **Person**, they need to establish and agree on
+the was they interact with each other, this is called **API** (Application Programming Interface). 
+API includes:
+- **Words (Protocol & Serialization)**
+While both know english, They need to agree on **words** that derive the conversation. 
+For example, every interaction starts with "Hello", following with "Please do/Please get/Please update/...". 
+This is not staingth forward for the un-experienced, some choose written
+language instead of spoken language...
+
+- **Subjects (Data Types)**
+What are the subjects that **Person A** is knowledgeable about that **Person B** needs to do his task?
+- **Work Method (StateLess/Stateful)**
+- **Work Load (Scalability)**
+- **Work Hours (Hi-Availability)**
+- **Authentication, Authorization & Accounting (Security)**
+
+## Insight 1
+The above is quantified to a **huge amount** of time, effort & money that is **repetitively done** between each two persons of the **same team**.
+
+## Insight 2
+**Each one** of the steps above contains a **Deep Pothole**. 
+Falling, at any step, to one of those **Potholes** is **Magnitude** the cost of **Insight 1**.
+
+# Exiting the analogy and Back to Micro Services.
 
 
 # <Work in progress, following is just some notes...>
@@ -101,57 +125,3 @@ lifecycle**.
 # Layer 8 Solution
 
 ![alt text](https://github.com/saichler/layer8/blob/main/layer8.png)
-
-
-## Challenges
-It all starts with identifying the new **Micro Services** challenges. 
-The following is some of the new challenges area and challenge questions, 
-with the layer8 approach of solving those challenges.
-
-### - Security
-Multiple processes/containers means they need to communicate with each
-other via the **Network**. Over the network immediatly raises the following:
-- ***How do you make sure the communication is allowed?*** 
-
-    A: ***Security Provider*** - Layer 8 provides a security provider interface, being utilized throught the components.
-- ***How do you make sure the communication is secured?*** 
-
-    A: Any data shared over the wire via layer8 is encrypted by the ***Security Provider***.
-- ***Reading the code, I see there is only Shallow Security Provider?***
-    
-    A: Yes, Layer8 is abstracting security so anyone can provide the ***Security Provider***. 
-
-### - Service Location/Address 
-Communicating via the **Network** requires an address/host/ip (kind of like a phone number).
-- ***How do you know the address?***
-- ***How do you attend multiple addresses for the same service?***
-- ***How do you push & handle this information between multiple services?***
-
-### - Service API
-Networking is basically sending/receiving bytes. 
-- ***What is the meaning of those bytes?***
-- ***What action should the service take?***
-- ***What is the response the service should reply?***
-- ***What is the meaning of the reply?***
-
-This effort is done between each two processes...
-
-**The effort is equivalent to inventing the words & sentences for a new Laungage...**
-
-### - Serialization
-Processes use models/structure to represent their data models. 
-When communicating between processes over the network, 
-translation from the data to a set of bytes and back is needed.
-- ***How do you do this translation efficiently?***
-- ***When only a subset of the model/struct has changed, 
-how do you just send and consume those changes seemlesly?***
-
-### - High Availability
-Dealing with multiple instances of the service, we have some challenges with high availability.
-- ***When one of the instances is down, 
-how do we shift the load to a new instance?***
-- ***Data concurrency, how do we promise that with multiple instances?***
-
-### - Scalability
-### - Stateful & Stateless
-### - Security
