@@ -54,7 +54,7 @@ func (tx *TX) writeToSocket() {
 					break
 				}
 				// If this is not a port on the switch, then try to reconnect.
-				if !tx.shuttingDown {
+				if !tx.shuttingDown && tx.vnic.running {
 					tx.vnic.reconnect()
 					err = nets.Write(data, tx.vnic.conn, tx.vnic.resources.Config())
 				} else {
@@ -66,7 +66,7 @@ func (tx *TX) writeToSocket() {
 			break
 		}
 	}
-	tx.vnic.resources.Logger().Debug("Connection Write for ", tx.vnic.name, " ended.")
+	tx.vnic.resources.Logger().Debug("TX for ", tx.vnic.name, " ended.")
 	tx.vnic.Shutdown()
 }
 

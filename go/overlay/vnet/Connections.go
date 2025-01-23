@@ -1,4 +1,4 @@
-package switching
+package vnet
 
 import (
 	"github.com/saichler/layer8/go/overlay/health"

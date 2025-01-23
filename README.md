@@ -118,7 +118,19 @@ The above is quantified to a **huge amount** of time, effort & money that is **r
 Falling, at any step, to one of those **Potholes** is **Magnitude** the cost of **Insight 1**.
 
 # Exiting the analogy and Back to Micro Services.
+By now, you have your **Application** in mind and 
+what are the different Micro Services under the hood. 
+You understand the challenges via the analogy, so now it is time to get technical. 
 
+## Kubernetes
+Will use Kubernetes as it is the most common container manager our there, although **Micro Services** 
+can also be implemented with **Docker** or even without any containers, just meer multi processes.
+
+<span style="color:#4080FF">Note: Layer8 is **agnostic** to Kubernetes, Docker or plain processes.</span>
+
+## Challenge #1 CNI, Core DNS & Kube Proxy
+Post installing Kubernetes, you must install the CNI (Container Network Interface) 
+that will assign an **IP Address** to each container instance. Configuring the CNI is a challenge by
 
 # <Work in progress, following is just some notes...>
 

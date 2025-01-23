@@ -97,6 +97,6 @@ func (rx *RX) notifyRawDataListener() {
 			}
 		}
 	}
-	rx.vnic.resources.Logger().Debug("notify data listener for ", rx.vnic.name, " Ended")
+	rx.vnic.resources.Logger().Debug("ND for ", rx.vnic.name, " has Ended")
 	rx.vnic.Shutdown()
 }

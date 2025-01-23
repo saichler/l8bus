@@ -1,6 +1,7 @@
 package vnic
 
 import (
+	"errors"
 	"github.com/google/uuid"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
@@ -62,6 +63,7 @@ func (vnic *VirtualNetworkInterface) Start() {
 	} else {
 		vnic.receiveConnection()
 	}
+	vnic.name = vnic.resources.Config().LocalAlias + " -->> " + vnic.resources.Config().RemoteAlias
 }
 
 func (vnic *VirtualNetworkInterface) connectToSwitch() {
@@ -69,7 +71,7 @@ func (vnic *VirtualNetworkInterface) connectToSwitch() {
 	vnic.components.start()
 }
 
-func (vnic *VirtualNetworkInterface) connect() {
+func (vnic *VirtualNetworkInterface) connect() error {
 	// Dial the destination and validate the secret and key
 	destination := protocol.MachineIP
 	if protocol.UsingContainers {
@@ -82,15 +84,16 @@ func (vnic *VirtualNetworkInterface) connect() {
 	// Try to dial to the switch
 	conn, err := vnic.resources.Security().CanDial(destination, vnic.resources.Config().SwitchPort)
 	if err != nil {
-		panic("Error connecting to the switch: " + err.Error())
+		return errors.New("Error connecting to the vnet: " + err.Error())
 	}
 	// Verify that the switch accepts this connection
 	err = vnic.resources.Security().ValidateConnection(conn, vnic.resources.Config())
 	if err != nil {
-		panic("Error validating connection: " + err.Error())
+		return errors.New("Error validating connection: " + err.Error())
 	}
 	vnic.conn = conn
 	vnic.resources.Config().Address = conn.LocalAddr().String()
+	return nil
 }
 
 func (vnic *VirtualNetworkInterface) receiveConnection() {
@@ -99,7 +102,13 @@ func (vnic *VirtualNetworkInterface) receiveConnection() {
 	vnic.components.start()
 }
 
-func (vnic *VirtualNetworkInterface) Shutdown() {}
+func (vnic *VirtualNetworkInterface) Shutdown() {
+	vnic.running = false
+	if vnic.conn != nil {
+		vnic.conn.Close()
+	}
+	vnic.components.shutdown()
+}
 
 func (vnic *VirtualNetworkInterface) Name() string {
 	if vnic.name == "" {
@@ -123,6 +132,9 @@ func (vnic *VirtualNetworkInterface) Resources() interfaces.IResources {
 }
 
 func (vnic *VirtualNetworkInterface) reconnect() {
+	if !vnic.running {
+		return
+	}
 	vnic.connMtx.Lock()
 	defer vnic.connMtx.Unlock()
 	if time.Now().Unix()-vnic.last_reconnect_attempt < 5 {
@@ -130,13 +142,16 @@ func (vnic *VirtualNetworkInterface) reconnect() {
 	}
 	vnic.last_reconnect_attempt = time.Now().Unix()
 
-	vnic.resources.Logger().Info("***** Reconnecting to the switch *****")
+	vnic.resources.Logger().Info("***** Trying to reconnect to ", vnic.resources.Config().RemoteAlias, " *****")
 
 	if vnic.conn != nil {
 		vnic.conn.Close()
 	}
 
-	vnic.connect()
-
-	vnic.resources.Logger().Info("***** Reconnected to the switch *****")
+	err := vnic.connect()
+	if err != nil {
+		vnic.resources.Logger().Error("***** Failed to reconnect to ", vnic.resources.Config().RemoteAlias, " *****")
+	} else {
+		vnic.resources.Logger().Error("***** Reconnected to ", vnic.resources.Config().RemoteAlias, " *****")
+	}
 }

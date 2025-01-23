@@ -62,12 +62,12 @@ func (this *HealthCenter) UuidsForTopic(topic string) map[string]bool {
 	return result
 }
 
-func (this *HealthCenter) AllPoints() []*types.HealthPoint {
-	result := make([]*types.HealthPoint, 0)
+func (this *HealthCenter) AllPoints() map[string]*types.HealthPoint {
+	result := make(map[string]*types.HealthPoint)
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
-	for _, v := range this.statuses {
-		result = append(result, v)
+	for k, v := range this.statuses {
+		result[k] = v
 	}
 	return result
 }

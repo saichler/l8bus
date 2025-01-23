@@ -36,9 +36,21 @@ func tear() {
 
 func TestPrintTopology(t *testing.T) {
 	defer reset("TestPrintTopology")
-	health.Health(eg1.Resources()).Print()
-	health.Health(eg3.Resources()).Print()
+	health.Health(eg5.Resources()).Print()
+	health.Health(eg4.Resources()).Print()
 	health.Health(sw1.Resources()).Print()
+	eg4Points := health.Health(eg4.Resources()).AllPoints()
+	eg5Points := health.Health(eg5.Resources()).AllPoints()
+	if len(eg5Points) != len(eg4Points) {
+		log.Fail("Expected health points to be equal")
+		return
+	}
+	for k, _ := range eg4Points {
+		delete(eg5Points, k)
+	}
+	if len(eg5Points) != 0 {
+		log.Fail("Expected health points to be empty")
+	}
 }
 
 func TestSendMultiCast(t *testing.T) {

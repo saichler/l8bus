@@ -1,4 +1,4 @@
-package switching
+package vnet
 
 import (
 	"github.com/saichler/layer8/go/overlay/health"
@@ -11,12 +11,12 @@ import (
 
 type SwitchTable struct {
 	conns         *Connections
-	switchService *SwitchService
+	switchService *VNet
 	routes        map[string]string
 	desc          string
 }
 
-func newSwitchTable(switchService *SwitchService) *SwitchTable {
+func newSwitchTable(switchService *VNet) *SwitchTable {
 	switchTable := &SwitchTable{}
 	switchTable.conns = newConnections(switchService.resources.Logger())
 	switchTable.switchService = switchService

@@ -2,7 +2,7 @@ package tests
 
 import (
 	"github.com/saichler/layer8/go/overlay/protocol"
-	"github.com/saichler/layer8/go/overlay/switching"
+	"github.com/saichler/layer8/go/overlay/vnet"
 	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
 	. "github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/share/logger"
@@ -13,8 +13,8 @@ import (
 )
 
 var log = logger.NewLoggerImpl(&logger.FmtLogMethod{})
-var sw1 *switching.SwitchService
-var sw2 *switching.SwitchService
+var sw1 *vnet.VNet
+var sw2 *vnet.VNet
 var eg1 IVirtualNetworkInterface
 var eg2 IVirtualNetworkInterface
 var eg3 IVirtualNetworkInterface
@@ -51,10 +51,10 @@ func shutdownTopology() {
 	sleep()
 }
 
-func createSwitch(port uint32, name string) *switching.SwitchService {
+func createSwitch(port uint32, name string) *vnet.VNet {
 	res := resources.NewDefaultResources(log, name)
 	res.Config().SwitchPort = port
-	sw := switching.NewSwitchService(res)
+	sw := vnet.NewVNet(res)
 	sw.Start()
 	return sw
 }
@@ -86,8 +86,8 @@ func createEdge(port uint32, name string, addTestTopic bool) IVirtualNetworkInte
 	return vnic
 }
 
-func connectSwitches(s1, s2 *switching.SwitchService) {
-	s1.Switch2Switch("127.0.0.1", s2.Resources().Config().SwitchPort)
+func connectSwitches(s1, s2 *vnet.VNet) {
+	s1.ConnectNetworks("127.0.0.1", s2.Resources().Config().SwitchPort)
 }
 
 func sleep() {
