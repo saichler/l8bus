@@ -85,7 +85,7 @@ func (tx *TX) Send(data []byte) error {
 // Do is wrapping a protobuf with a secure message and send it to the switch
 func (tx *TX) Do(action types.Action, destination string, pb proto.Message) error {
 	// Create message payload
-	data, err := tx.vnic.protocol.CreateMessageFor(types.Priority_P0, action, tx.vnic.resources.Config().Local_Uuid,
+	data, err := tx.vnic.protocol.CreateMessageFor(types.Priority_P0, action, tx.vnic.resources.Config().LocalUuid,
 		tx.vnic.resources.Config().RemoteUuid, destination, pb)
 	if err != nil {
 		tx.vnic.resources.Logger().Error("Failed to create message:", err)

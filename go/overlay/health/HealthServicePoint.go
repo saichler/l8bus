@@ -3,6 +3,7 @@ package health
 import (
 	"github.com/saichler/layer8/go/types"
 	"github.com/saichler/shared/go/share/interfaces"
+	types2 "github.com/saichler/shared/go/types"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -43,6 +44,9 @@ func (this *HealthServicePoint) Delete(pb proto.Message, vnic interfaces.IVirtua
 	return nil, nil
 }
 func (this *HealthServicePoint) Get(pb proto.Message, vnic interfaces.IVirtualNetworkInterface) (proto.Message, error) {
+	return nil, nil
+}
+func (this *HealthServicePoint) Failed(pb proto.Message, vnic interfaces.IVirtualNetworkInterface, msg *types2.Message) (proto.Message, error) {
 	return nil, nil
 }
 func (this *HealthServicePoint) EndPoint() string {

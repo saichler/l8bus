@@ -24,7 +24,7 @@ func (this *VNet) ConnectNetworks(host string, destPort uint32) error {
 
 	config := resources.Config()
 	config.SwitchPort = destPort
-	config.Local_Uuid = this.resources.Config().Local_Uuid
+	config.LocalUuid = this.resources.Config().LocalUuid
 	config.Topics = resources.ServicePoints().Topics()
 	config.ForceExternal = true
 

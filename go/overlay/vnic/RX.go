@@ -93,7 +93,8 @@ func (rx *RX) notifyRawDataListener() {
 					continue
 				}
 				// Otherwise call the handler per the action & the type
-				rx.vnic.resources.ServicePoints().Handle(pb, msg.Action, rx.vnic)
+
+				rx.vnic.resources.ServicePoints().Handle(pb, msg.Action, rx.vnic, msg)
 			}
 		}
 	}

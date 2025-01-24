@@ -1,3 +1,5 @@
+//go:build unit
+
 package tests
 
 import (
@@ -6,7 +8,6 @@ import (
 	"github.com/saichler/shared/go/tests/infra"
 	"github.com/saichler/shared/go/types"
 	"testing"
-	"time"
 )
 
 func TestMain(m *testing.M) {
@@ -77,7 +78,7 @@ func TestSendMultiCast(t *testing.T) {
 func TestUniCast(t *testing.T) {
 	defer reset("TestUniCast")
 	pb := &tests.TestProto{}
-	err := eg2.Do(types.Action_POST, eg3.Resources().Config().Local_Uuid, pb)
+	err := eg2.Do(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
 	if err != nil {
 		log.Fail(t, err)
 		return
@@ -93,7 +94,7 @@ func TestUniCast(t *testing.T) {
 func TestReconnect(t *testing.T) {
 	defer reset("TestReconnect")
 	pb := &tests.TestProto{}
-	err := eg5.Do(types.Action_POST, eg3.Resources().Config().Local_Uuid, pb)
+	err := eg5.Do(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
 	if err != nil {
 		log.Fail(t, err)
 		return
@@ -112,9 +113,9 @@ func TestReconnect(t *testing.T) {
 	data := make([]byte, eg5.Resources().Config().MaxDataSize+1)
 	eg5.Send(data)
 
-	err = eg5.Do(types.Action_POST, eg3.Resources().Config().Local_Uuid, pb)
-	err = eg5.Do(types.Action_POST, eg3.Resources().Config().Local_Uuid, pb)
-	err = eg5.Do(types.Action_POST, eg3.Resources().Config().Local_Uuid, pb)
+	err = eg5.Do(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
+	err = eg5.Do(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
+	err = eg5.Do(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
 	if err != nil {
 		log.Fail(t, err)
 		return
@@ -131,7 +132,7 @@ func TestReconnect(t *testing.T) {
 func TestDestinationUnreachable(t *testing.T) {
 	defer reset("TestDestinationUnreachable")
 	pb := &tests.TestProto{}
-	err := eg2.Do(types.Action_POST, eg4.Resources().Config().Local_Uuid, pb)
+	err := eg2.Do(types.Action_POST, eg4.Resources().Config().LocalUuid, pb)
 	if err != nil {
 		log.Fail(t, err)
 		return
@@ -146,12 +147,17 @@ func TestDestinationUnreachable(t *testing.T) {
 	log.Info("********* Shutting Down")
 	eg4.Shutdown()
 
-	time.Sleep(time.Second * 7)
+	sleep()
 
-	err = eg2.Do(types.Action_POST, eg4.Resources().Config().Local_Uuid, pb)
+	err = eg2.Do(types.Action_POST, eg4.Resources().Config().LocalUuid, pb)
 	if err != nil {
 		log.Fail(t, err)
 		return
 	}
+
 	sleep()
+	if tsps["eg2"].FailedNumber != 1 {
+		log.Fail(t, "eg2", " Fail count does not equal 1")
+		return
+	}
 }

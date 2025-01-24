@@ -25,6 +25,10 @@ func New(resources interfaces.IResources) *Protocol {
 	return p
 }
 
+func (this *Protocol) Serializer() interfaces.ISerializer {
+	return this.serializer
+}
+
 func (this *Protocol) MessageOf(data []byte) (*types.Message, error) {
 	msg, err := this.serializer.Unmarshal(data[109:], "Message", this.resources.Registry())
 	if err != nil {
@@ -74,6 +78,10 @@ func (this *Protocol) CreateMessageFor(priority types.Priority, action types.Act
 	msg.Data = encData
 	msg.Type = reflect.ValueOf(pb).Elem().Type().Name()
 	msg.Action = action
+	return this.DataFromMessage(msg)
+}
+
+func (this *Protocol) DataFromMessage(msg *types.Message) ([]byte, error) {
 	//Now serialize the message
 	msgData, err := this.serializer.Marshal(msg, nil)
 	if err != nil {

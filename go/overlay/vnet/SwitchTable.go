@@ -20,14 +20,14 @@ func newSwitchTable(switchService *VNet) *SwitchTable {
 	switchTable := &SwitchTable{}
 	switchTable.conns = newConnections(switchService.resources.Logger())
 	switchTable.switchService = switchService
-	switchTable.desc = "SwitchTable (" + switchService.resources.Config().Local_Uuid + ") - "
+	switchTable.desc = "SwitchTable (" + switchService.resources.Config().LocalUuid + ") - "
 	return switchTable
 }
 
 func (switchTable *SwitchTable) sendToAll(topic string, action types.Action, pb proto.Message) {
 	conns := switchTable.conns.all()
-	data, err := switchTable.switchService.protocol.CreateMessageFor(types.Priority_P0, action, switchTable.switchService.resources.Config().Local_Uuid,
-		switchTable.switchService.resources.Config().Local_Uuid, topic, pb)
+	data, err := switchTable.switchService.protocol.CreateMessageFor(types.Priority_P0, action, switchTable.switchService.resources.Config().LocalUuid,
+		switchTable.switchService.resources.Config().LocalUuid, topic, pb)
 	if err != nil {
 		switchTable.switchService.resources.Logger().Error("Failed to create message to send to all: ", err)
 		return
@@ -53,7 +53,7 @@ func (switchTable *SwitchTable) addVNic(vnic interfaces.IVirtualNetworkInterface
 	hp := &types2.HealthPoint{}
 	hp.Alias = config.RemoteAlias
 	hp.AUuid = config.RemoteUuid
-	hp.ZUuid = config.Local_Uuid
+	hp.ZUuid = config.LocalUuid
 	hp.Services = vnic.Resources().Config().Topics
 
 	hc := health.Health(switchTable.switchService.resources)
@@ -67,7 +67,7 @@ func (switchTable *SwitchTable) addVNic(vnic interfaces.IVirtualNetworkInterface
 func (switchTable *SwitchTable) ServiceUuids(destination, sourceSwitch string) map[string]bool {
 	h := health.Health(switchTable.switchService.resources)
 	uuidsMap := h.UuidsForTopic(destination)
-	if uuidsMap != nil && sourceSwitch != switchTable.switchService.resources.Config().Local_Uuid {
+	if uuidsMap != nil && sourceSwitch != switchTable.switchService.resources.Config().LocalUuid {
 		// When the message source is not within this switch,
 		// we should not publish to adjacent as the overlay is o one hope
 		// publish.

@@ -1,3 +1,5 @@
+//go:build scale
+
 package tests
 
 import (
@@ -14,7 +16,7 @@ func scaleTest(size, exp int, timeout int64, t *testing.T) bool {
 	for i := 0; i < size; i++ {
 		pb := &tests.TestProto{}
 		pb.Int32 = int32(i)
-		err := eg2.Do(types.Action_POST, eg3.Resources().Config().Local_Uuid, pb)
+		err := eg2.Do(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
 		if err != nil {
 			log.Fail(t, err)
 			return false
@@ -47,7 +49,7 @@ func TestScale(t *testing.T) {
 	if !ok {
 		return
 	}
-	
+
 	exp += 10000
 	ok = scaleTest(10000, exp, 2, t)
 	if !ok {
