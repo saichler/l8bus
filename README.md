@@ -1,5 +1,17 @@
 # ***Introducing Layer 8, Micro Service Layer into the OSI model***
 
+# Technical Overview for Developers
+**Micro Services**, implemented with **Kubernetes** or **Docker**, 
+is introducing an **Internal Integration** challenge between the **Containers**. 
+Itemizing the challenges of networking, security, API, stateful vs. statless, 
+horizontally scaling, high availability & more, indicates there is a large, missing, 
+infrastructure that is causing companies to spend huge amount of resources to re-develop
+every time.
+
+**Layer8** is attempting to cover the gap by introducing secure, seamless, 
+networking & API invocation between **Micro Services**, alongside built-in features & patterns
+for the modern stateful & stateless services.
+
 # Overview
 Roughly until 2013, an **Application** code was usually running inside a single process. 
 Shared data & services between threads was usually done via a **Singleton** and the challenges with 
