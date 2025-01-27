@@ -1,16 +1,20 @@
 # ***Introducing Layer 8, Micro Service Layer into the OSI model***
+When Steam Deck x86 gaming handheld was released on Feb-2022, the Specs weren't impressive. 
+A GPU that tops at 15W vs. gaming desktops GPUs that sometime tops at 10x then that.
+No one imagined that 2 years later, AAA games will be able to run at a decent frame rate on
+the steam deck hardware just via software optimization... **Just putting this out there**.
 
 # Technical Overview for Developers
 **Micro Services**, implemented with **Kubernetes** or **Docker**, 
 is introducing an **Internal Integration** challenge between the **Containers**. 
 Itemizing the challenges of networking, security, API, stateful vs. statless, 
-horizontally scaling, high availability & more, indicates there is a large, missing, 
-infrastructure that is causing companies to spend huge amount of resources to re-develop
-every time.
+horizontally scaling, high availability & etc., indicates there is a large, missing, 
+infrastructure piece that is causing companies to spend huge amount of resources & money to re-develop
+every time. Equivalent to inventing a Language every time, using the same alphabet.
 
-**Layer8** is attempting to cover the gap by introducing secure, seamless, 
-networking & API invocation between **Micro Services**, alongside built-in features & patterns
-for the modern stateful & stateless services.
+**Layer8** is attempting to cover the gap by introducing abstraction and encapsulation of secure, seamless, 
+networking & API invocation between **Micro Services**, alongside built-in features & design patterns
+for the modern stateful & stateless services. 
 
 # Overview
 Roughly until 2013, an **Application** code was usually running inside a single process. 
