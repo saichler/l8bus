@@ -106,3 +106,10 @@ func (this *Connections) filterExternals(uuids map[string]bool) {
 		delete(uuids, uuid)
 	}
 }
+
+func (this *Connections) isInterval(uuid string) bool {
+	this.mtx.RLock()
+	defer this.mtx.RUnlock()
+	_, ok := this.internal[uuid]
+	return ok
+}

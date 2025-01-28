@@ -54,6 +54,7 @@ func (switchTable *SwitchTable) addVNic(vnic interfaces.IVirtualNetworkInterface
 	hp.Alias = config.RemoteAlias
 	hp.AUuid = config.RemoteUuid
 	hp.ZUuid = config.LocalUuid
+	hp.Status = types2.State_Up
 	hp.Services = vnic.Resources().Config().Topics
 
 	hc := health.Health(switchTable.switchService.resources)

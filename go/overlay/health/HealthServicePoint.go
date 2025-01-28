@@ -35,6 +35,8 @@ func (this *HealthServicePoint) Post(pb proto.Message, vnic interfaces.IVirtualN
 	return nil, nil
 }
 func (this *HealthServicePoint) Put(pb proto.Message, vnic interfaces.IVirtualNetworkInterface) (proto.Message, error) {
+	hp := pb.(*types.HealthPoint)
+	this.healthCenter.Update(hp)
 	return nil, nil
 }
 func (this *HealthServicePoint) Patch(pb proto.Message, vnic interfaces.IVirtualNetworkInterface) (proto.Message, error) {

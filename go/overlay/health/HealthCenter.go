@@ -38,6 +38,22 @@ func (this *HealthCenter) Add(healthPoint *types.HealthPoint) {
 	}
 }
 
+func (this *HealthCenter) Update(healthPoint *types.HealthPoint) {
+	this.mtx.Lock()
+	defer this.mtx.Unlock()
+	this.statuses[healthPoint.AUuid] = healthPoint
+	if healthPoint.Services != nil && len(healthPoint.Services) > 0 {
+		for topic, _ := range healthPoint.Services {
+			uuids, ok := this.services[topic]
+			if !ok {
+				uuids = make(map[string]bool)
+				this.services[topic] = uuids
+			}
+			uuids[healthPoint.AUuid] = true
+		}
+	}
+}
+
 func (this *HealthCenter) ZSide(uuid string) string {
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
@@ -46,6 +62,23 @@ func (this *HealthCenter) ZSide(uuid string) string {
 		return st.ZUuid
 	}
 	return ""
+}
+
+func (this *HealthCenter) GetState(uuid string) *types.HealthPoint {
+	this.mtx.RLock()
+	defer this.mtx.RUnlock()
+	return this.statuses[uuid]
+}
+
+func (this *HealthCenter) SetState(uuid string, state types.State) (*types.HealthPoint, bool) {
+	this.mtx.RLock()
+	defer this.mtx.RUnlock()
+	st, ok := this.statuses[uuid]
+	if ok && st.Status != state {
+		st.Status = state
+		return st, true
+	}
+	return st, false
 }
 
 func (this *HealthCenter) UuidsForTopic(topic string) map[string]bool {

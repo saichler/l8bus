@@ -6,9 +6,11 @@ import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
+	types2 "github.com/saichler/layer8/go/types"
 	"github.com/saichler/shared/go/share/interfaces"
 	resources2 "github.com/saichler/shared/go/share/resources"
-	"github.com/saichler/shared/go/share/string_utils"
+	"github.com/saichler/shared/go/share/strings"
+	"github.com/saichler/shared/go/types"
 	"google.golang.org/protobuf/proto"
 	"net"
 	"strconv"
@@ -168,12 +170,12 @@ func (this *VNet) HandleData(data []byte, vnic interfaces.IVirtualNetworkInterfa
 			//The destination is a single port
 			_, p := this.switchTable.conns.getConnection(destination, true, this.resources)
 			if p == nil {
-				this.Failed(data, vnic, string_utils.New("Cannot find destination port for ", destination).String())
+				this.Failed(data, vnic, strings.New("Cannot find destination port for ", destination).String())
 				return
 			}
 			err := p.Send(data)
 			if err != nil {
-				this.Failed(data, vnic, string_utils.New("Error sending data:", err.Error()).String())
+				this.Failed(data, vnic, strings.New("Error sending data:", err.Error()).String())
 				return
 			}
 		}
@@ -212,6 +214,13 @@ func (this *VNet) publish(pb proto.Message) {
 }
 
 func (this *VNet) ShutdownVNic(vnic interfaces.IVirtualNetworkInterface) {
+	h := health.Health(this.resources)
+	uuid := vnic.Resources().Config().RemoteUuid
+	hs, updated := h.SetState(uuid, types2.State_Down)
+	if updated {
+		this.resources.Logger().Trace(this.resources.Config().LocalAlias, " Updated health state: ", hs.Alias, " to ", hs.Status)
+		this.switchTable.sendToAll(health.TOPIC, types.Action_PUT, hs)
+	}
 }
 
 func (this *VNet) switchDataReceived(data []byte, vnic interfaces.IVirtualNetworkInterface) {

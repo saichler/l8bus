@@ -1,9 +1,8 @@
-//go:build unit
-
 package tests
 
 import (
 	"github.com/saichler/layer8/go/overlay/health"
+	types2 "github.com/saichler/layer8/go/types"
 	"github.com/saichler/shared/go/tests"
 	"github.com/saichler/shared/go/tests/infra"
 	"github.com/saichler/shared/go/types"
@@ -158,6 +157,13 @@ func TestDestinationUnreachable(t *testing.T) {
 	sleep()
 	if tsps["eg2"].FailedNumber != 1 {
 		log.Fail(t, "eg2", " Fail count does not equal 1")
+		return
+	}
+
+	h := health.Health(eg2.Resources())
+	eg4h := h.GetState(eg4.Resources().Config().LocalUuid)
+	if eg4h.Status != types2.State_Down {
+		log.Fail(t, "eg4 state", " Not Down")
 		return
 	}
 }

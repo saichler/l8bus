@@ -2,7 +2,7 @@
 When Steam Deck x86 gaming handheld was released on Feb-2022, the Specs weren't impressive. 
 A GPU that tops at 15W vs. gaming desktops GPUs that sometime tops at 10x then that.
 No one imagined that 2 years later, AAA games will be able to run at a decent frame rate on
-the steam deck hardware just via software optimization... **Just putting this out there**.
+the steam deck hardware just via software optimization... **Let's learn the lesson**.
 
 # Technical Overview for Developers
 **Micro Services**, implemented with **Kubernetes** or **Docker**, 

@@ -1,7 +1,7 @@
 package protocol
 
 import (
-	"github.com/saichler/serializer/go/serializers"
+	"github.com/saichler/serializer/go/serialize/serializers"
 	"github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/types"
 	"google.golang.org/protobuf/proto"

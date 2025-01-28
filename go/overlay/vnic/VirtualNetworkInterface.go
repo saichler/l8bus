@@ -6,7 +6,7 @@ import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/shared/go/share/interfaces"
-	"github.com/saichler/shared/go/share/string_utils"
+	"github.com/saichler/shared/go/share/strings"
 	"github.com/saichler/shared/go/types"
 	"google.golang.org/protobuf/proto"
 	"net"
@@ -108,11 +108,14 @@ func (vnic *VirtualNetworkInterface) Shutdown() {
 		vnic.conn.Close()
 	}
 	vnic.components.shutdown()
+	if vnic.resources.DataListener() != nil {
+		vnic.resources.DataListener().ShutdownVNic(vnic)
+	}
 }
 
 func (vnic *VirtualNetworkInterface) Name() string {
 	if vnic.name == "" {
-		vnic.name = string_utils.New(vnic.resources.Config().LocalUuid,
+		vnic.name = strings.New(vnic.resources.Config().LocalUuid,
 			" -->> ",
 			vnic.resources.Config().RemoteUuid).String()
 	}
