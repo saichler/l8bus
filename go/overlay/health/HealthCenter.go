@@ -2,20 +2,24 @@ package health
 
 import (
 	"github.com/saichler/layer8/go/types"
+	"github.com/saichler/reflect/go/reflect/inspect"
+	"github.com/saichler/servicepoints/go/points/cache"
 	"github.com/saichler/shared/go/share/interfaces"
 	"sync"
 )
 
 type HealthCenter struct {
-	mtx       *sync.RWMutex
-	statuses  map[string]*types.HealthPoint
-	services  map[string]map[string]bool
-	resources interfaces.IResources
+	mtx          *sync.RWMutex
+	healthPoints *cache.Cache
+	services     map[string]map[string]bool
+	resources    interfaces.IResources
 }
 
 func newHealthCenter(resources interfaces.IResources) *HealthCenter {
 	hc := &HealthCenter{}
-	hc.statuses = make(map[string]*types.HealthPoint)
+	inspector := inspect.NewIntrospect(resources.Registry())
+	inspector.Inspect(&types.HealthPoint{})
+	hc.healthPoints = cache.NewModelCache("HealthPoint", resources.Config().LocalUuid, nil, inspector)
 	hc.services = make(map[string]map[string]bool)
 	hc.mtx = &sync.RWMutex{}
 	hc.resources = resources
@@ -23,9 +27,9 @@ func newHealthCenter(resources interfaces.IResources) *HealthCenter {
 }
 
 func (this *HealthCenter) Add(healthPoint *types.HealthPoint) {
+	this.healthPoints.Put(healthPoint.AUuid, healthPoint)
 	this.mtx.Lock()
 	defer this.mtx.Unlock()
-	this.statuses[healthPoint.AUuid] = healthPoint
 	if healthPoint.Services != nil && len(healthPoint.Services) > 0 {
 		for topic, _ := range healthPoint.Services {
 			uuids, ok := this.services[topic]
@@ -39,9 +43,13 @@ func (this *HealthCenter) Add(healthPoint *types.HealthPoint) {
 }
 
 func (this *HealthCenter) Update(healthPoint *types.HealthPoint) {
+	err := this.healthPoints.Patch(healthPoint.AUuid, healthPoint)
+	if err != nil {
+		this.resources.Logger().Error("Error updating health point ", err)
+		return
+	}
 	this.mtx.Lock()
 	defer this.mtx.Unlock()
-	this.statuses[healthPoint.AUuid] = healthPoint
 	if healthPoint.Services != nil && len(healthPoint.Services) > 0 {
 		for topic, _ := range healthPoint.Services {
 			uuids, ok := this.services[topic]
@@ -55,30 +63,16 @@ func (this *HealthCenter) Update(healthPoint *types.HealthPoint) {
 }
 
 func (this *HealthCenter) ZSide(uuid string) string {
-	this.mtx.RLock()
-	defer this.mtx.RUnlock()
-	st, ok := this.statuses[uuid]
+	hp, ok := this.healthPoints.Get(uuid).(*types.HealthPoint)
 	if ok {
-		return st.ZUuid
+		return hp.ZUuid
 	}
 	return ""
 }
 
-func (this *HealthCenter) GetState(uuid string) *types.HealthPoint {
-	this.mtx.RLock()
-	defer this.mtx.RUnlock()
-	return this.statuses[uuid]
-}
-
-func (this *HealthCenter) SetState(uuid string, state types.State) (*types.HealthPoint, bool) {
-	this.mtx.RLock()
-	defer this.mtx.RUnlock()
-	st, ok := this.statuses[uuid]
-	if ok && st.Status != state {
-		st.Status = state
-		return st, true
-	}
-	return st, false
+func (this *HealthCenter) GetHealthPoint(uuid string) *types.HealthPoint {
+	hp, _ := this.healthPoints.Get(uuid).(*types.HealthPoint)
+	return hp
 }
 
 func (this *HealthCenter) UuidsForTopic(topic string) map[string]bool {
@@ -95,26 +89,18 @@ func (this *HealthCenter) UuidsForTopic(topic string) map[string]bool {
 	return result
 }
 
-func (this *HealthCenter) AllPoints() map[string]*types.HealthPoint {
-	result := make(map[string]*types.HealthPoint)
-	this.mtx.RLock()
-	defer this.mtx.RUnlock()
-	for k, v := range this.statuses {
-		result[k] = v
-	}
-	return result
+func healthPoint(item interface{}) interface{} {
+	hp := item.(*types.HealthPoint)
+	return hp
 }
 
-func (this *HealthCenter) Print() {
-	this.mtx.RLock()
-	defer this.mtx.RUnlock()
-	this.resources.Logger().Info("** HealthCenter ", this.resources.Config().LocalAlias)
-	for _, hp := range this.statuses {
-		this.resources.Logger().Info("** -- ", hp.Alias)
-		for svc, _ := range hp.Services {
-			this.resources.Logger().Info("** ---- ", svc)
-		}
+func (this *HealthCenter) All() map[string]*types.HealthPoint {
+	uuids := this.healthPoints.Collect(healthPoint)
+	result := make(map[string]*types.HealthPoint)
+	for k, v := range uuids {
+		result[k] = v.(*types.HealthPoint)
 	}
+	return result
 }
 
 func Health(resource interfaces.IResources) *HealthCenter {

@@ -28,14 +28,18 @@ type VNet struct {
 
 func NewVNet(resources interfaces.IResources) *VNet {
 	net := &VNet{}
-	resources.SetDataListener(net)
-	net.resources = resources
-	net.protocol = protocol.New(resources)
+	net.resources = resources2.NewResources(resources.Registry(),
+		resources.Security(),
+		resources.ServicePoints(),
+		resources.Logger(),
+		net,
+		resources.Serializer(interfaces.BINARY), resources.Config())
+	net.protocol = protocol.New(net.resources)
 	net.running = true
 	net.resources.Config().LocalUuid = uuid.New().String()
 	net.switchTable = newSwitchTable(net)
 	health.RegisterHealth(net.resources)
-	net.resources.Config().Topics = resources.ServicePoints().Topics()
+	net.resources.Config().Topics = net.resources.ServicePoints().Topics()
 	return net
 }
 
@@ -99,12 +103,20 @@ func (this *VNet) connect(conn net.Conn) {
 		return
 	}
 
+	config := &types.VNicConfig{MaxDataSize: resources2.DEFAULT_MAX_DATA_SIZE,
+		RxQueueSize: resources2.DEFAULT_QUEUE_SIZE,
+		TxQueueSize: resources2.DEFAULT_QUEUE_SIZE,
+		LocalAlias:  this.resources.Config().LocalAlias,
+		LocalUuid:   this.resources.Config().LocalUuid,
+		Topics:      map[string]bool{}}
+
 	resources := resources2.NewResources(this.resources.Registry(),
 		this.resources.Security(),
 		this.resources.ServicePoints(),
 		this.resources.Logger(),
-		this.resources.Config().LocalAlias)
-	resources.SetDataListener(this)
+		this,
+		this.resources.Serializer(interfaces.BINARY),
+		config)
 
 	vnic := vnic2.NewVirtualNetworkInterface(resources, conn)
 	vnic.Resources().Config().LocalUuid = this.resources.Config().LocalUuid
@@ -216,11 +228,14 @@ func (this *VNet) publish(pb proto.Message) {
 func (this *VNet) ShutdownVNic(vnic interfaces.IVirtualNetworkInterface) {
 	h := health.Health(this.resources)
 	uuid := vnic.Resources().Config().RemoteUuid
-	hs, updated := h.SetState(uuid, types2.State_Down)
-	if updated {
-		this.resources.Logger().Trace(this.resources.Config().LocalAlias, " Updated health state: ", hs.Alias, " to ", hs.Status)
-		this.switchTable.sendToAll(health.TOPIC, types.Action_PUT, hs)
+	hp := h.GetHealthPoint(uuid)
+	if hp.Status != types2.State_Down {
+		hp.Status = types2.State_Down
+		h.Update(hp)
+		this.resources.Logger().Trace(this.resources.Config().LocalAlias, " Updated health state: ", hp.Alias, " to ", hp.Status)
+		this.switchTable.sendToAll(health.TOPIC, types.Action_PUT, hp)
 	}
+	this.resources.Logger().Info("Shutdown complete ", this.resources.Config().LocalAlias)
 }
 
 func (this *VNet) switchDataReceived(data []byte, vnic interfaces.IVirtualNetworkInterface) {

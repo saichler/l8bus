@@ -59,7 +59,7 @@ func (switchTable *SwitchTable) addVNic(vnic interfaces.IVirtualNetworkInterface
 
 	hc := health.Health(switchTable.switchService.resources)
 	hc.Add(hp)
-	for _, p := range hc.AllPoints() {
+	for _, p := range hc.All() {
 		vnic.Do(types.Action_POST, health.TOPIC, p)
 	}
 	switchTable.sendToAll(health.TOPIC, types.Action_POST, hp)

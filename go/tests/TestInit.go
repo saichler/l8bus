@@ -4,15 +4,19 @@ import (
 	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/layer8/go/overlay/vnet"
 	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
+	"github.com/saichler/servicepoints/go/points/service_points"
 	. "github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/share/logger"
+	"github.com/saichler/shared/go/share/registry"
 	"github.com/saichler/shared/go/share/resources"
+	"github.com/saichler/shared/go/share/shallow_security"
 	"github.com/saichler/shared/go/tests"
 	"github.com/saichler/shared/go/tests/infra"
+	"github.com/saichler/shared/go/types"
 	"time"
 )
 
-var log = logger.NewLoggerImpl(&logger.FmtLogMethod{})
+var log = logger.NewLoggerDirectImpl(&logger.FmtLogMethod{})
 var sw1 *vnet.VNet
 var sw2 *vnet.VNet
 var eg1 IVirtualNetworkInterface
@@ -52,7 +56,16 @@ func shutdownTopology() {
 }
 
 func createSwitch(port uint32, name string) *vnet.VNet {
-	res := resources.NewDefaultResources(log, name)
+	reg := registry.NewRegistry()
+	security := shallow_security.CreateShallowSecurityProvider()
+	config := &types.VNicConfig{MaxDataSize: resources.DEFAULT_MAX_DATA_SIZE,
+		RxQueueSize: resources.DEFAULT_QUEUE_SIZE,
+		TxQueueSize: resources.DEFAULT_QUEUE_SIZE,
+		LocalAlias:  name,
+		Topics:      map[string]bool{}}
+	sps := service_points.NewServicePoints(reg, config)
+
+	res := resources.NewResources(reg, security, sps, log, nil, nil, config)
 	res.Config().SwitchPort = port
 	sw := vnet.NewVNet(res)
 	sw.Start()
@@ -60,7 +73,16 @@ func createSwitch(port uint32, name string) *vnet.VNet {
 }
 
 func createEdge(port uint32, name string, addTestTopic bool) IVirtualNetworkInterface {
-	resources := resources.NewDefaultResources(log, name)
+	reg := registry.NewRegistry()
+	security := shallow_security.CreateShallowSecurityProvider()
+	config := &types.VNicConfig{MaxDataSize: resources.DEFAULT_MAX_DATA_SIZE,
+		RxQueueSize: resources.DEFAULT_QUEUE_SIZE,
+		TxQueueSize: resources.DEFAULT_QUEUE_SIZE,
+		LocalAlias:  name,
+		Topics:      map[string]bool{}}
+	sps := service_points.NewServicePoints(reg, config)
+
+	resources := resources.NewResources(reg, security, sps, log, nil, nil, config)
 	resources.Config().SwitchPort = port
 	tsps[name] = infra.NewTestServicePointHandler(name)
 

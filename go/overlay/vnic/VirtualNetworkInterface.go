@@ -109,7 +109,7 @@ func (vnic *VirtualNetworkInterface) Shutdown() {
 	}
 	vnic.components.shutdown()
 	if vnic.resources.DataListener() != nil {
-		vnic.resources.DataListener().ShutdownVNic(vnic)
+		go vnic.resources.DataListener().ShutdownVNic(vnic)
 	}
 }
 

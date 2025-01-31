@@ -19,11 +19,7 @@ type HealthServicePoint struct {
 func RegisterHealth(resources interfaces.IResources) {
 	health := &HealthServicePoint{}
 	health.healthCenter = newHealthCenter(resources)
-	ok, err := resources.Registry().Register(&types.HealthPoint{})
-	if !ok {
-		panic(err)
-	}
-	err = resources.ServicePoints().RegisterServicePoint(&types.HealthPoint{}, health)
+	err := resources.ServicePoints().RegisterServicePoint(&types.HealthPoint{}, health)
 	if err != nil {
 		panic(err)
 	}

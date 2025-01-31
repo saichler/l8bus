@@ -36,11 +36,8 @@ func tear() {
 
 func TestPrintTopology(t *testing.T) {
 	defer reset("TestPrintTopology")
-	health.Health(eg5.Resources()).Print()
-	health.Health(eg4.Resources()).Print()
-	health.Health(sw1.Resources()).Print()
-	eg4Points := health.Health(eg4.Resources()).AllPoints()
-	eg5Points := health.Health(eg5.Resources()).AllPoints()
+	eg4Points := health.Health(eg4.Resources()).All()
+	eg5Points := health.Health(eg5.Resources()).All()
 	if len(eg5Points) != len(eg4Points) {
 		log.Fail("Expected health points to be equal")
 		return
@@ -123,7 +120,7 @@ func TestReconnect(t *testing.T) {
 	sleep()
 
 	if tsps["eg3"].PostNumber != 4 {
-		log.Fail(t, "eg3", " Post count does not equal 4 after reconnect")
+		log.Fail(t, "eg3", " Post count does not equal 4 after reconnect ", tsps["eg3"].PostNumber)
 		return
 	}
 }
@@ -161,7 +158,7 @@ func TestDestinationUnreachable(t *testing.T) {
 	}
 
 	h := health.Health(eg2.Resources())
-	eg4h := h.GetState(eg4.Resources().Config().LocalUuid)
+	eg4h := h.GetHealthPoint(eg4.Resources().Config().LocalUuid)
 	if eg4h.Status != types2.State_Down {
 		log.Fail(t, "eg4 state", " Not Down")
 		return
