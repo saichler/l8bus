@@ -2,7 +2,6 @@ package health
 
 import (
 	"github.com/saichler/layer8/go/types"
-	"github.com/saichler/reflect/go/reflect/inspect"
 	"github.com/saichler/servicepoints/go/points/cache"
 	"github.com/saichler/shared/go/share/interfaces"
 	"sync"
@@ -17,9 +16,8 @@ type HealthCenter struct {
 
 func newHealthCenter(resources interfaces.IResources) *HealthCenter {
 	hc := &HealthCenter{}
-	inspector := inspect.NewIntrospect(resources.Registry())
-	inspector.Inspect(&types.HealthPoint{})
-	hc.healthPoints = cache.NewModelCache("HealthPoint", resources.Config().LocalUuid, nil, inspector)
+	resources.Introspector().Inspect(&types.HealthPoint{})
+	hc.healthPoints = cache.NewModelCache(resources.Config().LocalUuid, nil, resources.Introspector())
 	hc.services = make(map[string]map[string]bool)
 	hc.mtx = &sync.RWMutex{}
 	hc.resources = resources
@@ -43,7 +41,7 @@ func (this *HealthCenter) Add(healthPoint *types.HealthPoint) {
 }
 
 func (this *HealthCenter) Update(healthPoint *types.HealthPoint) {
-	err := this.healthPoints.Patch(healthPoint.AUuid, healthPoint)
+	err := this.healthPoints.Update(healthPoint.AUuid, healthPoint)
 	if err != nil {
 		this.resources.Logger().Error("Error updating health point ", err)
 		return

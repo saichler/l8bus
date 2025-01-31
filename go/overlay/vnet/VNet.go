@@ -33,7 +33,8 @@ func NewVNet(resources interfaces.IResources) *VNet {
 		resources.ServicePoints(),
 		resources.Logger(),
 		net,
-		resources.Serializer(interfaces.BINARY), resources.Config())
+		resources.Serializer(interfaces.BINARY), resources.Config(),
+		resources.Introspector())
 	net.protocol = protocol.New(net.resources)
 	net.running = true
 	net.resources.Config().LocalUuid = uuid.New().String()
@@ -116,7 +117,8 @@ func (this *VNet) connect(conn net.Conn) {
 		this.resources.Logger(),
 		this,
 		this.resources.Serializer(interfaces.BINARY),
-		config)
+		config,
+		this.resources.Introspector())
 
 	vnic := vnic2.NewVirtualNetworkInterface(resources, conn)
 	vnic.Resources().Config().LocalUuid = this.resources.Config().LocalUuid

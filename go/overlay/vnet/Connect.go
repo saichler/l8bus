@@ -31,7 +31,8 @@ func (this *VNet) ConnectNetworks(host string, destPort uint32) error {
 		this.resources.Logger(),
 		this,
 		this.resources.Serializer(interfaces.BINARY),
-		config)
+		config,
+		this.resources.Introspector())
 
 	vnic := vnic2.NewVirtualNetworkInterface(resources, conn)
 

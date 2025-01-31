@@ -4,6 +4,7 @@ import (
 	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/layer8/go/overlay/vnet"
 	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
+	"github.com/saichler/reflect/go/reflect/inspect"
 	"github.com/saichler/servicepoints/go/points/service_points"
 	. "github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/share/logger"
@@ -63,9 +64,10 @@ func createSwitch(port uint32, name string) *vnet.VNet {
 		TxQueueSize: resources.DEFAULT_QUEUE_SIZE,
 		LocalAlias:  name,
 		Topics:      map[string]bool{}}
-	sps := service_points.NewServicePoints(reg, config)
+	ins := inspect.NewIntrospect(reg)
+	sps := service_points.NewServicePoints(ins, config)
 
-	res := resources.NewResources(reg, security, sps, log, nil, nil, config)
+	res := resources.NewResources(reg, security, sps, log, nil, nil, config, ins)
 	res.Config().SwitchPort = port
 	sw := vnet.NewVNet(res)
 	sw.Start()
@@ -80,9 +82,10 @@ func createEdge(port uint32, name string, addTestTopic bool) IVirtualNetworkInte
 		TxQueueSize: resources.DEFAULT_QUEUE_SIZE,
 		LocalAlias:  name,
 		Topics:      map[string]bool{}}
-	sps := service_points.NewServicePoints(reg, config)
+	ins := inspect.NewIntrospect(reg)
+	sps := service_points.NewServicePoints(ins, config)
 
-	resources := resources.NewResources(reg, security, sps, log, nil, nil, config)
+	resources := resources.NewResources(reg, security, sps, log, nil, nil, config, ins)
 	resources.Config().SwitchPort = port
 	tsps[name] = infra.NewTestServicePointHandler(name)
 
