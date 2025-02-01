@@ -39,7 +39,7 @@ func NewVNet(resources interfaces.IResources) *VNet {
 	net.running = true
 	net.resources.Config().LocalUuid = uuid.New().String()
 	net.switchTable = newSwitchTable(net)
-	health.RegisterHealth(net.resources)
+	health.RegisterHealth(net.resources, net)
 	net.resources.Config().Topics = net.resources.ServicePoints().Topics()
 	return net
 }
@@ -144,8 +144,8 @@ func (this *VNet) Shutdown() {
 }
 
 func (this *VNet) Failed(data []byte, vnic interfaces.IVirtualNetworkInterface, failMsg string) {
-	this.resources.Logger().Error("Failed Message")
 	msg, err := this.protocol.MessageOf(data)
+	this.resources.Logger().Error("Failed Message ", msg.Action)
 	if err != nil {
 		this.resources.Logger().Error(err)
 		return
@@ -234,8 +234,8 @@ func (this *VNet) ShutdownVNic(vnic interfaces.IVirtualNetworkInterface) {
 	if hp.Status != types2.State_Down {
 		hp.Status = types2.State_Down
 		h.Update(hp)
-		this.resources.Logger().Trace(this.resources.Config().LocalAlias, " Updated health state: ", hp.Alias, " to ", hp.Status)
-		this.switchTable.sendToAll(health.TOPIC, types.Action_PUT, hp)
+		//this.resources.Logger().Trace(this.resources.Config().LocalAlias, " Updated health state: ", hp.Alias, " to ", hp.Status)
+		//this.switchTable.sendToAll(health.TOPIC, types.Action_PUT, hp)
 	}
 	this.resources.Logger().Info("Shutdown complete ", this.resources.Config().LocalAlias)
 }
@@ -258,4 +258,8 @@ func (this *VNet) switchDataReceived(data []byte, vnic interfaces.IVirtualNetwor
 
 func (this *VNet) Resources() interfaces.IResources {
 	return this.resources
+}
+
+func (this *VNet) PropertyChangeNotification(set *types.NotificationSet) {
+	this.switchTable.sendToAll(set.TypeName, types.Action_Notify, set)
 }

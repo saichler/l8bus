@@ -4,6 +4,7 @@ import (
 	"github.com/saichler/layer8/go/types"
 	"github.com/saichler/servicepoints/go/points/cache"
 	"github.com/saichler/shared/go/share/interfaces"
+	types2 "github.com/saichler/shared/go/types"
 	"sync"
 )
 
@@ -14,10 +15,11 @@ type HealthCenter struct {
 	resources    interfaces.IResources
 }
 
-func newHealthCenter(resources interfaces.IResources) *HealthCenter {
+func newHealthCenter(resources interfaces.IResources, listener cache.ICacheListener) *HealthCenter {
 	hc := &HealthCenter{}
-	resources.Introspector().Inspect(&types.HealthPoint{})
-	hc.healthPoints = cache.NewModelCache(resources.Config().LocalUuid, nil, resources.Introspector())
+	rnode, _ := resources.Introspector().Inspect(&types.HealthPoint{})
+	resources.Introspector().AddDecorator(types2.DecoratorType_Primary, []string{"AUuid"}, rnode)
+	hc.healthPoints = cache.NewModelCache(resources.Config().LocalUuid, listener, resources.Introspector())
 	hc.services = make(map[string]map[string]bool)
 	hc.mtx = &sync.RWMutex{}
 	hc.resources = resources

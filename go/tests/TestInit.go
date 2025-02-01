@@ -32,6 +32,26 @@ func init() {
 	protocol.UsingContainers = false
 }
 
+func setup() {
+	setupTopology()
+}
+
+func tear() {
+	shutdownTopology()
+}
+
+func reset(name string) {
+	log.Info("*** ", name, " end ***")
+	for _, t := range tsps {
+		t.PostNumber = 0
+		t.DeleteNumber = 0
+		t.PutNumber = 0
+		t.PatchNumber = 0
+		t.GetNumber = 0
+		t.FailedNumber = 0
+	}
+}
+
 func setupTopology() {
 	sw1 = createSwitch(50000, "sw1")
 	sw2 = createSwitch(50001, "sw2")

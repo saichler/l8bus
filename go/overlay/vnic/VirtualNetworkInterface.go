@@ -49,7 +49,7 @@ func NewVirtualNetworkInterface(resources interfaces.IResources, conn net.Conn) 
 
 	if conn == nil {
 		// Register the health service
-		health.RegisterHealth(vnic.resources)
+		health.RegisterHealth(vnic.resources, nil)
 	}
 
 	return vnic

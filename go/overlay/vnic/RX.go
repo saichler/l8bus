@@ -3,6 +3,7 @@ package vnic
 import (
 	"github.com/saichler/shared/go/share/nets"
 	"github.com/saichler/shared/go/share/queues"
+	"github.com/saichler/shared/go/types"
 )
 
 type RX struct {
@@ -93,8 +94,11 @@ func (rx *RX) notifyRawDataListener() {
 					continue
 				}
 				// Otherwise call the handler per the action & the type
-
-				rx.vnic.resources.ServicePoints().Handle(pb, msg.Action, rx.vnic, msg)
+				if msg.Action == types.Action_Notify {
+					rx.vnic.resources.ServicePoints().Notify(pb, msg.Action, rx.vnic, msg)
+				} else {
+					rx.vnic.resources.ServicePoints().Handle(pb, msg.Action, rx.vnic, msg)
+				}
 			}
 		}
 	}

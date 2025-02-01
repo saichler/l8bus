@@ -1,3 +1,5 @@
+//go:build unit
+
 package tests
 
 import (
@@ -15,38 +17,19 @@ func TestMain(m *testing.M) {
 	tear()
 }
 
-func reset(name string) {
-	log.Info("*** ", name, " end ***")
-	for _, t := range tsps {
-		t.PostNumber = 0
-		t.DeleteNumber = 0
-		t.PutNumber = 0
-		t.PatchNumber = 0
-		t.GetNumber = 0
-	}
-}
-
-func setup() {
-	setupTopology()
-}
-
-func tear() {
-	shutdownTopology()
-}
-
-func TestPrintTopology(t *testing.T) {
+func TestTopology(t *testing.T) {
 	defer reset("TestPrintTopology")
 	eg4Points := health.Health(eg4.Resources()).All()
 	eg5Points := health.Health(eg5.Resources()).All()
 	if len(eg5Points) != len(eg4Points) {
-		log.Fail("Expected health points to be equal")
+		log.Fail(t, "Expected health points to be equal")
 		return
 	}
 	for k, _ := range eg4Points {
 		delete(eg5Points, k)
 	}
 	if len(eg5Points) != 0 {
-		log.Fail("Expected health points to be empty")
+		log.Fail(t, "Expected health points to be empty")
 	}
 }
 

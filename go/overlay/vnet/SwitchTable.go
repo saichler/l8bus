@@ -62,7 +62,7 @@ func (switchTable *SwitchTable) addVNic(vnic interfaces.IVirtualNetworkInterface
 	for _, p := range hc.All() {
 		vnic.Do(types.Action_POST, health.TOPIC, p)
 	}
-	switchTable.sendToAll(health.TOPIC, types.Action_POST, hp)
+	//switchTable.sendToAll(health.TOPIC, types.Action_POST, hp)
 }
 
 func (switchTable *SwitchTable) ServiceUuids(destination, sourceSwitch string) map[string]bool {

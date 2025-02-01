@@ -2,6 +2,7 @@ package health
 
 import (
 	"github.com/saichler/layer8/go/types"
+	"github.com/saichler/servicepoints/go/points/cache"
 	"github.com/saichler/shared/go/share/interfaces"
 	types2 "github.com/saichler/shared/go/types"
 	"google.golang.org/protobuf/proto"
@@ -16,9 +17,9 @@ type HealthServicePoint struct {
 	healthCenter *HealthCenter
 }
 
-func RegisterHealth(resources interfaces.IResources) {
+func RegisterHealth(resources interfaces.IResources, listener cache.ICacheListener) {
 	health := &HealthServicePoint{}
-	health.healthCenter = newHealthCenter(resources)
+	health.healthCenter = newHealthCenter(resources, listener)
 	err := resources.ServicePoints().RegisterServicePoint(&types.HealthPoint{}, health)
 	if err != nil {
 		panic(err)
@@ -36,6 +37,8 @@ func (this *HealthServicePoint) Put(pb proto.Message, vnic interfaces.IVirtualNe
 	return nil, nil
 }
 func (this *HealthServicePoint) Patch(pb proto.Message, vnic interfaces.IVirtualNetworkInterface) (proto.Message, error) {
+	hp := pb.(*types.HealthPoint)
+	this.healthCenter.Update(hp)
 	return nil, nil
 }
 func (this *HealthServicePoint) Delete(pb proto.Message, vnic interfaces.IVirtualNetworkInterface) (proto.Message, error) {
