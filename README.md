@@ -5,10 +5,10 @@ No one imagined that 2 years later, AAA games will be able to run at a decent fr
 the steam deck hardware just via software optimization... **Let's learn the lesson**.
 
 # Base Projects
-Shared Interfaces & Components - https://github.com/saichler/shared/tree/main
-Serializers & Protobuf Object - https://github.com/saichler/serializer/tree/main
-Generic Model Alteration - https://github.com/saichler/reflect/tree/main
-Service Points & Generic Model Cache - https://github.com/saichler/servicepoints
+- Shared Interfaces & Components - https://github.com/saichler/shared/tree/main
+- Serializers & Protobuf Object - https://github.com/saichler/serializer/tree/main
+- Generic Model Alteration - https://github.com/saichler/reflect/tree/main
+- Service Points & Generic Model Cache - https://github.com/saichler/servicepoints
 
 # Technical Overview for Developers
 **Micro Services**, implemented with **Kubernetes** or **Docker**, 
