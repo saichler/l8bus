@@ -1,10 +1,7 @@
-//go:build unit
-
 package tests
 
 import (
 	"github.com/saichler/layer8/go/overlay/health"
-	types2 "github.com/saichler/layer8/go/types"
 	"github.com/saichler/shared/go/tests"
 	"github.com/saichler/shared/go/tests/infra"
 	"github.com/saichler/shared/go/types"
@@ -36,11 +33,12 @@ func TestTopology(t *testing.T) {
 func TestSendMultiCast(t *testing.T) {
 	defer reset("TestSendMultiCast")
 	pb := &tests.TestProto{}
-	err := eg1.Do(types.Action_POST, infra.TEST_TOPIC, pb)
+	err := eg1.Multicast(types.Action_POST, 0, infra.TEST_TOPIC, pb)
 	if err != nil {
 		log.Fail(t, err)
 		return
 	}
+	sleep()
 	sleep()
 
 	for eg, tsp := range tsps {
@@ -57,7 +55,7 @@ func TestSendMultiCast(t *testing.T) {
 func TestUniCast(t *testing.T) {
 	defer reset("TestUniCast")
 	pb := &tests.TestProto{}
-	err := eg2.Do(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
+	err := eg2.Unicast(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
 	if err != nil {
 		log.Fail(t, err)
 		return
@@ -73,7 +71,7 @@ func TestUniCast(t *testing.T) {
 func TestReconnect(t *testing.T) {
 	defer reset("TestReconnect")
 	pb := &tests.TestProto{}
-	err := eg5.Do(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
+	err := eg5.Unicast(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
 	if err != nil {
 		log.Fail(t, err)
 		return
@@ -90,11 +88,11 @@ func TestReconnect(t *testing.T) {
 	//Create a larger than max data
 	//sending it will disconnect the socket and attempt a reconnect
 	data := make([]byte, eg5.Resources().Config().MaxDataSize+1)
-	eg5.Send(data)
+	eg5.SendMessage(data)
 
-	err = eg5.Do(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
-	err = eg5.Do(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
-	err = eg5.Do(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
+	err = eg5.Unicast(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
+	err = eg5.Unicast(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
+	err = eg5.Unicast(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
 	if err != nil {
 		log.Fail(t, err)
 		return
@@ -111,7 +109,7 @@ func TestReconnect(t *testing.T) {
 func TestDestinationUnreachable(t *testing.T) {
 	defer reset("TestDestinationUnreachable")
 	pb := &tests.TestProto{}
-	err := eg2.Do(types.Action_POST, eg4.Resources().Config().LocalUuid, pb)
+	err := eg2.Unicast(types.Action_POST, eg4.Resources().Config().LocalUuid, pb)
 	if err != nil {
 		log.Fail(t, err)
 		return
@@ -128,7 +126,7 @@ func TestDestinationUnreachable(t *testing.T) {
 
 	sleep()
 
-	err = eg2.Do(types.Action_POST, eg4.Resources().Config().LocalUuid, pb)
+	err = eg2.Unicast(types.Action_POST, eg4.Resources().Config().LocalUuid, pb)
 	if err != nil {
 		log.Fail(t, err)
 		return
@@ -142,7 +140,7 @@ func TestDestinationUnreachable(t *testing.T) {
 
 	h := health.Health(eg2.Resources())
 	eg4h := h.GetHealthPoint(eg4.Resources().Config().LocalUuid)
-	if eg4h.Status != types2.State_Down {
+	if eg4h.Status != types.HealthState_Down {
 		log.Fail(t, "eg4 state", " Not Down")
 		return
 	}

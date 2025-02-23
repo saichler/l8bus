@@ -1,6 +1,7 @@
 package vnet
 
 import (
+	"fmt"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/shared/go/share/interfaces"
@@ -56,7 +57,6 @@ func (this *SwitchTable) addVNic(vnic interfaces.IVirtualNetworkInterface) {
 	hp.ZUuid = config.LocalUuid
 	hp.Status = types.HealthState_Up
 	hp.ServiceAreas = vnic.Resources().Config().ServiceAreas
-
 	hc := health.Health(this.switchService.resources)
 	hc.Add(hp)
 
@@ -66,9 +66,10 @@ func (this *SwitchTable) addVNic(vnic interfaces.IVirtualNetworkInterface) {
 	//switchTable.sendToAll(health.TOPIC, types.Action_POST, hp)
 }
 
-func (this *SwitchTable) ServiceUuids(destination, sourceSwitch string, area int32) map[string]bool {
+func (this *SwitchTable) ServiceUuids(area int32, destination, sourceSwitch string) map[string]bool {
 	h := health.Health(this.switchService.resources)
-	uuidsMap := h.UuidsForTopic(destination)
+	uuidsMap := h.UuidsForTopic(area, destination)
+	fmt.Println("Topic:", destination, "UUIds:", uuidsMap)
 	if uuidsMap != nil && sourceSwitch != this.switchService.resources.Config().LocalUuid {
 		// When the message source is not within this switch,
 		// we should not publish to adjacent as the overlay is o one hope

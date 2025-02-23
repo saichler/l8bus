@@ -82,13 +82,12 @@ func createSwitch(port uint32, name string) *vnet.VNet {
 	config := &types.VNicConfig{MaxDataSize: resources.DEFAULT_MAX_DATA_SIZE,
 		RxQueueSize: resources.DEFAULT_QUEUE_SIZE,
 		TxQueueSize: resources.DEFAULT_QUEUE_SIZE,
-		LocalAlias:  name,
-		Topics:      map[string]bool{}}
+		LocalAlias:  name}
 	ins := inspect.NewIntrospect(reg)
 	sps := service_points.NewServicePoints(ins, config)
 
 	res := resources.NewResources(reg, security, sps, log, nil, nil, config, ins)
-	res.Config().SwitchPort = port
+	res.Config().VnetPort = port
 	sw := vnet.NewVNet(res)
 	sw.Start()
 	return sw
@@ -100,18 +99,17 @@ func createEdge(port uint32, name string, addTestTopic bool) IVirtualNetworkInte
 	config := &types.VNicConfig{MaxDataSize: resources.DEFAULT_MAX_DATA_SIZE,
 		RxQueueSize: resources.DEFAULT_QUEUE_SIZE,
 		TxQueueSize: resources.DEFAULT_QUEUE_SIZE,
-		LocalAlias:  name,
-		Topics:      map[string]bool{}}
+		LocalAlias:  name}
 	ins := inspect.NewIntrospect(reg)
 	sps := service_points.NewServicePoints(ins, config)
 
 	resources := resources.NewResources(reg, security, sps, log, nil, nil, config, ins)
-	resources.Config().SwitchPort = port
+	resources.Config().VnetPort = port
 	tsps[name] = infra.NewTestServicePointHandler(name)
 
 	if addTestTopic {
 		sp := resources.ServicePoints()
-		err := sp.RegisterServicePoint(&tests.TestProto{}, tsps[name])
+		err := sp.RegisterServicePoint(0, &tests.TestProto{}, tsps[name])
 		if err != nil {
 			panic(err)
 		}
@@ -132,7 +130,7 @@ func createEdge(port uint32, name string, addTestTopic bool) IVirtualNetworkInte
 }
 
 func connectSwitches(s1, s2 *vnet.VNet) {
-	s1.ConnectNetworks("127.0.0.1", s2.Resources().Config().SwitchPort)
+	s1.ConnectNetworks("127.0.0.1", s2.Resources().Config().VnetPort)
 }
 
 func sleep() {

@@ -43,7 +43,7 @@ func HeaderOf(data []byte) (string, string, string, int32, types.Priority) {
 	//Topic, either than being a uuid can also be a topic/multicast so it might not be full 16 bytes
 	topic := make([]byte, 0)
 	for i := TOPIC_POS; i < TOPIC_POS+UNICAST_ADDRESS_SIZE; i++ {
-		if topic[i] == 0 {
+		if data[i] == 0 {
 			break
 		}
 		topic = append(topic, data[i])

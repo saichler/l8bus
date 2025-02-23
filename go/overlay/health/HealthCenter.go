@@ -10,7 +10,7 @@ import (
 type HealthCenter struct {
 	mtx          *sync.RWMutex
 	healthPoints *cache.Cache
-	services     map[string]map[string]bool
+	services     *types.Areas
 	resources    interfaces.IResources
 }
 
@@ -19,26 +19,40 @@ func newHealthCenter(resources interfaces.IResources, listener cache.ICacheListe
 	rnode, _ := resources.Introspector().Inspect(&types.HealthPoint{})
 	resources.Introspector().AddDecorator(types.DecoratorType_Primary, []string{"AUuid"}, rnode)
 	hc.healthPoints = cache.NewModelCache(resources.Config().LocalUuid, listener, resources.Introspector())
-	hc.services = make(map[string]map[string]bool)
+	hc.services = &types.Areas{}
+	hc.services.AreasMap = make(map[int32]*types.Area)
 	hc.mtx = &sync.RWMutex{}
 	hc.resources = resources
 	return hc
 }
 
-func (this *HealthCenter) Add(healthPoint *types.HealthPoint) {
-	this.healthPoints.Put(healthPoint.AUuid, healthPoint)
+func (this *HealthCenter) updateServices(areas *types.Areas) {
 	this.mtx.Lock()
 	defer this.mtx.Unlock()
-	if healthPoint.Services != nil && len(healthPoint.Services) > 0 {
-		for topic, _ := range healthPoint.Services {
-			uuids, ok := this.services[topic]
+	if areas != nil {
+		for areaId, area := range areas.AreasMap {
+			_, ok := this.services.AreasMap[areaId]
 			if !ok {
-				uuids = make(map[string]bool)
-				this.services[topic] = uuids
+				this.services.AreasMap[areaId] = area
+				continue
 			}
-			uuids[healthPoint.AUuid] = true
+			for topic, addrs := range area.Topics {
+				_, ok := this.services.AreasMap[areaId].Topics[topic]
+				if !ok {
+					this.services.AreasMap[areaId].Topics[topic] = addrs
+					continue
+				}
+				for k, v := range addrs.Uuids {
+					this.services.AreasMap[areaId].Topics[topic].Uuids[k] = v
+				}
+			}
 		}
 	}
+}
+
+func (this *HealthCenter) Add(healthPoint *types.HealthPoint) {
+	this.healthPoints.Put(healthPoint.AUuid, healthPoint)
+	this.updateServices(healthPoint.ServiceAreas)
 }
 
 func (this *HealthCenter) Update(healthPoint *types.HealthPoint) {
@@ -47,18 +61,7 @@ func (this *HealthCenter) Update(healthPoint *types.HealthPoint) {
 		this.resources.Logger().Error("Error updating health point ", err)
 		return
 	}
-	this.mtx.Lock()
-	defer this.mtx.Unlock()
-	if healthPoint.Services != nil && len(healthPoint.Services) > 0 {
-		for topic, _ := range healthPoint.Services {
-			uuids, ok := this.services[topic]
-			if !ok {
-				uuids = make(map[string]bool)
-				this.services[topic] = uuids
-			}
-			uuids[healthPoint.AUuid] = true
-		}
-	}
+	this.updateServices(healthPoint.ServiceAreas)
 }
 
 func (this *HealthCenter) ZSide(uuid string) string {
@@ -74,15 +77,19 @@ func (this *HealthCenter) GetHealthPoint(uuid string) *types.HealthPoint {
 	return hp
 }
 
-func (this *HealthCenter) UuidsForTopic(topic string) map[string]bool {
+func (this *HealthCenter) UuidsForTopic(areaId int32, topic string) map[string]bool {
 	result := make(map[string]bool)
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
-	uuids, ok := this.services[topic]
+	area, ok := this.services.AreasMap[areaId]
 	if !ok {
-		return nil
+		return result
 	}
-	for uuid, _ := range uuids {
+	addrs, ok := area.Topics[topic]
+	if !ok {
+		return result
+	}
+	for uuid, _ := range addrs.Uuids {
 		result[uuid] = true
 	}
 	return result

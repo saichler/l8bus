@@ -30,7 +30,7 @@ func (this *Protocol) Serializer() interfaces.ISerializer {
 }
 
 func (this *Protocol) MessageOf(data []byte) (*types.Message, error) {
-	msg, err := this.serializer.Unmarshal(data[109:], "Message", this.resources.Registry())
+	msg, err := this.serializer.Unmarshal(data[HEADER_SIZE:], "Message", this.resources.Registry())
 	if err != nil {
 		panic(err)
 	}

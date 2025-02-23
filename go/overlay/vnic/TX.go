@@ -6,7 +6,6 @@ import (
 	"github.com/saichler/shared/go/share/nets"
 	"github.com/saichler/shared/go/share/queues"
 	"github.com/saichler/shared/go/types"
-	"google.golang.org/protobuf/proto"
 	"strconv"
 )
 
@@ -96,7 +95,7 @@ func (this *TX) Unicast(action types.Action, destination string, any interface{}
 func (this *TX) Multicast(action types.Action, area int32, topic string, any interface{}, p types.Priority) error {
 	// Create message payload
 	data, err := this.vnic.protocol.CreateMessageFor(area, topic, p, action,
-		this.vnic.resources.Config().LocalUuid, this.vnic.resources.Config().RemoteUuid, pb)
+		this.vnic.resources.Config().LocalUuid, this.vnic.resources.Config().RemoteUuid, any)
 	if err != nil {
 		this.vnic.resources.Logger().Error("Failed to create message:", err)
 		return err

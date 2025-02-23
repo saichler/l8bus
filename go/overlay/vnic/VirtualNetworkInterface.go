@@ -44,7 +44,9 @@ func NewVirtualNetworkInterface(resources interfaces.IResources, conn net.Conn) 
 	vnic.components.addComponent(newRX(vnic))
 	vnic.components.addComponent(newTX(vnic))
 	vnic.resources.Registry().Register(&types.Message{})
-	vnic.resources.Config().LocalUuid = uuid.New().String()
+	if vnic.resources.Config().LocalUuid == "" {
+		vnic.resources.Config().LocalUuid = uuid.New().String()
+	}
 
 	if conn == nil {
 		// Register the health service

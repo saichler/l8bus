@@ -38,8 +38,8 @@ func NewVNet(resources interfaces.IResources) *VNet {
 	net.running = true
 	net.resources.Config().LocalUuid = uuid.New().String()
 	net.switchTable = newSwitchTable(net)
-	health.RegisterHealth(net.resources, net)
 	net.resources.Config().ServiceAreas = net.resources.ServicePoints().Areas()
+	health.RegisterHealth(net.resources, net)
 	return net
 }
 
@@ -193,9 +193,9 @@ func (this *VNet) HandleData(data []byte, vnic interfaces.IVirtualNetworkInterfa
 			}
 		}
 	default:
-		uuidMap := this.switchTable.ServiceUuids(destination, sourceVnet)
+		uuidMap := this.switchTable.ServiceUuids(area, destination, sourceVnet)
 		if uuidMap != nil {
-			this.sendToPorts(uuidMap, data, sourceVnet)
+			this.uniCastToPorts(uuidMap, data, sourceVnet)
 			if destination == health.TOPIC {
 				this.switchDataReceived(data, vnic)
 			}
@@ -216,7 +216,7 @@ func (this *VNet) uniCastToPorts(uuids map[string]bool, data []byte, sourceSwitc
 			if !ok {
 				alreadySent[usedUuid] = true
 				this.resources.Logger().Trace("Sending from ", this.resources.Config().LocalUuid, " to ", usedUuid)
-				port.SendMessage()d(data)
+				port.SendMessage(data)
 			}
 		}
 	}
@@ -230,8 +230,8 @@ func (this *VNet) ShutdownVNic(vnic interfaces.IVirtualNetworkInterface) {
 	h := health.Health(this.resources)
 	uuid := vnic.Resources().Config().RemoteUuid
 	hp := h.GetHealthPoint(uuid)
-	if hp.Status != types2.State_Down {
-		hp.Status = types2.State_Down
+	if hp.Status != types.HealthState_Down {
+		hp.Status = types.HealthState_Down
 		h.Update(hp)
 		//this.resources.Logger().Trace(this.resources.Config().LocalAlias, " Updated health state: ", hp.Alias, " to ", hp.Status)
 		//this.switchTable.sendToAll(health.TOPIC, types.Action_PUT, hp)
@@ -260,5 +260,5 @@ func (this *VNet) Resources() interfaces.IResources {
 }
 
 func (this *VNet) PropertyChangeNotification(set *types.NotificationSet) {
-	this.switchTable.sendToAll(set.TypeName, types.Action_Notify, set)
+	this.switchTable.uniCastToAll(0, set.TypeName, types.Action_Notify, set)
 }
