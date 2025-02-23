@@ -18,9 +18,9 @@ func (this *VNet) ConnectNetworks(host string, destPort uint32) error {
 	config := &types.VNicConfig{MaxDataSize: resources2.DEFAULT_MAX_DATA_SIZE,
 		RxQueueSize:   resources2.DEFAULT_QUEUE_SIZE,
 		TxQueueSize:   resources2.DEFAULT_QUEUE_SIZE,
-		SwitchPort:    destPort,
+		VnetPort:      destPort,
 		LocalUuid:     this.resources.Config().LocalUuid,
-		Topics:        this.resources.ServicePoints().Topics(),
+		ServiceAreas:  this.resources.ServicePoints().Areas(),
 		ForceExternal: true,
 		LocalAlias:    this.resources.Config().LocalAlias,
 	}

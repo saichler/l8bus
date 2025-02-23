@@ -6,7 +6,6 @@ import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
-	types2 "github.com/saichler/layer8/go/types"
 	"github.com/saichler/shared/go/share/interfaces"
 	resources2 "github.com/saichler/shared/go/share/resources"
 	"github.com/saichler/shared/go/share/strings"
@@ -40,7 +39,7 @@ func NewVNet(resources interfaces.IResources) *VNet {
 	net.resources.Config().LocalUuid = uuid.New().String()
 	net.switchTable = newSwitchTable(net)
 	health.RegisterHealth(net.resources, net)
-	net.resources.Config().Topics = net.resources.ServicePoints().Topics()
+	net.resources.Config().ServiceAreas = net.resources.ServicePoints().Areas()
 	return net
 }
 
@@ -56,7 +55,7 @@ func (this *VNet) Start() error {
 }
 
 func (this *VNet) start(err *error) {
-	if this.resources.Config().SwitchPort == 0 {
+	if this.resources.Config().VnetPort == 0 {
 		er := errors.New("Switch Port does not have a port defined")
 		err = &er
 		return
@@ -85,13 +84,13 @@ func (this *VNet) start(err *error) {
 }
 
 func (this *VNet) bind() error {
-	socket, e := net.Listen("tcp", ":"+strconv.Itoa(int(this.resources.Config().SwitchPort)))
+	socket, e := net.Listen("tcp", ":"+strconv.Itoa(int(this.resources.Config().VnetPort)))
 	if e != nil {
 		return this.resources.Logger().Error("Unable to bind to port ",
-			this.resources.Config().SwitchPort, e.Error())
+			this.resources.Config().VnetPort, e.Error())
 	}
 	this.resources.Logger().Info("Bind Successfully to port ",
-		this.resources.Config().SwitchPort)
+		this.resources.Config().VnetPort)
 	this.socket = socket
 	return nil
 }
@@ -108,8 +107,7 @@ func (this *VNet) connect(conn net.Conn) {
 		RxQueueSize: resources2.DEFAULT_QUEUE_SIZE,
 		TxQueueSize: resources2.DEFAULT_QUEUE_SIZE,
 		LocalAlias:  this.resources.Config().LocalAlias,
-		LocalUuid:   this.resources.Config().LocalUuid,
-		Topics:      map[string]bool{}}
+		LocalUuid:   this.resources.Config().LocalUuid}
 
 	resources := resources2.NewResources(this.resources.Registry(),
 		this.resources.Security(),
@@ -152,14 +150,14 @@ func (this *VNet) Failed(data []byte, vnic interfaces.IVirtualNetworkInterface, 
 	}
 	msg.FailMsg = failMsg
 	src := msg.SourceUuid
-	msg.SourceUuid = msg.Destination
-	msg.Destination = src
+	msg.SourceUuid = msg.Topic
+	msg.Topic = src
 	data, err = this.protocol.DataFromMessage(msg)
 	if err != nil {
 		this.resources.Logger().Error(err)
 		return
 	}
-	err = vnic.Send(data)
+	err = vnic.SendMessage(data)
 	if err != nil {
 		this.resources.Logger().Error(err)
 	}
@@ -167,16 +165,17 @@ func (this *VNet) Failed(data []byte, vnic interfaces.IVirtualNetworkInterface, 
 
 func (this *VNet) HandleData(data []byte, vnic interfaces.IVirtualNetworkInterface) {
 	this.resources.Logger().Trace("********** Swith Service - HandleData **********")
-	source, sourceSwitch, destination, _ := protocol.HeaderOf(data)
+	source, sourceVnet, destination, area, _ := protocol.HeaderOf(data)
 	this.resources.Logger().Trace("** Switch      : ", this.resources.Config().LocalUuid)
 	this.resources.Logger().Trace("** Source      : ", source)
-	this.resources.Logger().Trace("** SourceSwitch: ", sourceSwitch)
+	this.resources.Logger().Trace("** SourceVnet: ", sourceVnet)
+	this.resources.Logger().Trace("** Area      : ", area)
 	this.resources.Logger().Trace("** Destination : ", destination)
 
 	dSize := len(destination)
 	switch dSize {
-	case 36:
-		//The destination is the switch
+	case protocol.UNICAST_ADDRESS_SIZE:
+		//The destination is the vnet
 		if destination == this.resources.Config().LocalUuid {
 			this.switchDataReceived(data, vnic)
 			return
@@ -187,16 +186,16 @@ func (this *VNet) HandleData(data []byte, vnic interfaces.IVirtualNetworkInterfa
 				this.Failed(data, vnic, strings.New("Cannot find destination port for ", destination).String())
 				return
 			}
-			err := p.Send(data)
+			err := p.SendMessage(data)
 			if err != nil {
 				this.Failed(data, vnic, strings.New("Error sending data:", err.Error()).String())
 				return
 			}
 		}
 	default:
-		uuidMap := this.switchTable.ServiceUuids(destination, sourceSwitch)
+		uuidMap := this.switchTable.ServiceUuids(destination, sourceVnet)
 		if uuidMap != nil {
-			this.sendToPorts(uuidMap, data, sourceSwitch)
+			this.sendToPorts(uuidMap, data, sourceVnet)
 			if destination == health.TOPIC {
 				this.switchDataReceived(data, vnic)
 			}
@@ -205,7 +204,7 @@ func (this *VNet) HandleData(data []byte, vnic interfaces.IVirtualNetworkInterfa
 	}
 }
 
-func (this *VNet) sendToPorts(uuids map[string]bool, data []byte, sourceSwitch string) {
+func (this *VNet) uniCastToPorts(uuids map[string]bool, data []byte, sourceSwitch string) {
 	alreadySent := make(map[string]bool)
 	for vnicUuid, _ := range uuids {
 		isHope0 := this.resources.Config().LocalUuid == sourceSwitch
@@ -217,7 +216,7 @@ func (this *VNet) sendToPorts(uuids map[string]bool, data []byte, sourceSwitch s
 			if !ok {
 				alreadySent[usedUuid] = true
 				this.resources.Logger().Trace("Sending from ", this.resources.Config().LocalUuid, " to ", usedUuid)
-				port.Send(data)
+				port.SendMessage()d(data)
 			}
 		}
 	}

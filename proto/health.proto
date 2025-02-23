@@ -7,7 +7,7 @@ option java_outer_classname = "Types";
 option java_package = "com.shared.types";
 option go_package = "./types";
 
-enum State {
+enum HealthState {
   Invalid_State = 0;
   Up = 1;
   Down = 2;
@@ -18,6 +18,6 @@ message HealthPoint {
   string a_uuid = 1;
   string z_uuid = 2;
   string alias = 3;
-  map<string, bool> services = 4;
-  State status = 5;
+
+  HealthState status = 5;
 }
