@@ -8,7 +8,6 @@ import (
 	"github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/share/strings"
 	"github.com/saichler/shared/go/types"
-	"google.golang.org/protobuf/proto"
 	"net"
 	"sync"
 	"time"
@@ -30,7 +29,7 @@ type VirtualNetworkInterface struct {
 	// Name for this VNic expressing the connection path in aside -->> zside
 	name string
 	// Indicates if this vnic in on the switch internal, hence need no keep alive
-	IsSwitch bool
+	IsVNet bool
 	// Last reconnect attempt
 	last_reconnect_attempt int64
 }
@@ -58,7 +57,7 @@ func NewVirtualNetworkInterface(resources interfaces.IResources, conn net.Conn) 
 func (vnic *VirtualNetworkInterface) Start() {
 	vnic.running = true
 	if vnic.conn == nil {
-		vnic.resources.Config().Topics = vnic.resources.ServicePoints().Topics()
+		vnic.resources.Config().ServiceAreas = vnic.resources.ServicePoints().Areas()
 		vnic.connectToSwitch()
 	} else {
 		vnic.receiveConnection()
@@ -82,7 +81,7 @@ func (vnic *VirtualNetworkInterface) connect() error {
 		destination = subnet + ".1"
 	}
 	// Try to dial to the switch
-	conn, err := vnic.resources.Security().CanDial(destination, vnic.resources.Config().SwitchPort)
+	conn, err := vnic.resources.Security().CanDial(destination, vnic.resources.Config().VnetPort)
 	if err != nil {
 		return errors.New("Error connecting to the vnet: " + err.Error())
 	}
@@ -97,7 +96,7 @@ func (vnic *VirtualNetworkInterface) connect() error {
 }
 
 func (vnic *VirtualNetworkInterface) receiveConnection() {
-	vnic.IsSwitch = true
+	vnic.IsVNet = true
 	vnic.resources.Config().Address = vnic.conn.RemoteAddr().String()
 	vnic.components.start()
 }
@@ -122,12 +121,16 @@ func (vnic *VirtualNetworkInterface) Name() string {
 	return vnic.name
 }
 
-func (vnic *VirtualNetworkInterface) Send(data []byte) error {
-	return vnic.components.TX().Send(data)
+func (vnic *VirtualNetworkInterface) SendMessage(data []byte) error {
+	return vnic.components.TX().SendMessage(data)
 }
 
-func (vnic *VirtualNetworkInterface) Do(action types.Action, destination string, pb proto.Message) error {
-	return vnic.components.TX().Do(action, destination, pb)
+func (vnic *VirtualNetworkInterface) Unicast(action types.Action, destination string, any interface{}) error {
+	return vnic.components.TX().Unicast(action, destination, any, 0)
+}
+
+func (vnic *VirtualNetworkInterface) Multicast(action types.Action, area int32, topic string, any interface{}) error {
+	return vnic.components.TX().Multicast(action, area, topic, any, 0)
 }
 
 func (vnic *VirtualNetworkInterface) Resources() interfaces.IResources {

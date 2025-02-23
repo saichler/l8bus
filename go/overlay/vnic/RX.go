@@ -45,7 +45,7 @@ func (rx *RX) readFromSocket() {
 		data, err := nets.Read(rx.vnic.conn, rx.vnic.resources.Config())
 		//If therer is an error
 		if err != nil {
-			if rx.vnic.IsSwitch {
+			if rx.vnic.IsVNet {
 				break
 			}
 			if !rx.shuttingDown {

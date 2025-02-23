@@ -2,10 +2,12 @@ package vnic
 
 import (
 	"errors"
+	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/shared/go/share/nets"
 	"github.com/saichler/shared/go/share/queues"
 	"github.com/saichler/shared/go/types"
 	"google.golang.org/protobuf/proto"
+	"strconv"
 )
 
 type TX struct {
@@ -22,41 +24,41 @@ func newTX(vnic *VirtualNetworkInterface) *TX {
 	return tx
 }
 
-func (tx *TX) start() {
-	go tx.writeToSocket()
+func (this *TX) start() {
+	go this.writeToSocket()
 }
 
-func (tx *TX) shutdown() {
-	tx.shuttingDown = true
-	if tx.vnic.conn != nil {
-		tx.vnic.conn.Close()
+func (this *TX) shutdown() {
+	this.shuttingDown = true
+	if this.vnic.conn != nil {
+		this.vnic.conn.Close()
 	}
-	tx.tx.Shutdown()
+	this.tx.Shutdown()
 }
 
-func (tx *TX) name() string {
+func (this *TX) name() string {
 	return "TX"
 }
 
 // loop of Writing data to socket
-func (tx *TX) writeToSocket() {
+func (this *TX) writeToSocket() {
 	// As long ad the port is active
-	for tx.vnic.running {
+	for this.vnic.running {
 		// Get next data to write to the socket from the TX queue, if no data, this is a blocking call
-		data := tx.tx.Next()
+		data := this.tx.Next()
 		// if the data is not nil
-		if data != nil && tx.vnic.running {
+		if data != nil && this.vnic.running {
 			//Write the data to the socket
-			err := nets.Write(data, tx.vnic.conn, tx.vnic.resources.Config())
+			err := nets.Write(data, this.vnic.conn, this.vnic.resources.Config())
 			// If there is an error
 			if err != nil {
-				if tx.vnic.IsSwitch {
+				if this.vnic.IsVNet {
 					break
 				}
 				// If this is not a port on the switch, then try to reconnect.
-				if !tx.shuttingDown && tx.vnic.running {
-					tx.vnic.reconnect()
-					err = nets.Write(data, tx.vnic.conn, tx.vnic.resources.Config())
+				if !this.shuttingDown && this.vnic.running {
+					this.vnic.reconnect()
+					err = nets.Write(data, this.vnic.conn, this.vnic.resources.Config())
 				} else {
 					break
 				}
@@ -66,31 +68,39 @@ func (tx *TX) writeToSocket() {
 			break
 		}
 	}
-	tx.vnic.resources.Logger().Debug("TX for ", tx.vnic.name, " ended.")
-	tx.vnic.Shutdown()
+	this.vnic.resources.Logger().Debug("TX for ", this.vnic.name, " ended.")
+	this.vnic.Shutdown()
 }
 
 // Send Add the raw data to the tx queue to be written to the socket
-func (tx *TX) Send(data []byte) error {
+func (this *TX) SendMessage(data []byte) error {
 	// if the port is still active
-	if tx.vnic.running {
+	if this.vnic.running {
 		// Add the data to the TX queue
-		tx.tx.Add(data)
+		this.tx.Add(data)
 	} else {
 		return errors.New("Port is not active")
 	}
 	return nil
 }
 
-// Do is wrapping a protobuf with a secure message and send it to the switch
-func (tx *TX) Do(action types.Action, destination string, pb proto.Message) error {
+// Unicast is wrapping a protobuf with a secure message and send it to the vnet
+func (this *TX) Unicast(action types.Action, destination string, any interface{}, p types.Priority) error {
+	if len(destination) != protocol.UNICAST_ADDRESS_SIZE {
+		return errors.New("Invalid destination address " + destination + " size " + strconv.Itoa(len(destination)))
+	}
+	return this.Multicast(action, 0, destination, any, p)
+}
+
+// Multicast is wrapping a protobuf with a secure message and send it to the vnet topic
+func (this *TX) Multicast(action types.Action, area int32, topic string, any interface{}, p types.Priority) error {
 	// Create message payload
-	data, err := tx.vnic.protocol.CreateMessageFor(types.Priority_P0, action, tx.vnic.resources.Config().LocalUuid,
-		tx.vnic.resources.Config().RemoteUuid, destination, pb)
+	data, err := this.vnic.protocol.CreateMessageFor(area, topic, p, action,
+		this.vnic.resources.Config().LocalUuid, this.vnic.resources.Config().RemoteUuid, pb)
 	if err != nil {
-		tx.vnic.resources.Logger().Error("Failed to create message:", err)
+		this.vnic.resources.Logger().Error("Failed to create message:", err)
 		return err
 	}
-	//Send the secure message to the switch
-	return tx.Send(data)
+	//Send the secure message to the vnet
+	return this.SendMessage(data)
 }

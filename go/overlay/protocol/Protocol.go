@@ -57,8 +57,13 @@ func (this *Protocol) ProtoOf(msg *types.Message) (proto.Message, error) {
 	return pb, err
 }
 
-func (this *Protocol) CreateMessageFor(priority types.Priority, action types.Action, source, sourceSwitch, dest string, pb proto.Message) ([]byte, error) {
+func (this *Protocol) CreateMessageFor(area int32, topic string, priority types.Priority,
+	action types.Action, source, sourceVnet string, any interface{}) ([]byte, error) {
+
 	//first marshal the protobuf into bytes
+	//Expecting a crash here if it is not a protocol buffer
+	//Will implement generic serializer via registry in the future
+	pb := any.(proto.Message)
 	data, err := this.serializer.Marshal(pb, nil)
 	if err != nil {
 		return nil, err
@@ -71,8 +76,9 @@ func (this *Protocol) CreateMessageFor(priority types.Priority, action types.Act
 	//create the wrapping message for the destination
 	msg := &types.Message{}
 	msg.SourceUuid = source
-	msg.SourceSwitchUuid = sourceSwitch
-	msg.Destination = dest
+	msg.SourceVnetUuid = sourceVnet
+	msg.Area = area
+	msg.Topic = topic
 	msg.Sequence = this.sequence.Add(1)
 	msg.Priority = priority
 	msg.Data = encData
