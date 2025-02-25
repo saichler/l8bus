@@ -30,17 +30,12 @@ the implementation is currently private...;o)
 that we want as part of the **Application Overlay**. 
 There is the flexability to have multiple Application Vnet hosted inside the same OS service
 or an OS service per Application Vnet
+![alt text](https://github.com/saichler/layer8/blob/main/docs/vnet.png)
 
-
-## Vnet & Vnic
-The **Vnet** is a service running on the host. It is using the Security Provider Plugin to validate
-internal & external connection requests from Vnics. Once connected, the **Vnic** info is
-added to the switching table of the **Vnet**.
-
-The **VNic** is a piece of code/library used inside the provess to connect and send/public messages
-inside the **Vnet**.
-
-### Vnic connects to the Vnet sequence
+## Vnic
+The **VNic** is a piece of code/library used inside the running process to connect and send/publish/request messages
+inside the **Vnet**. When instantiated, it autodetect and connects to the Vnet, **given**
+it has the correct **Security Provider**. It is **agnostic** to being hosted inside K8s, Docker, Container or plain process. 
 ![alt text](https://github.com/saichler/layer8/blob/main/docs/layer-8-vnic2vnet-connect.png)
 
 ## Unicast sequence
