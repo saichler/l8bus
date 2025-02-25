@@ -11,8 +11,9 @@ and overwhelming the cost of actual business logic code by factors.**
 
 ## Layer 8
 **Layer** is a layered development stack & SDK that targets the painful 
-challenges of Micro Services base development and trying to encapsulate them into
-a very simple interface.
+challenges of Micro Services base **Application** development and trying to encapsulate them into
+a very, extremely simple, interface to substantially lower the **Micro Services** development costs
+and extremely reduce the **Time to Market**. 
 
 ## Security Provider
 When developing a Micro Services stack, usually security consideration comes a bit late
