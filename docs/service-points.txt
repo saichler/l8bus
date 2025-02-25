@@ -6,9 +6,8 @@ Vnic->Vnet: Publish Topic
 note right of Vnet:Receive A message\nfor the topic
 Vnet->Vnic:Forward the message\nto all Vnic having the\ntopic.
 Vnic<->Security Provider:Decode the message
-Vnic->Service Points:Hanle(message)
+Vnic->Service Points:Handle(message)
 note right of Service Points:Message has an Action\n(Post/Put..).\nTopic is the element\nType Name.
 note right of Service Points:Look for a Service Point
 Service Points<->Security Provider:Validate Source is permitted on the Topic+Action
 note right of Service Points:Invoke Service Point\nAction
-

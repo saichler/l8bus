@@ -1,0 +1,12 @@
+title Vnet (Virtual Network Between Machines)
+
+M1-Vnet<->M2-Vnet: Broadcast Channel
+note right of M1-Vnet: Determinate who should initiate the connection?\nA: M1
+note left of M2-Vnet: Determinate who should initiate the connection?\nA: M1
+M1-Vnet->Security Provider-M1:Can initiate connection?
+Security Provider-M1->M2-Vnet: (yes) Initiate Connection
+M2-Vnet->Security Provider-M2: Can Accept Connection?
+Security Provider-M2->M2-Vnet:Yes
+M1-Vnet<->M2-Vnet: Connect!
+M1-Vnet<->M2-Vnet: Exchange Health States &\nRoute Tables
+
