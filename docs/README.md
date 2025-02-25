@@ -16,3 +16,7 @@ inside the **Vnet**.
 ### Vnic connects to the Vnet sequence
 ![alt text](https://github.com/saichler/layer8/blob/main/docs/layer-8-vnic2vnet-connect.png)
 
+## Unicast sequence
+The Vnic can unicast a message to another Vnic on the Vnet via its uuid address.
+### Unicast flow
+![alt text](https://github.com/saichler/layer8/blob/main/docs/layer-8-vnet-unicast-cross-nodes.png)
