@@ -1,0 +1,13 @@
+title Property
+
+Startup->Introspector: Inspect a Type\n that is the root of\na complex model.
+Startup->Property:Invoke PropertyOf\nwith a string, representing\nAn Instance ID.
+note left of Property:Extract Attribute ID\nfrom the Instance ID.
+Property<->Introspector: Build a Property path to\nthe model root using the\n Attribute ID
+Property->Startup: Return a Property instance
+Startup<->Property:Use Property.Get(root instance) value, error
+note left of Property:Using the Property path,\ndrill down to the property and fetch\nit's value. In case of nil, return \nprimitive default or nil.
+Startup<->Property:Use Property.Set(root instance, value) root instance, error
+note left of Property: Using the Property path,\ndrill down to the property and set it.\nin case of a nil elem in the path,\nINCLUDING the root instance,\nCREATE it!
+
+

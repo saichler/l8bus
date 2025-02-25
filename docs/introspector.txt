@@ -1,0 +1,10 @@
+title Introspector
+
+Startup->Introspector: Inspect a Type\n that is the root of\na complex model.
+
+loop Inspect the Type attributes
+note right of Introspector:Create an Attribute Node\nCreate a string Attribute ID
+Introspector->Attributes Map:Register the Attribute\nNode with the Attribute ID
+Introspector->Introspector: Inspect Attribute Type\nwhen non-primitive\nor a non-pimitive List/Map\nelement.
+end
+
