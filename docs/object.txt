@@ -1,0 +1,9 @@
+title Protobuf Object
+
+Startup->Object: Object.Add(instance of a primitive or protobuf) byte array
+Object->Startup: Return a byte array representation of the instance
+Startup->Object:Object.Get(byte array) instance
+Object->Startup:Return an instance
+
+
+

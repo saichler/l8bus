@@ -1,0 +1,17 @@
+title Distributed Cache
+
+Startup->Cache: Instanciate with Item Type\n& Vnic.
+Cache->Introspector: Inspect Item Type
+Startup->Cache:Put(key,elem)
+note right of Cache:If new element,\nadd to cache.
+Cache->Vnic:Create Add Notification and\nPublish it.
+note right of Cache:If existing element.
+Cache<->Cloner:Clone old element
+Cache<->Updater:Use updater with (clone,new)\nto get list of changes.
+note right of Cache:Apply changes to the existing\nelement.
+Cache->Object:Convert changes into bytes
+Cache->Vnic:Create Change Notification and\nPublish it.
+note left of Vnic:Receive Notification\nmessage
+Vnic->Cache: Apply Notification
+note right of Cache:Apply Notification using the\nProperty on cache element.
+

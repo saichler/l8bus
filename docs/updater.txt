@@ -1,0 +1,7 @@
+title Updater
+
+Startup->Introspector: Inspect a Type\n that is the root of\na complex model.
+Startup->Updater: Call Update(instance old,instance new) List of Changes.
+Updater<->Introspector: Using the introspected model,\nUpdate attributes from the new instance,\nto the old instance.
+Updater->Startup:Return the list of changes as an output.\nA change contains propertyId, old value, new value.
+
