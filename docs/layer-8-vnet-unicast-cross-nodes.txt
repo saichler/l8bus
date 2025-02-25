@@ -1,0 +1,10 @@
+title Vnet Unicast cross nodes
+
+Vnic-on-node-1<->SecurityProvider: Prepare Encripted\nMessage
+Vnic-on-node-1->Vnet-on-node-1: Send message
+note
+note right of Vnet-on-node-1: Is destination\nexternal?
+Vnet-on-node-1->Vnet-on-node-2:Forward message\nto adjacent Vnet
+Vnet-on-node-2->Vnic-on-node-2:Forward message\nto the Vnic
+Vnic-on-node-2<->SecurityProvider:Decrypt Message
+

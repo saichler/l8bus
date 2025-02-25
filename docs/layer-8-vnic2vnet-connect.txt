@@ -1,0 +1,11 @@
+title Container VNic connection to Vnet
+
+note right of Vnic: Detect VNet IP\nIf inside container=Bridge IP\notherwise 127.0.0.1
+Vnic->SecurityProviderVNic:Can connect Vnet?
+SecurityProviderVNic->Vnet:Attempt to Connect
+Vnet->SecurityProviderVnet:Can accept connection?
+note left of SecurityProviderVnet:Certify connection
+SecurityProviderVnet->Vnet:Approve
+Vnet->SecurityProviderVNic:Connection
+SecurityProviderVNic->Vnic:Connection
+
