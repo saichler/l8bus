@@ -7,5 +7,7 @@ Vnet->SecurityProviderVnet:Can accept connection?
 note left of SecurityProviderVnet:Certify connection
 SecurityProviderVnet->Vnet:Approve
 Vnet->SecurityProviderVNic:Connection
+Vnet->Health Service:Register Vnic for Health Monitoring
 SecurityProviderVNic->Vnic:Connection
+
 
