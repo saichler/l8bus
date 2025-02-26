@@ -28,7 +28,7 @@ func (this *SwitchTable) uniCastToAll(area int32, topic string, action types.Act
 	conns := this.conns.all()
 	data, err := this.switchService.protocol.CreateMessageFor(area, topic, types.Priority_P0, action,
 		this.switchService.resources.Config().LocalUuid,
-		this.switchService.resources.Config().LocalUuid, pb)
+		this.switchService.resources.Config().LocalUuid, pb, false, false, this.switchService.protocol.NextMessageNumber())
 	if err != nil {
 		this.switchService.resources.Logger().Error("Failed to create message to send to all: ", err)
 		return
@@ -61,7 +61,7 @@ func (this *SwitchTable) addVNic(vnic interfaces.IVirtualNetworkInterface) {
 	hc.Add(hp)
 
 	for _, healthPoint := range hc.All() {
-		vnic.Multicast(types.Action_POST, 0, health.TOPIC, healthPoint)
+		vnic.Multicast(types.CastMode_All, types.Action_POST, 0, health.TOPIC, healthPoint)
 	}
 	//switchTable.sendToAll(health.TOPIC, types.Action_POST, hp)
 }

@@ -1,6 +1,7 @@
 package health
 
 import (
+	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/servicepoints/go/points/cache"
 	"github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/types"
@@ -93,6 +94,48 @@ func (this *HealthCenter) UuidsForTopic(areaId int32, topic string) map[string]b
 		result[uuid] = true
 	}
 	return result
+}
+
+func (this *HealthCenter) UuidsForRequest(cast types.CastMode, areaId int32, topic, source string) string {
+	if len(topic) == protocol.UNICAST_ADDRESS_SIZE {
+		return topic
+	}
+	uuids := this.UuidsForTopic(areaId, topic)
+	switch cast {
+	case types.CastMode_All:
+		fallthrough
+	case types.CastMode_Single:
+		_, ok := uuids[source]
+		if ok {
+			return source
+		}
+		sourceHp := this.healthPoints.Get(source).(*types.HealthPoint)
+		leader := ""
+		started := int64(-1)
+		for uuid, _ := range uuids {
+			uuidHp := this.healthPoints.Get(uuid).(*types.HealthPoint)
+			if sourceHp.ZUuid == uuidHp.ZUuid {
+				return uuid
+			}
+			if uuidHp.Status == types.HealthState_Up && (uuidHp.Started < started || started == -1) {
+				leader = uuid
+				started = uuidHp.Started
+			}
+		}
+		return leader
+	case types.CastMode_Leader:
+		leader := ""
+		started := int64(-1)
+		for uuid, _ := range uuids {
+			uuidHp := this.healthPoints.Get(uuid).(*types.HealthPoint)
+			if uuidHp.Status == types.HealthState_Up && (uuidHp.Started < started || started == -1) {
+				leader = uuid
+				started = uuidHp.Started
+			}
+		}
+		return leader
+	}
+	return ""
 }
 
 func healthPoint(item interface{}) interface{} {

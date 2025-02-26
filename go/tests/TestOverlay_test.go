@@ -33,7 +33,7 @@ func TestTopology(t *testing.T) {
 func TestSendMultiCast(t *testing.T) {
 	defer reset("TestSendMultiCast")
 	pb := &tests.TestProto{}
-	err := eg1.Multicast(types.Action_POST, 0, infra.TEST_TOPIC, pb)
+	err := eg1.Multicast(types.CastMode_All, types.Action_POST, 0, infra.TEST_TOPIC, pb)
 	if err != nil {
 		log.Fail(t, err)
 		return

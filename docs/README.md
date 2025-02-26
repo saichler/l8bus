@@ -86,5 +86,6 @@ simple interface that allows a transparent & seemless API invocation between one
 ## Invoking an API
 Invoking an API is simply utilizing the one of the GET, POST, PUT, PATCH, DELETE method on
 the **Vnic**. The input is just the model instance and a **GSQL Query** 
-(![alt text](https://github.com/saichler/gsql)) in case of a GET.
+(https://github.com/saichler/gsql) in case of a GET. The Service Points framework
+will encapsulate all the message interactions over the Vnet.
 

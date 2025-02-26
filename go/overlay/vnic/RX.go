@@ -94,10 +94,31 @@ func (rx *RX) notifyRawDataListener() {
 					continue
 				}
 				// Otherwise call the handler per the action & the type
-				if msg.Action == types.Action_Notify {
+				if msg.Action == types.Action_Reply {
+					request := rx.vnic.requests.getRequest(msg.Sequence)
+					request.response = pb
+					request.cond.Broadcast()
+				} else if msg.Action == types.Action_Notify {
 					rx.vnic.resources.ServicePoints().Notify(pb, msg.Action, rx.vnic, msg)
 				} else {
-					rx.vnic.resources.ServicePoints().Handle(pb, msg.Action, rx.vnic, msg)
+					resp, err := rx.vnic.resources.ServicePoints().Handle(pb, msg.Action, rx.vnic, msg)
+					if err != nil {
+						rx.vnic.resources.Logger().Error(err)
+					}
+					if msg.IsRequest {
+						msg.Action = types.Action_Reply
+						msg.Topic = msg.SourceUuid
+						msg.SourceUuid = rx.vnic.resources.Config().LocalUuid
+						msg.SourceVnetUuid = rx.vnic.resources.Config().RemoteUuid
+						msg.IsRequest = false
+						msg.IsReply = true
+						data, err := rx.vnic.protocol.CreateMessageForm(msg, resp)
+						if err != nil {
+							rx.vnic.resources.Logger().Error(err)
+							return
+						}
+						rx.vnic.SendMessage(data)
+					}
 				}
 			}
 		}

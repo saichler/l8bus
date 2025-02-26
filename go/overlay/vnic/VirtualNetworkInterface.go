@@ -32,6 +32,8 @@ type VirtualNetworkInterface struct {
 	IsVNet bool
 	// Last reconnect attempt
 	last_reconnect_attempt int64
+
+	requests *Requests
 }
 
 func NewVirtualNetworkInterface(resources interfaces.IResources, conn net.Conn) *VirtualNetworkInterface {
@@ -43,6 +45,7 @@ func NewVirtualNetworkInterface(resources interfaces.IResources, conn net.Conn) 
 	vnic.components = newSubomponents()
 	vnic.components.addComponent(newRX(vnic))
 	vnic.components.addComponent(newTX(vnic))
+	vnic.requests = newRequests()
 	vnic.resources.Registry().Register(&types.Message{})
 	if vnic.resources.Config().LocalUuid == "" {
 		vnic.resources.Config().LocalUuid = uuid.New().String()
@@ -128,11 +131,31 @@ func (vnic *VirtualNetworkInterface) SendMessage(data []byte) error {
 }
 
 func (vnic *VirtualNetworkInterface) Unicast(action types.Action, destination string, any interface{}) error {
-	return vnic.components.TX().Unicast(action, destination, any, 0)
+	return vnic.components.TX().Unicast(action, destination, any, 0, false, false, vnic.protocol.NextMessageNumber())
 }
 
-func (vnic *VirtualNetworkInterface) Multicast(action types.Action, area int32, topic string, any interface{}) error {
-	return vnic.components.TX().Multicast(action, area, topic, any, 0)
+func (vnic *VirtualNetworkInterface) Multicast(cast types.CastMode, action types.Action, area int32, topic string, any interface{}) error {
+	return vnic.components.TX().Multicast(action, area, topic, any, 0, false, false, vnic.protocol.NextMessageNumber())
+}
+
+func (vnic *VirtualNetworkInterface) Request(cast types.CastMode, action types.Action, area int32, topic string, any interface{}) (interface{}, error) {
+	hc := health.Health(vnic.resources)
+	destination := hc.UuidsForRequest(cast, area, topic, vnic.resources.Config().LocalUuid)
+
+	request := vnic.requests.newRequest(vnic.protocol.NextMessageNumber())
+	request.cond.L.Lock()
+	defer request.cond.L.Unlock()
+
+	e := vnic.components.TX().Unicast(action, destination, any, 0, true, false, request.msgNum)
+	if e != nil {
+		return nil, e
+	}
+	request.cond.Wait()
+	return request.response, nil
+}
+
+func (vnic *VirtualNetworkInterface) API(area int32) interfaces.API {
+	return newAPI(area, types.CastMode_Leader)
 }
 
 func (vnic *VirtualNetworkInterface) Resources() interfaces.IResources {

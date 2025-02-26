@@ -57,8 +57,12 @@ func (this *Protocol) ProtoOf(msg *types.Message) (proto.Message, error) {
 	return pb, err
 }
 
+func (this *Protocol) NextMessageNumber() int32 {
+	return this.sequence.Add(1)
+}
+
 func (this *Protocol) CreateMessageFor(area int32, topic string, priority types.Priority,
-	action types.Action, source, sourceVnet string, any interface{}) ([]byte, error) {
+	action types.Action, source, sourceVnet string, any interface{}, isRequest, isReply bool, msgNum int32) ([]byte, error) {
 
 	//first marshal the protobuf into bytes
 	//Expecting a crash here if it is not a protocol buffer
@@ -79,12 +83,36 @@ func (this *Protocol) CreateMessageFor(area int32, topic string, priority types.
 	msg.SourceVnetUuid = sourceVnet
 	msg.Area = area
 	msg.Topic = topic
-	msg.Sequence = this.sequence.Add(1)
+	msg.Sequence = msgNum
 	msg.Priority = priority
 	msg.Data = encData
 	msg.Type = reflect.ValueOf(pb).Elem().Type().Name()
 	msg.Action = action
-	return this.DataFromMessage(msg)
+	msg.IsRequest = isRequest
+	msg.IsReply = isReply
+	d, e := this.DataFromMessage(msg)
+	return d, e
+}
+
+func (this *Protocol) CreateMessageForm(msg *types.Message, any interface{}) ([]byte, error) {
+	//first marshal the protobuf into bytes
+	//Expecting a crash here if it is not a protocol buffer
+	//Will implement generic serializer via registry in the future
+	pb := any.(proto.Message)
+	data, err := this.serializer.Marshal(pb, nil)
+	if err != nil {
+		return nil, err
+	}
+	//Encode the data
+	encData, err := this.resources.Security().Encrypt(data)
+	if err != nil {
+		return nil, err
+	}
+	//create the wrapping message for the destination
+	msg.Data = encData
+
+	d, e := this.DataFromMessage(msg)
+	return d, e
 }
 
 func (this *Protocol) DataFromMessage(msg *types.Message) ([]byte, error) {

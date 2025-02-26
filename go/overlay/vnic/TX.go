@@ -84,18 +84,18 @@ func (this *TX) SendMessage(data []byte) error {
 }
 
 // Unicast is wrapping a protobuf with a secure message and send it to the vnet
-func (this *TX) Unicast(action types.Action, destination string, any interface{}, p types.Priority) error {
+func (this *TX) Unicast(action types.Action, destination string, any interface{}, p types.Priority, isRequest, isReply bool, msgNum int32) error {
 	if len(destination) != protocol.UNICAST_ADDRESS_SIZE {
 		return errors.New("Invalid destination address " + destination + " size " + strconv.Itoa(len(destination)))
 	}
-	return this.Multicast(action, 0, destination, any, p)
+	return this.Multicast(action, 0, destination, any, p, isRequest, isReply, msgNum)
 }
 
 // Multicast is wrapping a protobuf with a secure message and send it to the vnet topic
-func (this *TX) Multicast(action types.Action, area int32, topic string, any interface{}, p types.Priority) error {
+func (this *TX) Multicast(action types.Action, area int32, topic string, any interface{}, p types.Priority, isRequest, isReply bool, msgNum int32) error {
 	// Create message payload
 	data, err := this.vnic.protocol.CreateMessageFor(area, topic, p, action,
-		this.vnic.resources.Config().LocalUuid, this.vnic.resources.Config().RemoteUuid, any)
+		this.vnic.resources.Config().LocalUuid, this.vnic.resources.Config().RemoteUuid, any, isRequest, isReply, msgNum)
 	if err != nil {
 		this.vnic.resources.Logger().Error("Failed to create message:", err)
 		return err
