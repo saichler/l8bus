@@ -1,0 +1,11 @@
+title Invoking API
+
+Startup->Vnic: resp = \nvnic.API().GET(\"gsql query")\nand wait
+Vnic->Vnet:Create a Request message\nfor the topic in the gsql query\nand send it
+Vnet->Vnic-2:Forward the message to\nVnic-2
+Vnic-2->Service Points:Invoke the API on the\nService Point
+Service Points->Vnic-2:Return the response
+Vnic-2->Vnet:Create a Reply message
+Vnet->Vnic:Forward the reply to the\nrequesting Vnic
+Vnic->Startup: Wakeup and reply\nwith the response.
+
