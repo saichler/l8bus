@@ -54,5 +54,37 @@ the message to its adjacents **only** if the adjacent **Vnet** has at least one 
 registered on the **Topic**.
 ![alt text](https://github.com/saichler/layer8/blob/main/docs/layer-8-vnet-multicast-cross-nodes.png)
 
+## Unicast Topic
+The **Vnic** can unicast a message to a **Topic**. The message will be delivered to **only one**
+**Vnic** registered on the **Topic**. Unless explicitly specified, the message will be delivered via
+the following fallback logic:
+- Is sending **Vnic** registered on the **Topic**? Deliver to self. ->
+- Explicit **Topic Leader** specified? Deliver to the **Topic Leader**. ->
+- Is there a **Vnic** registered on the **Topic** in the same machine as the sender? Deliver to that **Vnic**. ->
+- Deliver to the **Topic Leader**.
 
+## Request/Reply
+Request/Reply is essentially sending a message and waiting for the reply. It is utilizing
+the Unicast & the Unicast Topic method is a synchronic way, expecting a reply message
+from the target.
+
+# Service Points - Standard API Sharing
+Project Home:![alt text](https://github.com/saichler/servicepoints)
+## Overview
+When a **Micro Service** is interacting with another **Micro Service**, 
+essentially it needs to invoke API. 
+Using Client/Server technologies like Restful & GRPC isn't "ideal" (to say the least) 
+for internal Application communication. The other option is to use request/reply over
+messaging system to invoke the internal API, however there are open challenges with Security
+, AAA & Messages 2 API translation.
+
+## Service Points
+**Service Points** is encapsulating all the **Vnet Messaging, Security, AAA & the API** under a
+simple interface that allows a transparent & seemless API invocation between one **Micro Service** to another.
+![alt text](https://github.com/saichler/layer8/blob/main/docs/service-points.png)
+
+## Invoking an API
+Invoking an API is simply utilizing the one of the GET, POST, PUT, PATCH, DELETE method on
+the **Vnic**. The input is just the model instance and a **GSQL Query** 
+(![alt text](https://github.com/saichler/gsql)) in case of a GET.
 
