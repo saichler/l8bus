@@ -69,10 +69,10 @@ the Unicast & the Unicast Topic method is a synchronic way, expecting a reply me
 from the target.
 
 # Service Points - Standard API Sharing
-Project Home:![alt text](https://github.com/saichler/servicepoints)
+Project Home: https://github.com/saichler/servicepoints
 ## Overview
 When a **Micro Service** is interacting with another **Micro Service**, 
-essentially it needs to invoke API. 
+essentially it needs to invoke an API. 
 Using Client/Server technologies like Restful & GRPC isn't "ideal" (to say the least) 
 for internal Application communication. The other option is to use request/reply over
 messaging system to invoke the internal API, however there are open challenges with Security
