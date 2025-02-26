@@ -1,4 +1,4 @@
-# Layer 8 Functionality
+# Layer 8 - The Missing Development Stack for Micro Services
 
 ## Overview
 **Micro Services** has exposed a missing developer stack with the Service 2 Service
@@ -31,25 +31,27 @@ the implementation is currently private...;o)
 ## Vnet (Virtual Network)
 **Vnet** is a process running on each host as an OS service, 
 that we want as part of the **Application Overlay**. 
-There is the flexability to have multiple Application Vnet hosted inside the same OS service
+There is the flexability to have multiple Application **Vnet** hosted inside the same OS service
 or an OS service per Application Vnet
 ![alt text](https://github.com/saichler/layer8/blob/main/docs/vnet.png)
 
 ## Vnic
-The **VNic** is a piece of code/library used inside the running process to connect and send/publish/request messages
+The **Vnic** is a piece of code/library used inside the running process to connect and send/publish/request messages
 inside the **Vnet**. When instantiated, it autodetect and connects to the Vnet, **given**
 it has the correct **Security Provider**. It is **agnostic** to being hosted inside K8s, Docker, Container or plain process. 
 ![alt text](https://github.com/saichler/layer8/blob/main/docs/layer-8-vnic2vnet-connect.png)
 
-## Unicast sequence
-The Vnic can unicast a message to another Vnic on the Vnet via its uuid address.
-### Unicast flow
+## Unicast
+The **Vnic** can unicast a message to another **Vnic** on the **Vnet** via its uuid address. 
+Each **Vnic**, once joins the **VNet**, has access to the Health system, via which it can acquire
+the uuid of the unicast destination.
 ![alt text](https://github.com/saichler/layer8/blob/main/docs/layer-8-vnet-unicast-cross-nodes.png)
 
-## Multicast sequence
-A Vnic can publish a message to a topic over the Vnet. The Vnet agents will receive the multicast
-only if they have at least 1 Vnic that is registered to consume the topic.
-### Multicast flow
+## Multicast
+A Vnic can publish a message to a **Topic**. Any **Vnic** that registered on the **Topic**,
+will have the message deliver to it. The **Vnet** on the same Host as the **Vnic**, will forward
+the message to its adjacents **only** if the adjacent **Vnet** has at least one **Vnic**
+registered on the **Topic**.
 ![alt text](https://github.com/saichler/layer8/blob/main/docs/layer-8-vnet-multicast-cross-nodes.png)
 
 
