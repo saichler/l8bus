@@ -21,28 +21,29 @@ and extremely reduce the **Time to Market**.
 
 # Context
 
-01. [Security Provider](#security)
-02. [Vnet (Virtual Network)](#vnet)
-03. [Vnic (Virtual Network Interface)](#Vnic)
-04. [Unicast](#unicast)
-05. [Multicast](#multicast)
-06. [Unicast Topic](#unicasttopic)
-07. [Request/Reply](#requestreply)
-08. [Service Points](#servicepoints)
-09. [Integrated Health Service & Leader/Follower Election](#health) 
+1. [Security Provider](#security)
+2. [Vnet (Virtual Network)](#vnet)
+3. [Vnic (Virtual Network Interface)](#Vnic)
+4. [Unicast](#unicast)
+5. [Multicast](#multicast)
+6. [Unicast Topic](#unicasttopic)
+7. [Request/Reply](#requestreply)
+8. [Service Points](#servicepoints)
+9. [Integrated Health Service & Leader/Follower Election](#health) 
 10. [Invoking an API](#api)
-11. [GSQL (Graph SQL)](#gsql)
-12. [From String](#fromstring)
-13. [Introspector](#introspectpr)
-14. [Protobug Object](#object)
-15. [Meta Data Driven Property & Dynamic Instantiation](#property)
-16. [Updater & Generic Model Change Set](#updater)
-17. [Deep Clone (Model Sensitive)](#clone)
-18. [Distributed Cache & Delta Notifications](#cache)
-19. [Distributed Collection Service](#collect)
-20. [Distributed Model Agnostic Parsing](#parse)
-21. [Distributed Model Agnostic Inventory](#inventory)
-22. [Traffic Generator](#generator)
+11. [Service Transactions](#transactions)
+12. [GSQL (Graph SQL)](#gsql)
+13. [From String](#fromstring)
+14. [Introspector](#introspectpr)
+15. [Protobug Object](#object)
+16. [Meta Data Driven Property & Dynamic Instantiation](#property)
+17. [Updater & Generic Model Change Set](#updater)
+18. [Deep Clone (Model Sensitive)](#clone)
+19. [Distributed Cache & Delta Notifications](#cache)
+20. [Distributed Collection Service](#collect)
+21. [Distributed Model Agnostic Parsing](#parse)
+22. [Distributed Model Agnostic Inventory](#inventory)
+23. [Traffic Generator](#generator)
 
 ## Security Provider <a name="security"></a>
 
@@ -120,7 +121,11 @@ messaging system to invoke the internal API, however there are open challenges w
 ## Service Points
 
 **Service Points** is encapsulating all the **Vnet Messaging, Security, AAA & the API** under a
-simple interface that allows a transparent & seemless API invocation between one **Micro Service** to another.
+simple interface that allows a transparent & seemless API invocation between one **Micro Service** to another, 
+masking the networking interaction between services.
+
+N number of services, each implemented as a service point, can reside inside the same **Process** or reside in
+separated **Micro Services Processes**, all subject to the Author decision, The interaction is the same.
 ![alt text](https://github.com/saichler/layer8/blob/main/docs/service-points.png)
 
 ## Integrated Health Service & Leader/Follower Election <a name="health"></a>
@@ -137,6 +142,12 @@ the **Vnic**. The input is just the model instance and a **GSQL Query**
 (https://github.com/saichler/gsql) in case of a GET. The Service Points framework
 will encapsulate all the message interactions over the Vnet.
 ![alt text](https://github.com/saichler/layer8/blob/main/docs/api.png)
+
+## Service Transactions <a name="transactions"></a>
+A **Service Point** can be registered inside multiple **Vnic** (e.g. **Micro Services**), forming
+A **Topic Overlay** for the provided service. In case of a **Stateful** service, the **Service Point**
+has a michanism of a **Distributed Transaction** to apply a change or a state and rollback in case of
+a failure in one of the instances.
 
 ## GSQL (Graph SQL) <a name="gsql"></a>
 
