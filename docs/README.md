@@ -138,7 +138,7 @@ https://github.com/saichler/gsql
 
 https://github.com/saichler/shared/tree/main/go/share/strings
 
-# Introspector <a name="vnic">introspector</a>
+# Introspector <a name="introspector"></a>
 
 https://github.com/saichler/reflect/tree/main/go/reflect/inspect
 
@@ -154,7 +154,7 @@ https://github.com/saichler/reflect/tree/main/go/reflect/property
 
 https://github.com/saichler/reflect/tree/main/go/reflect/updater
 
-# Deep Clone (Model Sensitive) <a name="deepclone"></a>
+# Deep Clone (Model Sensitive) <a name="clone"></a>
 
 https://github.com/saichler/reflect/tree/main/go/reflect/clone
 
