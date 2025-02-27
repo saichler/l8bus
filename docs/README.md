@@ -22,9 +22,10 @@ and extremely reduce the **Time to Market**.
 # Context
 1. [Security Provider](#security)
 2. [Vnet (Virtual Network)](#vnet)
+3. [Vnic (Virtual Network Interface)](#Vnic)
 
 
-## Security Provider
+## Security Provider <a name="security"></a>
 
 When developing a Micro Services stack, usually security consideration comes a bit late
 in the game, creating tough challenges. With **Layer8**, this is the starting point!
@@ -36,7 +37,7 @@ the **same Security Provider** to interact with each other.
 What is the **Same Security Provider?** As this is an interfaced abstraction,
 the implementation is currently private...;o)
 
-## Vnet (Virtual Network)
+## Vnet (Virtual Network) <a name="vnet"></a>
 
 **Vnet** is a process running on each host as an OS service,
 that we want as part of the **Application Overlay**.
@@ -44,7 +45,7 @@ There is the flexability to have multiple Application **Vnet** hosted inside the
 or an OS service per Application Vnet
 ![alt text](https://github.com/saichler/layer8/blob/main/docs/vnet.png)
 
-## Vnic
+## Vnic (Virtual Network Interface) <a name="vnic"></a>
 
 The **Vnic** is a piece of code/library used inside the running process to connect and send/publish/request messages
 inside the **Vnet**. When instantiated, it autodetect and connects to the Vnet, **given**
