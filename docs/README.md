@@ -124,8 +124,11 @@ simple interface that allows a transparent & seemless API invocation between one
 ![alt text](https://github.com/saichler/layer8/blob/main/docs/service-points.png)
 
 ## Integrated Health Service & Leader/Follower Election <a name="health"></a>
-The **Vnic/Vnet** is pre-integrated with health monitoring statistics, that includes memory & CPU
-monitoring of the hosting process. It also intergrated with **Leader/Follower** election.
+The **Vnic/Vnet** is pre-integrated with health monitoring statistics **Service Point**. 
+This service is monitoring the Memory & CPU of the hosting process, alongside a **Keep Alive**
+heartbeat protocol.
+
+The service is also integrated with **Leader/Follower** election.
 
 ## Invoking an API <a name="api"></a>
 
