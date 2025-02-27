@@ -19,6 +19,11 @@ and extremely reduce the **Time to Market**.
 
 **And doing that without settling on Security & Quality**
 
+# Context
+1. [Security Provider](#security)
+2. [Vnet (Virtual Network)](#vnet)
+
+
 ## Security Provider
 
 When developing a Micro Services stack, usually security consideration comes a bit late
@@ -105,4 +110,39 @@ the **Vnic**. The input is just the model instance and a **GSQL Query**
 (https://github.com/saichler/gsql) in case of a GET. The Service Points framework
 will encapsulate all the message interactions over the Vnet.
 ![alt text](https://github.com/saichler/layer8/blob/main/docs/api.png)
+
+# From String
+https://github.com/saichler/shared/tree/main/go/share/strings
+
+# Introspector
+https://github.com/saichler/reflect/tree/main/go/reflect/inspect
+
+# Protobuf Object
+https://github.com/saichler/serializer/tree/main/go/serialize/object
+
+# Meta Data Driven Property & Dynamic Instantiation
+https://github.com/saichler/reflect/tree/main/go/reflect/property
+
+# Updater & Generic Model Change Set
+https://github.com/saichler/reflect/tree/main/go/reflect/updater
+
+# Deep Clone (Model Sensitive)
+https://github.com/saichler/reflect/tree/main/go/reflect/clone
+
+# Distributed Cache & Delta Notifications
+https://github.com/saichler/servicepoints/tree/main/go/points/cache
+
+# Distributed Collection Service
+https://github.com/saichler/collect/tree/main/go/collection/control
+
+# Distributed Model Agnostic Parsing
+https://github.com/saichler/collect/tree/main/go/collection/parsing
+
+# Distributed Model Agnostic Inventory
+https://github.com/saichler/collect/tree/main/go/collection/inventory
+
+
+
+
+
 
