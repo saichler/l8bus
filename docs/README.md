@@ -29,19 +29,20 @@ and extremely reduce the **Time to Market**.
 06. [Unicast Topic](#unicasttopic)
 07. [Request/Reply](#requestreply)
 08. [Service Points](#servicepoints)
-09. [Invoking an API](#api)
-10. [GSQL (Graph SQL)](#gsql)
-11. [From String](#fromstring)
-12. [Introspector](#introspectpr)
-13. [Protobug Object](#object)
-14. [Meta Data Driven Property & Dynamic Instantiation](#property)
-15. [Updater & Generic Model Change Set](#updater)
-16. [Deep Clone (Model Sensitive)](#clone)
-17. [Distributed Cache & Delta Notifications](#cache)
-18. [Distributed Collection Service](#collect)
-19. [Distributed Model Agnostic Parsing](#parse)
-20. [Distributed Model Agnostic Inventory](#inventory)
-21. [Traffic Generator](#generator)
+09. [Integrated Health Service & Leader/Follower Election](#health) 
+10. [Invoking an API](#api)
+11. [GSQL (Graph SQL)](#gsql)
+12. [From String](#fromstring)
+13. [Introspector](#introspectpr)
+14. [Protobug Object](#object)
+15. [Meta Data Driven Property & Dynamic Instantiation](#property)
+16. [Updater & Generic Model Change Set](#updater)
+17. [Deep Clone (Model Sensitive)](#clone)
+18. [Distributed Cache & Delta Notifications](#cache)
+19. [Distributed Collection Service](#collect)
+20. [Distributed Model Agnostic Parsing](#parse)
+21. [Distributed Model Agnostic Inventory](#inventory)
+22. [Traffic Generator](#generator)
 
 ## Security Provider <a name="security"></a>
 
@@ -121,6 +122,10 @@ messaging system to invoke the internal API, however there are open challenges w
 **Service Points** is encapsulating all the **Vnet Messaging, Security, AAA & the API** under a
 simple interface that allows a transparent & seemless API invocation between one **Micro Service** to another.
 ![alt text](https://github.com/saichler/layer8/blob/main/docs/service-points.png)
+
+## Integrated Health Service & Leader/Follower Election <a name="health"></a>
+The **Vnic/Vnet** is pre-integrated with health monitoring statistics, that includes memory & CPU
+monitoring of the hosting process. It also intergrated with **Leader/Follower** election.
 
 ## Invoking an API <a name="api"></a>
 
