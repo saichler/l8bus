@@ -97,9 +97,10 @@ func createEdge(port uint32, name string, addTestTopic bool) IVirtualNetworkInte
 	reg := registry.NewRegistry()
 	security := shallow_security.CreateShallowSecurityProvider()
 	config := &types.VNicConfig{MaxDataSize: resources.DEFAULT_MAX_DATA_SIZE,
-		RxQueueSize: resources.DEFAULT_QUEUE_SIZE,
-		TxQueueSize: resources.DEFAULT_QUEUE_SIZE,
-		LocalAlias:  name}
+		RxQueueSize:              resources.DEFAULT_QUEUE_SIZE,
+		TxQueueSize:              resources.DEFAULT_QUEUE_SIZE,
+		LocalAlias:               name,
+		KeepAliveIntervalSeconds: 2}
 	ins := inspect.NewIntrospect(reg)
 	sps := service_points.NewServicePoints(ins, config)
 

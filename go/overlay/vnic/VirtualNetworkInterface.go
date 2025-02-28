@@ -47,6 +47,7 @@ func NewVirtualNetworkInterface(resources interfaces.IResources, conn net.Conn) 
 	vnic.components = newSubomponents()
 	vnic.components.addComponent(newRX(vnic))
 	vnic.components.addComponent(newTX(vnic))
+	vnic.components.addComponent(newKeepAlive(vnic))
 	vnic.requests = newRequests()
 	vnic.resources.Registry().Register(&types.Message{})
 	vnic.stats = &types.HealthPointStats{}

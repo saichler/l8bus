@@ -69,7 +69,7 @@ func (this *SwitchTable) newHealthPoint(config *types.VNicConfig) *types.HealthP
 	hp.ZUuid = config.LocalUuid
 	hp.Status = types.HealthState_Up
 	hp.ServiceAreas = config.ServiceAreas
-	hp.StartTime = time.Now().UnixMicro()
+	hp.StartTime = time.Now().UnixMilli()
 	return hp
 }
 

@@ -63,7 +63,7 @@ func (this *TX) writeToSocket() {
 					break
 				}
 			}
-			this.vnic.stats.LastMsgTime = time.Now().UnixMicro()
+			this.vnic.stats.LastMsgTime = time.Now().UnixMilli()
 			this.vnic.stats.TxMsgCount++
 			this.vnic.stats.TxDataCount += int64(len(data))
 		} else {
