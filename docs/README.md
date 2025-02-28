@@ -102,8 +102,8 @@ the following fallback logic:
 ## Request/Reply <a name="requestreply"></a>
 
 Request/Reply is essentially sending a message and waiting for the reply. It is utilizing
-the Unicast & the Unicast Topic method is a synchronic way, expecting a reply message
-from the target.
+either the Unicast or the Unicast Topic methods, in a synchronic method, expecting a reply message
+from the target. As it is waiting for a reply, there is a timeout mechanism to avoid endless waiting.
 
 # Service Points - Standard API Sharing <a name="servicepoints"></a>
 
