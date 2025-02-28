@@ -171,7 +171,7 @@ Here is a sample implementation of a service that can have multiple instances: h
 Specially note the following: https://github.com/saichler/collect/blob/190f6d451e0d56dfa012047c0dd088c0e7716849/go/collection/config/ConfigCenter.go#L20
 
 Explanation: The single line of doing a "Put", is actually encapsulating the below sequence.
-
+![alt text](https://github.com/saichler/layer8/blob/main/docs/cache.png)
 
 
 ## GSQL (Graph SQL) <a name="gsql"></a>
