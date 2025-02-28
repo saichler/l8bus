@@ -7,6 +7,7 @@ import (
 	"github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/types"
 	"google.golang.org/protobuf/proto"
+	"time"
 )
 
 type SwitchTable struct {
@@ -51,19 +52,25 @@ func (this *SwitchTable) addVNic(vnic interfaces.IVirtualNetworkInterface) {
 		this.conns.addExternal(config.RemoteUuid, vnic)
 	}
 
-	hp := &types.HealthPoint{}
-	hp.Alias = config.RemoteAlias
-	hp.AUuid = config.RemoteUuid
-	hp.ZUuid = config.LocalUuid
-	hp.Status = types.HealthState_Up
-	hp.ServiceAreas = vnic.Resources().Config().ServiceAreas
+	hp := this.newHealthPoint(config)
+
 	hc := health.Health(this.switchService.resources)
 	hc.Add(hp)
 
 	for _, healthPoint := range hc.All() {
 		vnic.Multicast(types.CastMode_All, types.Action_POST, 0, health.TOPIC, healthPoint)
 	}
-	//switchTable.sendToAll(health.TOPIC, types.Action_POST, hp)
+}
+
+func (this *SwitchTable) newHealthPoint(config *types.VNicConfig) *types.HealthPoint {
+	hp := &types.HealthPoint{}
+	hp.Alias = config.RemoteAlias
+	hp.AUuid = config.RemoteUuid
+	hp.ZUuid = config.LocalUuid
+	hp.Status = types.HealthState_Up
+	hp.ServiceAreas = config.ServiceAreas
+	hp.StartTime = time.Now().UnixMicro()
+	return hp
 }
 
 func (this *SwitchTable) ServiceUuids(area int32, destination, sourceSwitch string) map[string]bool {

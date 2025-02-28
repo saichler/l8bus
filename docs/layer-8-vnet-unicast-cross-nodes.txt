@@ -1,10 +1,10 @@
-title Vnet Unicast cross nodes
+title Vnet Multicast cross nodes
 
-Vnic-on-node-1<->SecurityProvider: Prepare Encripted\nMessage
+Vnic-on-node-1<->SecurityProvider: Prepare Encrypted\nMessage
 Vnic-on-node-1->Vnet-on-node-1: Send message
 note
-note right of Vnet-on-node-1: Is destination\nexternal?
-Vnet-on-node-1->Vnet-on-node-2:Forward message\nto adjacent Vnet
-Vnet-on-node-2->Vnic-on-node-2:Forward message\nto the Vnic
+Vnet-on-node-1->Vnic-on-node-1: Forward to all local Vnics\nlistening on the area & topic
+Vnet-on-node-1->Vnet-on-node-2:If source Vnic local?\nForward message\nto adjacent Vnet
+Vnet-on-node-2->Vnic-on-node-2:Forward to all local Vnics\nlistening on the area & topic
 Vnic-on-node-2<->SecurityProvider:Decrypt Message
-
+note left of Vnet-on-node-2:Source is not local\nso do not forward to\nadjacent Vnet

@@ -79,6 +79,8 @@ func (rx *RX) notifyRawDataListener() {
 		data := rx.rx.Next()
 		// If data is not nil
 		if data != nil {
+			rx.vnic.stats.RxMsgCount++
+			rx.vnic.stats.RxDataCont += int64(len(data))
 			// if there is a dataListener, this is a switch
 			if rx.vnic.resources.DataListener() != nil {
 				rx.vnic.resources.DataListener().HandleData(data, rx.vnic)

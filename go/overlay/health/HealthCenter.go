@@ -117,9 +117,9 @@ func (this *HealthCenter) UuidsForRequest(cast types.CastMode, areaId int32, top
 			if sourceHp.ZUuid == uuidHp.ZUuid {
 				return uuid
 			}
-			if uuidHp.Status == types.HealthState_Up && (uuidHp.Started < started || started == -1) {
+			if uuidHp.Status == types.HealthState_Up && (uuidHp.StartTime < started || started == -1) {
 				leader = uuid
-				started = uuidHp.Started
+				started = uuidHp.StartTime
 			}
 		}
 		return leader
@@ -128,9 +128,9 @@ func (this *HealthCenter) UuidsForRequest(cast types.CastMode, areaId int32, top
 		started := int64(-1)
 		for uuid, _ := range uuids {
 			uuidHp := this.healthPoints.Get(uuid).(*types.HealthPoint)
-			if uuidHp.Status == types.HealthState_Up && (uuidHp.Started < started || started == -1) {
+			if uuidHp.Status == types.HealthState_Up && (uuidHp.StartTime < started || started == -1) {
 				leader = uuid
-				started = uuidHp.Started
+				started = uuidHp.StartTime
 			}
 		}
 		return leader

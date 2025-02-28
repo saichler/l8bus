@@ -7,6 +7,7 @@ import (
 	"github.com/saichler/shared/go/share/queues"
 	"github.com/saichler/shared/go/types"
 	"strconv"
+	"time"
 )
 
 type TX struct {
@@ -62,6 +63,9 @@ func (this *TX) writeToSocket() {
 					break
 				}
 			}
+			this.vnic.stats.LastMsgTime = time.Now().UnixMicro()
+			this.vnic.stats.TxMsgCount++
+			this.vnic.stats.TxDataCount += int64(len(data))
 		} else {
 			// if the data is nil, break and cleanup
 			break

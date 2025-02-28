@@ -55,3 +55,6 @@ func (this *HealthServicePoint) EndPoint() string {
 func (this *HealthServicePoint) Topic() string {
 	return TOPIC
 }
+func (this *HealthServicePoint) Transactional() bool {
+	return false
+}

@@ -34,6 +34,8 @@ type VirtualNetworkInterface struct {
 	last_reconnect_attempt int64
 
 	requests *Requests
+
+	stats *types.HealthPointStats
 }
 
 func NewVirtualNetworkInterface(resources interfaces.IResources, conn net.Conn) *VirtualNetworkInterface {
@@ -47,6 +49,7 @@ func NewVirtualNetworkInterface(resources interfaces.IResources, conn net.Conn) 
 	vnic.components.addComponent(newTX(vnic))
 	vnic.requests = newRequests()
 	vnic.resources.Registry().Register(&types.Message{})
+	vnic.stats = &types.HealthPointStats{}
 	if vnic.resources.Config().LocalUuid == "" {
 		vnic.resources.Config().LocalUuid = uuid.New().String()
 	}
