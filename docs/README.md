@@ -125,8 +125,8 @@ simple interface that allows a transparent & seemless API invocation between one
 masking the networking interaction between services.
 
 N number of services, each implemented as a service point, can reside inside the same **Process** or reside in
-a separated **Micro Services Processes**, all subject to the Author decision. The interaction will the same for the
-developer.
+a separated **Micro Services Processes**, all subject to the Author decision. The interaction will be 
+the same for the developer.
 ![alt text](https://github.com/saichler/layer8/blob/main/docs/service-points.png)
 
 ## Integrated Health Service & Leader/Follower Election <a name="health"></a>
