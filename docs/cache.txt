@@ -1,0 +1,15 @@
+title Cache Put Sequence
+
+Start->Cache: Call cache.Put(key, model element)
+Cache->Internal Cache: Check if element exist in the cache?
+Internal Cache->Cache:No
+Cache->Internal Cache:Put Element in cache
+Cache-> Adjacent Cache: Send Add Notification.
+note left of Adjacent Cache:Add to internal\ncache
+Cache->Start: complete
+Internal Cache->Cache:Yes
+note left of Cache:Calculate Changes between\ninput model element &\ncache model element
+Cache->Adjacent Cache: Send Change Notification with\nthe changes.
+note left of Adjacent Cache:Apply changes to\ninternal cache
+Cache->Internal Cache:Apply changes to\internal cache
+Cache->Start:complete

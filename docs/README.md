@@ -29,17 +29,17 @@ and extremely reduce the **Time to Market**.
 6. [Unicast Topic](#unicasttopic)
 7. [Request/Reply](#requestreply)
 8. [Service Points](#servicepoints)
-9. [Integrated Health Service & Leader/Follower Election](#health) 
+9. [Integrated Health Service & Leader/Follower Election](#health)
 10. [Invoking an API](#api)
 11. [Service Transactions](#transactions)
-12. [GSQL (Graph SQL)](#gsql)
-13. [From String](#fromstring)
-14. [Introspector](#introspectpr)
-15. [Protobug Object](#object)
-16. [Meta Data Driven Property & Dynamic Instantiation](#property)
-17. [Updater & Generic Model Change Set](#updater)
-18. [Deep Clone (Model Sensitive)](#clone)
-19. [Distributed Cache & Delta Notifications](#cache)
+12. [Model Agnostic Distributed Cache](#cache)
+13. [GSQL (Graph SQL)](#gsql)
+14. [From String](#fromstring)
+15. [Introspector](#introspectpr)
+16. [Protobug Object](#object)
+17. [Meta Data Driven Property & Dynamic Instantiation](#property)
+18. [Updater & Generic Model Change Set](#updater)
+19. [Deep Clone (Model Sensitive)](#clone)
 20. [Distributed Collection Service](#collect)
 21. [Distributed Model Agnostic Parsing](#parse)
 22. [Distributed Model Agnostic Inventory](#inventory)
@@ -121,16 +121,17 @@ messaging system to invoke the internal API, however there are open challenges w
 ## Service Points
 
 **Service Points** is encapsulating all the **Vnet Messaging, Security, AAA & the API** under a
-simple interface that allows a transparent & seemless API invocation between one **Micro Service** to another, 
+simple interface that allows a transparent & seemless API invocation between one **Micro Service** to another,
 masking the networking interaction between services.
 
 N number of services, each implemented as a service point, can reside inside the same **Process** or reside in
-a separated **Micro Services Processes**, all subject to the Author decision. The interaction will be 
+a separated **Micro Services Processes**, all subject to the Author decision. The interaction will be
 the same for the developer.
 ![alt text](https://github.com/saichler/layer8/blob/main/docs/service-points.png)
 
 ## Integrated Health Service & Leader/Follower Election <a name="health"></a>
-The **Vnic/Vnet** is pre-integrated with health monitoring statistics **Service Point**. 
+
+The **Vnic/Vnet** is pre-integrated with health monitoring statistics **Service Point**.
 This service is monitoring the Memory & CPU of the hosting process, alongside a **Keep Alive**
 heartbeat protocol.
 
@@ -145,10 +146,33 @@ will encapsulate all the message interactions over the Vnet.
 ![alt text](https://github.com/saichler/layer8/blob/main/docs/api.png)
 
 ## Service Transactions <a name="transactions"></a>
+
 A **Service Point** can be registered inside multiple **Vnic** (e.g. **Micro Services**), forming
 A **Topic Overlay** for the provided service. In case of a **Stateful** service, the **Service Point**
-has a michanism of a **Distributed Transaction** to apply a change or a state and rollback in case of
-a failure in one of the instances.
+can be registered as **Transactional**. When a **Service Point** is defined as **Transactional**,
+the transaction protocol will be applied to distribute the messages between the **Topic** listeners
+to ensure concurrent between the stateful instances.
+
+# Model Agnostic Distributed Cache <a name="cache"></a>
+
+https://github.com/saichler/servicepoints/tree/main/go/points/cache
+One of the big challenges of multi instance **stateful** service is synchronizing the **State**
+between the instances. The **State** is usually some structured model in a singleton cache, where
+each element is a nested tree/graph model. The hard task of keeping the cache synchronized between
+the different instances, while sending only the changes over the wire, is encapsulated in the **Service Points Cache**
+componet.
+
+The **Service Point Cache** component is encapsulating all the model changeset calculation, networking &
+changeset applying on each instance into a look and feel of working with a **local instance**. All of
+this, which being **Agnostic to the model & its structure.**
+
+In a nutshell, it is extremely simplifying building a stateful service with multiple instances.
+Here is a sample implementation of a service that can have multiple instances: https://github.com/saichler/collect/tree/main/go/collection/config.
+Specially note the following: https://github.com/saichler/collect/blob/190f6d451e0d56dfa012047c0dd088c0e7716849/go/collection/config/ConfigCenter.go#L20
+
+Explanation: The single line of doing a "Put", is actually encapsulating the below sequence.
+
+
 
 ## GSQL (Graph SQL) <a name="gsql"></a>
 
@@ -177,10 +201,6 @@ https://github.com/saichler/reflect/tree/main/go/reflect/updater
 # Deep Clone (Model Sensitive) <a name="clone"></a>
 
 https://github.com/saichler/reflect/tree/main/go/reflect/clone
-
-# Distributed Cache & Delta Notifications <a name="cache"></a>
-
-https://github.com/saichler/servicepoints/tree/main/go/points/cache
 
 # Distributed Collection Service <a name="collect"></a>
 
