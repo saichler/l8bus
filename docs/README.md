@@ -50,8 +50,8 @@ and extremely reduce the **Time to Market**.
 When developing a Micro Services stack, usually security consideration comes a bit late
 in the game, creating tough challenges. With **Layer8**, this is the starting point!
 
-The **Security Provider** is an abstraction inteface for AAA & Encryption, being used and utilized
-the development stack & frameworks. **The Prime rule** is that two component need to have
+The **Security Provider** is an abstracted plugin inteface for AAA & Encryption, being used and utilized
+by the development stack & frameworks. **The Prime rule** is that two component need to have
 the **same Security Provider** to interact with each other.
 
 What is the **Same Security Provider?** As this is an interfaced abstraction,
