@@ -11,5 +11,5 @@ Internal Cache->Cache:Yes
 note left of Cache:Calculate Changes between\ninput model element &\ncache model element
 Cache->Adjacent Cache: Send Change Notification with\nthe changes.
 note left of Adjacent Cache:Apply changes to\ninternal cache
-Cache->Internal Cache:Apply changes to\internal cache
+Cache->Internal Cache:Apply changes to\ninternal cache
 Cache->Start:complete
