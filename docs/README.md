@@ -154,8 +154,8 @@ the transaction protocol will be applied to distribute the messages between the 
 to ensure concurrent between the stateful instances.
 
 # Model Agnostic Distributed Cache <a name="cache"></a>
-
 https://github.com/saichler/servicepoints/tree/main/go/points/cache
+
 One of the big challenges of multi instance **stateful** service is synchronizing the **State**
 between the instances. The **State** is usually some structured model in a singleton cache, where
 each element is a nested tree/graph model. The hard task of keeping the cache synchronized between
