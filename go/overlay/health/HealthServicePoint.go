@@ -25,28 +25,28 @@ func RegisterHealth(resources interfaces.IResources, listener cache.ICacheListen
 	}
 }
 
-func (this *HealthServicePoint) Post(pb proto.Message, vnic interfaces.IVirtualNetworkInterface) (proto.Message, error) {
+func (this *HealthServicePoint) Post(pb proto.Message, resourcs interfaces.IResources) (proto.Message, error) {
 	hp := pb.(*types.HealthPoint)
 	this.healthCenter.Add(hp)
 	return nil, nil
 }
-func (this *HealthServicePoint) Put(pb proto.Message, vnic interfaces.IVirtualNetworkInterface) (proto.Message, error) {
+func (this *HealthServicePoint) Put(pb proto.Message, resourcs interfaces.IResources) (proto.Message, error) {
 	hp := pb.(*types.HealthPoint)
 	this.healthCenter.Update(hp)
 	return nil, nil
 }
-func (this *HealthServicePoint) Patch(pb proto.Message, vnic interfaces.IVirtualNetworkInterface) (proto.Message, error) {
+func (this *HealthServicePoint) Patch(pb proto.Message, resourcs interfaces.IResources) (proto.Message, error) {
 	hp := pb.(*types.HealthPoint)
 	this.healthCenter.Update(hp)
 	return nil, nil
 }
-func (this *HealthServicePoint) Delete(pb proto.Message, vnic interfaces.IVirtualNetworkInterface) (proto.Message, error) {
+func (this *HealthServicePoint) Delete(pb proto.Message, resourcs interfaces.IResources) (proto.Message, error) {
 	return nil, nil
 }
-func (this *HealthServicePoint) Get(pb proto.Message, vnic interfaces.IVirtualNetworkInterface) (proto.Message, error) {
+func (this *HealthServicePoint) Get(pb proto.Message, resourcs interfaces.IResources) (proto.Message, error) {
 	return nil, nil
 }
-func (this *HealthServicePoint) Failed(pb proto.Message, vnic interfaces.IVirtualNetworkInterface, msg *types.Message) (proto.Message, error) {
+func (this *HealthServicePoint) Failed(pb proto.Message, resourcs interfaces.IResources, msg *types.Message) (proto.Message, error) {
 	return nil, nil
 }
 func (this *HealthServicePoint) EndPoint() string {

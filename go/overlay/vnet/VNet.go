@@ -38,7 +38,7 @@ func NewVNet(resources interfaces.IResources) *VNet {
 	net.running = true
 	net.resources.Config().LocalUuid = uuid.New().String()
 	net.switchTable = newSwitchTable(net)
-	net.resources.Config().ServiceAreas = net.resources.ServicePoints().Areas()
+	net.resources.Config().ServiceAreas = net.resources.ServicePoints().ServiceAreas()
 	health.RegisterHealth(net.resources, net)
 	return net
 }

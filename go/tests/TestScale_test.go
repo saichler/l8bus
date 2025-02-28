@@ -12,11 +12,12 @@ import (
 	"time"
 )
 
+/*
 func TestMain(m *testing.M) {
 	setup()
 	m.Run()
 	tear()
-}
+}*/
 
 func scaleTest(size, exp int, timeout int64, t *testing.T) bool {
 	start := time.Now().Unix()
@@ -24,7 +25,7 @@ func scaleTest(size, exp int, timeout int64, t *testing.T) bool {
 		pb := &tests.TestProto{}
 		pb.MyString = strings.New("Str-", i).String()
 		pb.MyInt32 = int32(i)
-		err := eg2.Do(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
+		err := eg2.Unicast(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
 		if err != nil {
 			log.Fail(t, err)
 			return false
