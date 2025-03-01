@@ -134,22 +134,55 @@ func (vnic *VirtualNetworkInterface) SendMessage(data []byte) error {
 }
 
 func (vnic *VirtualNetworkInterface) Unicast(action types.Action, destination string, any interface{}) error {
-	return vnic.components.TX().Unicast(action, destination, any, 0, false, false, vnic.protocol.NextMessageNumber())
+	return vnic.components.TX().Unicast(action, destination, any, 0, false, false, vnic.protocol.NextMessageNumber(), nil)
 }
 
 func (vnic *VirtualNetworkInterface) Multicast(cast types.CastMode, action types.Action, vlan int32, topic string, any interface{}) error {
-	return vnic.components.TX().Multicast(action, vlan, topic, any, 0, false, false, vnic.protocol.NextMessageNumber())
+	return vnic.components.TX().Multicast(action, vlan, topic, any, 0, false, false, vnic.protocol.NextMessageNumber(), nil)
 }
 
 func (vnic *VirtualNetworkInterface) Request(cast types.CastMode, action types.Action, vlan int32, topic string, any interface{}) (interface{}, error) {
 	hc := health.Health(vnic.resources)
 	destination := hc.UuidsForRequest(cast, vlan, topic, vnic.resources.Config().LocalUuid)
 
-	request := vnic.requests.newRequest(vnic.protocol.NextMessageNumber())
+	request := vnic.requests.newRequest(vnic.protocol.NextMessageNumber(), vnic.resources.Config().LocalUuid)
 	request.cond.L.Lock()
 	defer request.cond.L.Unlock()
 
-	e := vnic.components.TX().Unicast(action, destination, any, 0, true, false, request.msgNum)
+	e := vnic.components.TX().Unicast(action, destination, any, 0, true, false, request.msgNum, nil)
+	if e != nil {
+		return nil, e
+	}
+	request.cond.Wait()
+	return request.response, nil
+}
+
+func (vnic *VirtualNetworkInterface) Reply(msg *types.Message, resp interface{}) error {
+	msg.Action = types.Action_Reply
+	msg.Topic = msg.SourceUuid
+	msg.SourceUuid = vnic.resources.Config().LocalUuid
+	msg.SourceVnetUuid = vnic.resources.Config().RemoteUuid
+	msg.IsRequest = false
+	msg.IsReply = true
+	data, e := vnic.protocol.CreateMessageForm(msg, resp)
+	if e != nil {
+		vnic.resources.Logger().Error(e)
+		return e
+	}
+	return vnic.SendMessage(data)
+}
+
+func (vnic *VirtualNetworkInterface) Forward(msg *types.Message, destination string) (interface{}, error) {
+	pb, err := vnic.protocol.ProtoOf(msg)
+	if err != nil {
+		return nil, err
+	}
+
+	request := vnic.requests.newRequest(vnic.protocol.NextMessageNumber(), vnic.resources.Config().LocalUuid)
+	request.cond.L.Lock()
+	defer request.cond.L.Unlock()
+
+	e := vnic.components.TX().Unicast(msg.Action, destination, pb, 0, true, false, request.msgNum, msg.Tr)
 	if e != nil {
 		return nil, e
 	}

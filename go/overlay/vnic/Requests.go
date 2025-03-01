@@ -1,39 +1,55 @@
 package vnic
 
-import "sync"
+import (
+	"bytes"
+	"strconv"
+	"sync"
+)
 
 type Requests struct {
-	pending map[int32]*Request
+	pending map[string]*Request
 	mtx     *sync.Mutex
 }
 
 type Request struct {
-	cond     *sync.Cond
-	msgNum   int32
-	response interface{}
+	cond      *sync.Cond
+	msgSource string
+	msgNum    int32
+	response  interface{}
 }
 
 func newRequests() *Requests {
 	this := &Requests{}
-	this.pending = make(map[int32]*Request)
+	this.pending = make(map[string]*Request)
 	this.mtx = &sync.Mutex{}
 	return this
 }
 
-func (this *Requests) newRequest(msgNum int32) *Request {
+func (this *Requests) newRequest(msgNum int32, msgSource string) *Request {
 	request := &Request{}
 	request.msgNum = msgNum
+	request.msgSource = msgSource
 	request.cond = sync.NewCond(&sync.Mutex{})
+	key := bytes.Buffer{}
+	key.WriteString(msgSource)
+	key.WriteString(strconv.Itoa(int(msgNum)))
 	this.mtx.Lock()
 	defer this.mtx.Unlock()
-	this.pending[msgNum] = request
+	_, ok := this.pending[key.String()]
+	if ok {
+		panic("duplicated request")
+	}
+	this.pending[key.String()] = request
 	return request
 }
 
-func (this *Requests) getRequest(msgNum int32) *Request {
+func (this *Requests) getRequest(msgNum int32, msgSource string) *Request {
+	key := bytes.Buffer{}
+	key.WriteString(msgSource)
+	key.WriteString(strconv.Itoa(int(msgNum)))
 	this.mtx.Lock()
 	defer this.mtx.Unlock()
-	request := this.pending[msgNum]
-	delete(this.pending, msgNum)
+	request := this.pending[key.String()]
+	delete(this.pending, key.String())
 	return request
 }

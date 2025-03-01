@@ -4,6 +4,7 @@ import (
 	"github.com/saichler/shared/go/share/nets"
 	"github.com/saichler/shared/go/share/queues"
 	"github.com/saichler/shared/go/types"
+	"google.golang.org/protobuf/proto"
 )
 
 type RX struct {
@@ -96,35 +97,28 @@ func (rx *RX) notifyRawDataListener() {
 					continue
 				}
 				// Otherwise call the handler per the action & the type
-				if msg.Action == types.Action_Reply {
-					request := rx.vnic.requests.getRequest(msg.Sequence)
-					request.response = pb
-					request.cond.Broadcast()
-				} else if msg.Action == types.Action_Notify {
-					rx.vnic.resources.ServicePoints().Notify(pb, msg.Action, rx.vnic, msg)
-				} else {
-					resp, err := rx.vnic.resources.ServicePoints().Handle(pb, msg.Action, rx.vnic, msg)
-					if err != nil {
-						rx.vnic.resources.Logger().Error(err)
-					}
-					if msg.IsRequest {
-						msg.Action = types.Action_Reply
-						msg.Topic = msg.SourceUuid
-						msg.SourceUuid = rx.vnic.resources.Config().LocalUuid
-						msg.SourceVnetUuid = rx.vnic.resources.Config().RemoteUuid
-						msg.IsRequest = false
-						msg.IsReply = true
-						data, err := rx.vnic.protocol.CreateMessageForm(msg, resp)
-						if err != nil {
-							rx.vnic.resources.Logger().Error(err)
-							return
-						}
-						rx.vnic.SendMessage(data)
-					}
-				}
+				go rx.handleMessage(msg, pb)
 			}
 		}
 	}
 	rx.vnic.resources.Logger().Debug("ND for ", rx.vnic.name, " has Ended")
 	rx.vnic.Shutdown()
+}
+
+func (rx *RX) handleMessage(msg *types.Message, pb proto.Message) {
+	if msg.Action == types.Action_Reply {
+		request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.Config().LocalUuid)
+		request.response = pb
+		request.cond.Broadcast()
+	} else if msg.Action == types.Action_Notify {
+		rx.vnic.resources.ServicePoints().Notify(pb, msg.Action, rx.vnic, msg)
+	} else {
+		resp, err := rx.vnic.resources.ServicePoints().Handle(pb, msg.Action, rx.vnic, msg)
+		if err != nil {
+			rx.vnic.resources.Logger().Error(err)
+		}
+		if msg.IsRequest {
+			rx.vnic.Reply(msg, resp)
+		}
+	}
 }

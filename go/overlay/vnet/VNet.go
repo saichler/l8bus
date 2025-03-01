@@ -243,8 +243,15 @@ func (this *VNet) switchDataReceived(data []byte, vnic interfaces.IVirtualNetwor
 		this.resources.Logger().Error(err)
 		return
 	}
+
 	pb, err := this.protocol.ProtoOf(msg)
 	if err != nil {
+		if msg.Tr != nil {
+			//This message should not be processed and we should just
+			//reply with nil to unblock the transaction
+			vnic.Reply(msg, nil)
+			return
+		}
 		this.resources.Logger().Error(err)
 		return
 	}

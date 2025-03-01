@@ -62,15 +62,18 @@ func (this *Protocol) NextMessageNumber() int32 {
 }
 
 func (this *Protocol) CreateMessageFor(vlan int32, topic string, priority types.Priority,
-	action types.Action, source, sourceVnet string, any interface{}, isRequest, isReply bool, msgNum int32) ([]byte, error) {
+	action types.Action, source, sourceVnet string, any interface{}, isRequest, isReply bool, msgNum int32, tr *types.Transaction) ([]byte, error) {
 
 	//first marshal the protobuf into bytes
-	//Expecting a crash here if it is not a protocol buffer
-	//Will implement generic serializer via registry in the future
-	pb := any.(proto.Message)
-	data, err := this.serializer.Marshal(pb, nil)
-	if err != nil {
-		return nil, err
+	var data []byte
+	var err error
+
+	pb, ok := any.(proto.Message)
+	if ok {
+		data, err = this.serializer.Marshal(pb, nil)
+		if err != nil {
+			return nil, err
+		}
 	}
 	//Encode the data
 	encData, err := this.resources.Security().Encrypt(data)
@@ -86,10 +89,15 @@ func (this *Protocol) CreateMessageFor(vlan int32, topic string, priority types.
 	msg.Sequence = msgNum
 	msg.Priority = priority
 	msg.Data = encData
-	msg.Type = reflect.ValueOf(pb).Elem().Type().Name()
+	if pb == nil {
+		msg.Type = topic
+	} else {
+		msg.Type = reflect.ValueOf(pb).Elem().Type().Name()
+	}
 	msg.Action = action
 	msg.IsRequest = isRequest
 	msg.IsReply = isReply
+	msg.Tr = tr
 	d, e := this.DataFromMessage(msg)
 	return d, e
 }
@@ -98,8 +106,12 @@ func (this *Protocol) CreateMessageForm(msg *types.Message, any interface{}) ([]
 	//first marshal the protobuf into bytes
 	//Expecting a crash here if it is not a protocol buffer
 	//Will implement generic serializer via registry in the future
-	pb := any.(proto.Message)
-	data, err := this.serializer.Marshal(pb, nil)
+	var data []byte
+	var err error
+	pb, ok := any.(proto.Message)
+	if ok {
+		data, err = this.serializer.Marshal(pb, nil)
+	}
 	if err != nil {
 		return nil, err
 	}

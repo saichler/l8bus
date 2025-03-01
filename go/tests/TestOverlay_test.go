@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/shared/go/tests"
 	"github.com/saichler/shared/go/tests/infra"
@@ -33,13 +34,16 @@ func TestTopology(t *testing.T) {
 func TestSendMultiCast(t *testing.T) {
 	defer reset("TestSendMultiCast")
 	pb := &tests.TestProto{}
-	err := eg1.Multicast(types.CastMode_All, types.Action_POST, 0, infra.TEST_TOPIC, pb)
+	err := eg4.Multicast(types.CastMode_All, types.Action_POST, 0, infra.TEST_TOPIC, pb)
 	if err != nil {
 		log.Fail(t, err)
 		return
 	}
 	sleep()
 	sleep()
+
+	all := health.Health(eg3.Resources()).Uuids("TestProto", 0)
+	fmt.Println(len(all))
 
 	for eg, tsp := range tsps {
 		if tsp.PostNumber != 1 && eg != "eg5" {

@@ -28,7 +28,7 @@ func (this *SwitchTable) uniCastToAll(vlan int32, topic string, action types.Act
 	conns := this.conns.all()
 	data, err := this.switchService.protocol.CreateMessageFor(vlan, topic, types.Priority_P0, action,
 		this.switchService.resources.Config().LocalUuid,
-		this.switchService.resources.Config().LocalUuid, pb, false, false, this.switchService.protocol.NextMessageNumber())
+		this.switchService.resources.Config().LocalUuid, pb, false, false, this.switchService.protocol.NextMessageNumber(), nil)
 	if err != nil {
 		this.switchService.resources.Logger().Error("Failed to create message to send to all: ", err)
 		return

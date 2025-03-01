@@ -8,6 +8,7 @@ import (
 type Services struct {
 	topics      map[string]*Topic
 	aSide2zSide map[string]string
+	vnetUuid    map[string]bool
 	mtx         *sync.RWMutex
 }
 
@@ -116,6 +117,7 @@ func (this *Services) Update(healthPoint *types.HealthPoint) {
 			calcLeader(vlan)
 		}
 	}()
+
 	this.mtx.Lock()
 	defer this.mtx.Unlock()
 
@@ -135,6 +137,12 @@ func calcLeader(vlan *Vlan) {
 			vlan.leader = uuid
 		}
 	}
+}
+
+func (this *Services) setVnetUuid(uuid string) {
+	this.mtx.Lock()
+	defer this.mtx.Unlock()
+	this.vnetUuid[uuid] = true
 }
 
 func (this *Services) AllTopics() *types.Topics {
