@@ -1,7 +1,6 @@
 package health
 
 import (
-	"fmt"
 	"github.com/saichler/shared/go/types"
 	"sync"
 )
@@ -80,7 +79,6 @@ func (this *Services) checkHealthPointDown(healthPoint *types.HealthPoint, vlans
 				_, ok := vlan.members[healthPoint.AUuid]
 				if ok {
 					*vlansToCalcLeader = append(*vlansToCalcLeader, vlan)
-					fmt.Println("deleting ", healthPoint.AUuid)
 					delete(vlan.members, healthPoint.AUuid)
 				}
 			}
