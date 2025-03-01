@@ -2,7 +2,6 @@ package vnet
 
 import (
 	"errors"
-	"github.com/google/uuid"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
@@ -36,9 +35,8 @@ func NewVNet(resources interfaces.IResources) *VNet {
 		resources.Introspector())
 	net.protocol = protocol.New(net.resources)
 	net.running = true
-	net.resources.Config().LocalUuid = uuid.New().String()
+	net.resources.Config().LocalUuid = interfaces.NewUuid()
 	net.switchTable = newSwitchTable(net)
-	net.resources.Config().Vlans = net.resources.ServicePoints().Vlans()
 	health.RegisterHealth(net.resources, net)
 	return net
 }
@@ -204,7 +202,7 @@ func (this *VNet) HandleData(data []byte, vnic interfaces.IVirtualNetworkInterfa
 	}
 }
 
-func (this *VNet) uniCastToPorts(uuids map[string]int64, data []byte, sourceSwitch string) {
+func (this *VNet) uniCastToPorts(uuids map[string]bool, data []byte, sourceSwitch string) {
 	alreadySent := make(map[string]bool)
 	for vnicUuid, _ := range uuids {
 		isHope0 := this.resources.Config().LocalUuid == sourceSwitch
@@ -229,7 +227,7 @@ func (this *VNet) publish(pb proto.Message) {
 func (this *VNet) ShutdownVNic(vnic interfaces.IVirtualNetworkInterface) {
 	h := health.Health(this.resources)
 	uuid := vnic.Resources().Config().RemoteUuid
-	hp := h.GetHealthPoint(uuid)
+	hp := h.HealthPoint(uuid)
 	if hp.Status != types.HealthState_Down {
 		hp.Status = types.HealthState_Down
 		h.Update(hp)

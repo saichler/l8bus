@@ -66,7 +66,6 @@ func NewVirtualNetworkInterface(resources interfaces.IResources, conn net.Conn) 
 func (vnic *VirtualNetworkInterface) Start() {
 	vnic.running = true
 	if vnic.conn == nil {
-		vnic.resources.Config().Vlans = vnic.resources.ServicePoints().Vlans()
 		vnic.connectToSwitch()
 	} else {
 		vnic.receiveConnection()

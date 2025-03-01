@@ -68,14 +68,14 @@ func (this *SwitchTable) newHealthPoint(config *types.VNicConfig) *types.HealthP
 	hp.AUuid = config.RemoteUuid
 	hp.ZUuid = config.LocalUuid
 	hp.Status = types.HealthState_Up
-	hp.Vlans = config.Vlans
+	hp.Topics = config.Topics
 	hp.StartTime = time.Now().UnixMilli()
 	return hp
 }
 
-func (this *SwitchTable) ServiceUuids(vlan int32, destination, sourceSwitch string) map[string]int64 {
+func (this *SwitchTable) ServiceUuids(vlan int32, destination, sourceSwitch string) map[string]bool {
 	h := health.Health(this.switchService.resources)
-	uuidsMap := h.UuidsForTopic(vlan, destination)
+	uuidsMap := h.Uuids(destination, vlan)
 	fmt.Println("Topic:", destination, "UUIds:", uuidsMap)
 	if uuidsMap != nil && sourceSwitch != this.switchService.resources.Config().LocalUuid {
 		// When the message source is not within this switch,

@@ -139,7 +139,7 @@ func TestDestinationUnreachable(t *testing.T) {
 	}
 
 	h := health.Health(eg2.Resources())
-	eg4h := h.GetHealthPoint(eg4.Resources().Config().LocalUuid)
+	eg4h := h.HealthPoint(eg4.Resources().Config().LocalUuid)
 	if eg4h.Status != types.HealthState_Down {
 		log.Fail(t, "eg4 state", " Not Down")
 		return
