@@ -61,7 +61,7 @@ func (this *Protocol) NextMessageNumber() int32 {
 	return this.sequence.Add(1)
 }
 
-func (this *Protocol) CreateMessageFor(area int32, topic string, priority types.Priority,
+func (this *Protocol) CreateMessageFor(vlan int32, topic string, priority types.Priority,
 	action types.Action, source, sourceVnet string, any interface{}, isRequest, isReply bool, msgNum int32) ([]byte, error) {
 
 	//first marshal the protobuf into bytes
@@ -81,7 +81,7 @@ func (this *Protocol) CreateMessageFor(area int32, topic string, priority types.
 	msg := &types.Message{}
 	msg.SourceUuid = source
 	msg.SourceVnetUuid = sourceVnet
-	msg.Area = area
+	msg.Vlan = vlan
 	msg.Topic = topic
 	msg.Sequence = msgNum
 	msg.Priority = priority

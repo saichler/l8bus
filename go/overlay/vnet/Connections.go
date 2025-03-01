@@ -99,7 +99,7 @@ func (this *Connections) all() map[string]interfaces.IVirtualNetworkInterface {
 	return all
 }
 
-func (this *Connections) filterExternals(uuids map[string]bool) {
+func (this *Connections) filterExternals(uuids map[string]int64) {
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
 	for uuid, _ := range this.external {

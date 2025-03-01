@@ -11,7 +11,7 @@ import (
 type HealthCenter struct {
 	mtx          *sync.RWMutex
 	healthPoints *cache.Cache
-	services     *types.Areas
+	services     *types.Vlans
 	resources    interfaces.IResources
 }
 
@@ -20,31 +20,31 @@ func newHealthCenter(resources interfaces.IResources, listener cache.ICacheListe
 	rnode, _ := resources.Introspector().Inspect(&types.HealthPoint{})
 	resources.Introspector().AddDecorator(types.DecoratorType_Primary, []string{"AUuid"}, rnode)
 	hc.healthPoints = cache.NewModelCache(resources.Config().LocalUuid, listener, resources.Introspector())
-	hc.services = &types.Areas{}
-	hc.services.AreasMap = make(map[int32]*types.Area)
+	hc.services = &types.Vlans{}
+	hc.services.Vlans = make(map[int32]*types.Vlan)
 	hc.mtx = &sync.RWMutex{}
 	hc.resources = resources
 	return hc
 }
 
-func (this *HealthCenter) updateServices(areas *types.Areas) {
+func (this *HealthCenter) updateServices(vlans *types.Vlans) {
 	this.mtx.Lock()
 	defer this.mtx.Unlock()
-	if areas != nil {
-		for areaId, area := range areas.AreasMap {
-			_, ok := this.services.AreasMap[areaId]
+	if vlans != nil {
+		for vlanId, vlan := range vlans.Vlans {
+			_, ok := this.services.Vlans[vlanId]
 			if !ok {
-				this.services.AreasMap[areaId] = area
+				this.services.Vlans[vlanId] = vlan
 				continue
 			}
-			for topic, addrs := range area.Topics {
-				_, ok := this.services.AreasMap[areaId].Topics[topic]
+			for topic, members := range vlan.Members {
+				_, ok = this.services.Vlans[vlanId].Members[topic]
 				if !ok {
-					this.services.AreasMap[areaId].Topics[topic] = addrs
+					this.services.Vlans[vlanId].Members[topic] = members
 					continue
 				}
-				for k, v := range addrs.Uuids {
-					this.services.AreasMap[areaId].Topics[topic].Uuids[k] = v
+				for k, v := range members.MemberToJoinTime {
+					this.services.Vlans[vlanId].Members[topic].MemberToJoinTime[k] = v
 				}
 			}
 		}
@@ -53,7 +53,7 @@ func (this *HealthCenter) updateServices(areas *types.Areas) {
 
 func (this *HealthCenter) Add(healthPoint *types.HealthPoint) {
 	this.healthPoints.Put(healthPoint.AUuid, healthPoint)
-	this.updateServices(healthPoint.ServiceAreas)
+	this.updateServices(healthPoint.Vlans)
 }
 
 func (this *HealthCenter) Update(healthPoint *types.HealthPoint) {
@@ -62,7 +62,7 @@ func (this *HealthCenter) Update(healthPoint *types.HealthPoint) {
 		this.resources.Logger().Error("Error updating health point ", err)
 		return
 	}
-	this.updateServices(healthPoint.ServiceAreas)
+	this.updateServices(healthPoint.Vlans)
 }
 
 func (this *HealthCenter) ZSide(uuid string) string {
@@ -78,29 +78,29 @@ func (this *HealthCenter) GetHealthPoint(uuid string) *types.HealthPoint {
 	return hp
 }
 
-func (this *HealthCenter) UuidsForTopic(areaId int32, topic string) map[string]bool {
-	result := make(map[string]bool)
+func (this *HealthCenter) UuidsForTopic(vlanId int32, topic string) map[string]int64 {
+	result := make(map[string]int64)
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
-	area, ok := this.services.AreasMap[areaId]
+	vlan, ok := this.services.Vlans[vlanId]
 	if !ok {
 		return result
 	}
-	addrs, ok := area.Topics[topic]
+	members, ok := vlan.Members[topic]
 	if !ok {
 		return result
 	}
-	for uuid, _ := range addrs.Uuids {
-		result[uuid] = true
+	for uuid, joinTime := range members.MemberToJoinTime {
+		result[uuid] = joinTime
 	}
 	return result
 }
 
-func (this *HealthCenter) UuidsForRequest(cast types.CastMode, areaId int32, topic, source string) string {
+func (this *HealthCenter) UuidsForRequest(cast types.CastMode, vlanId int32, topic, source string) string {
 	if len(topic) == protocol.UNICAST_ADDRESS_SIZE {
 		return topic
 	}
-	uuids := this.UuidsForTopic(areaId, topic)
+	uuids := this.UuidsForTopic(vlanId, topic)
 	switch cast {
 	case types.CastMode_All:
 		fallthrough
@@ -138,9 +138,9 @@ func (this *HealthCenter) UuidsForRequest(cast types.CastMode, areaId int32, top
 	return ""
 }
 
-func healthPoint(item interface{}) interface{} {
+func healthPoint(item interface{}) (bool, interface{}) {
 	hp := item.(*types.HealthPoint)
-	return hp
+	return true, hp
 }
 
 func (this *HealthCenter) All() map[string]*types.HealthPoint {
@@ -151,6 +151,11 @@ func (this *HealthCenter) All() map[string]*types.HealthPoint {
 	}
 	return result
 }
+
+/*
+func (this *HealthCenter) Leader(area int32, topic string) map[string]bool {
+
+}*/
 
 func Health(resource interfaces.IResources) *HealthCenter {
 	sp, ok := resource.ServicePoints().ServicePointHandler(TOPIC)

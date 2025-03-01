@@ -38,7 +38,7 @@ func NewVNet(resources interfaces.IResources) *VNet {
 	net.running = true
 	net.resources.Config().LocalUuid = uuid.New().String()
 	net.switchTable = newSwitchTable(net)
-	net.resources.Config().ServiceAreas = net.resources.ServicePoints().ServiceAreas()
+	net.resources.Config().Vlans = net.resources.ServicePoints().Vlans()
 	health.RegisterHealth(net.resources, net)
 	return net
 }
@@ -165,11 +165,11 @@ func (this *VNet) Failed(data []byte, vnic interfaces.IVirtualNetworkInterface, 
 
 func (this *VNet) HandleData(data []byte, vnic interfaces.IVirtualNetworkInterface) {
 	this.resources.Logger().Trace("********** Swith Service - HandleData **********")
-	source, sourceVnet, destination, area, _ := protocol.HeaderOf(data)
+	source, sourceVnet, destination, vlan, _ := protocol.HeaderOf(data)
 	this.resources.Logger().Trace("** Switch      : ", this.resources.Config().LocalUuid)
 	this.resources.Logger().Trace("** Source      : ", source)
 	this.resources.Logger().Trace("** SourceVnet: ", sourceVnet)
-	this.resources.Logger().Trace("** Area      : ", area)
+	this.resources.Logger().Trace("** Vlan      : ", vlan)
 	this.resources.Logger().Trace("** Destination : ", destination)
 
 	dSize := len(destination)
@@ -193,7 +193,7 @@ func (this *VNet) HandleData(data []byte, vnic interfaces.IVirtualNetworkInterfa
 			}
 		}
 	default:
-		uuidMap := this.switchTable.ServiceUuids(area, destination, sourceVnet)
+		uuidMap := this.switchTable.ServiceUuids(vlan, destination, sourceVnet)
 		if uuidMap != nil {
 			this.uniCastToPorts(uuidMap, data, sourceVnet)
 			if destination == health.TOPIC {
@@ -204,7 +204,7 @@ func (this *VNet) HandleData(data []byte, vnic interfaces.IVirtualNetworkInterfa
 	}
 }
 
-func (this *VNet) uniCastToPorts(uuids map[string]bool, data []byte, sourceSwitch string) {
+func (this *VNet) uniCastToPorts(uuids map[string]int64, data []byte, sourceSwitch string) {
 	alreadySent := make(map[string]bool)
 	for vnicUuid, _ := range uuids {
 		isHope0 := this.resources.Config().LocalUuid == sourceSwitch

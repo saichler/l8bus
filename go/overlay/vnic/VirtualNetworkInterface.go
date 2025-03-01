@@ -66,7 +66,7 @@ func NewVirtualNetworkInterface(resources interfaces.IResources, conn net.Conn) 
 func (vnic *VirtualNetworkInterface) Start() {
 	vnic.running = true
 	if vnic.conn == nil {
-		vnic.resources.Config().ServiceAreas = vnic.resources.ServicePoints().ServiceAreas()
+		vnic.resources.Config().Vlans = vnic.resources.ServicePoints().Vlans()
 		vnic.connectToSwitch()
 	} else {
 		vnic.receiveConnection()
@@ -138,13 +138,13 @@ func (vnic *VirtualNetworkInterface) Unicast(action types.Action, destination st
 	return vnic.components.TX().Unicast(action, destination, any, 0, false, false, vnic.protocol.NextMessageNumber())
 }
 
-func (vnic *VirtualNetworkInterface) Multicast(cast types.CastMode, action types.Action, area int32, topic string, any interface{}) error {
-	return vnic.components.TX().Multicast(action, area, topic, any, 0, false, false, vnic.protocol.NextMessageNumber())
+func (vnic *VirtualNetworkInterface) Multicast(cast types.CastMode, action types.Action, vlan int32, topic string, any interface{}) error {
+	return vnic.components.TX().Multicast(action, vlan, topic, any, 0, false, false, vnic.protocol.NextMessageNumber())
 }
 
-func (vnic *VirtualNetworkInterface) Request(cast types.CastMode, action types.Action, area int32, topic string, any interface{}) (interface{}, error) {
+func (vnic *VirtualNetworkInterface) Request(cast types.CastMode, action types.Action, vlan int32, topic string, any interface{}) (interface{}, error) {
 	hc := health.Health(vnic.resources)
-	destination := hc.UuidsForRequest(cast, area, topic, vnic.resources.Config().LocalUuid)
+	destination := hc.UuidsForRequest(cast, vlan, topic, vnic.resources.Config().LocalUuid)
 
 	request := vnic.requests.newRequest(vnic.protocol.NextMessageNumber())
 	request.cond.L.Lock()
@@ -158,8 +158,8 @@ func (vnic *VirtualNetworkInterface) Request(cast types.CastMode, action types.A
 	return request.response, nil
 }
 
-func (vnic *VirtualNetworkInterface) API(area int32) interfaces.API {
-	return newAPI(area, types.CastMode_Leader)
+func (vnic *VirtualNetworkInterface) API(vlan int32) interfaces.API {
+	return newAPI(vlan, types.CastMode_Leader)
 }
 
 func (vnic *VirtualNetworkInterface) Resources() interfaces.IResources {

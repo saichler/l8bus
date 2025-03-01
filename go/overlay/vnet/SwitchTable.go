@@ -25,9 +25,9 @@ func newSwitchTable(switchService *VNet) *SwitchTable {
 	return switchTable
 }
 
-func (this *SwitchTable) uniCastToAll(area int32, topic string, action types.Action, pb proto.Message) {
+func (this *SwitchTable) uniCastToAll(vlan int32, topic string, action types.Action, pb proto.Message) {
 	conns := this.conns.all()
-	data, err := this.switchService.protocol.CreateMessageFor(area, topic, types.Priority_P0, action,
+	data, err := this.switchService.protocol.CreateMessageFor(vlan, topic, types.Priority_P0, action,
 		this.switchService.resources.Config().LocalUuid,
 		this.switchService.resources.Config().LocalUuid, pb, false, false, this.switchService.protocol.NextMessageNumber())
 	if err != nil {
@@ -68,14 +68,14 @@ func (this *SwitchTable) newHealthPoint(config *types.VNicConfig) *types.HealthP
 	hp.AUuid = config.RemoteUuid
 	hp.ZUuid = config.LocalUuid
 	hp.Status = types.HealthState_Up
-	hp.ServiceAreas = config.ServiceAreas
+	hp.Vlans = config.Vlans
 	hp.StartTime = time.Now().UnixMilli()
 	return hp
 }
 
-func (this *SwitchTable) ServiceUuids(area int32, destination, sourceSwitch string) map[string]bool {
+func (this *SwitchTable) ServiceUuids(vlan int32, destination, sourceSwitch string) map[string]int64 {
 	h := health.Health(this.switchService.resources)
-	uuidsMap := h.UuidsForTopic(area, destination)
+	uuidsMap := h.UuidsForTopic(vlan, destination)
 	fmt.Println("Topic:", destination, "UUIds:", uuidsMap)
 	if uuidsMap != nil && sourceSwitch != this.switchService.resources.Config().LocalUuid {
 		// When the message source is not within this switch,

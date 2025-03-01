@@ -12,7 +12,7 @@ const (
 	HEADER_SIZE          = UNICAST_ADDRESS_SIZE*3 + INT_SIZE + PRIORITY_SIZE
 	SOURCE_VNET_POS      = UNICAST_ADDRESS_SIZE
 	TOPIC_POS            = UNICAST_ADDRESS_SIZE * 2
-	AREA_POS             = UNICAST_ADDRESS_SIZE * 3
+	VLAN_POS             = UNICAST_ADDRESS_SIZE * 3
 	PRIORITY_POS         = UNICAST_ADDRESS_SIZE*3 + 4
 )
 
@@ -27,9 +27,9 @@ func CreateHeader(msg *types.Message) []byte {
 	for i, c := range msg.Topic {
 		header[i+TOPIC_POS] = byte(c)
 	}
-	area := nets.Int2Bytes(msg.Area)
-	for i := 0; i < len(area); i++ {
-		header[AREA_POS+i] = area[i]
+	vlan := nets.Int2Bytes(msg.Vlan)
+	for i := 0; i < len(vlan); i++ {
+		header[VLAN_POS+i] = vlan[i]
 	}
 	header[PRIORITY_POS] = byte(msg.Priority)
 	return header
@@ -48,7 +48,7 @@ func HeaderOf(data []byte) (string, string, string, int32, types.Priority) {
 		}
 		topic = append(topic, data[i])
 	}
-	area := nets.Bytes2Int(data[AREA_POS : AREA_POS+4])
+	vlan := nets.Bytes2Int(data[VLAN_POS : VLAN_POS+4])
 	pri := types.Priority(data[PRIORITY_POS])
-	return source, sourceVnet, string(topic), area, pri
+	return source, sourceVnet, string(topic), vlan, pri
 }
