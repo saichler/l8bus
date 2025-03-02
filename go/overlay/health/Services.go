@@ -27,6 +27,7 @@ func newServices() *Services {
 	services.topics = make(map[string]*Topic)
 	services.aSide2zSide = make(map[string]string)
 	services.mtx = new(sync.RWMutex)
+	services.vnetUuid = make(map[string]bool)
 	return services
 }
 
@@ -36,7 +37,7 @@ func (this *Services) ZUuid(auuid string) string {
 	return this.aSide2zSide[auuid]
 }
 
-func (this *Services) UUIDs(topicId string, vlanId int32) map[string]bool {
+func (this *Services) UUIDs(topicId string, vlanId int32, noVnet bool) map[string]bool {
 	result := make(map[string]bool)
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
@@ -49,6 +50,12 @@ func (this *Services) UUIDs(topicId string, vlanId int32) map[string]bool {
 		return result
 	}
 	for uuid, _ := range vlan.members {
+		if noVnet {
+			_, ok = this.vnetUuid[uuid]
+			if ok {
+				continue
+			}
+		}
 		if uuid == vlan.leader {
 			result[uuid] = true
 		} else {
@@ -90,6 +97,9 @@ func (this *Services) checkHealthPointDown(healthPoint *types.HealthPoint, vlans
 func (this *Services) updateTopics(healthPoint *types.HealthPoint, vlansToCalcLeader *[]*Vlan) {
 	if healthPoint.Topics == nil {
 		return
+	}
+	if healthPoint.IsVnet {
+		this.vnetUuid[healthPoint.AUuid] = true
 	}
 	for topic, vlans := range healthPoint.Topics.TopicToVlan {
 		_, ok := this.topics[topic]

@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"fmt"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/shared/go/tests"
 	"github.com/saichler/shared/go/tests/infra"
@@ -29,6 +28,16 @@ func TestTopology(t *testing.T) {
 	if len(eg5Points) != 0 {
 		log.Fail(t, "Expected health points to be empty")
 	}
+
+	hc := health.Health(eg2.Resources())
+	uuids := hc.Uuids("TestProto", 0, false)
+	if len(uuids) != 5 {
+		log.Fail(t, "Expected uuids to be 5, but it is ", len(uuids))
+	}
+	uuids = hc.Uuids("TestProto", 0, true)
+	if len(uuids) != 4 {
+		log.Fail(t, "Expected uuids to be 4, but it is ", len(uuids))
+	}
 }
 
 func TestSendMultiCast(t *testing.T) {
@@ -41,9 +50,6 @@ func TestSendMultiCast(t *testing.T) {
 	}
 	sleep()
 	sleep()
-
-	all := health.Health(eg3.Resources()).Uuids("TestProto", 0)
-	fmt.Println(len(all))
 
 	for eg, tsp := range tsps {
 		if tsp.PostNumber != 1 && eg != "eg5" {

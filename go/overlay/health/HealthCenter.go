@@ -54,7 +54,7 @@ func (this *HealthCenter) UuidsForRequest(cast types.CastMode, vlanId int32, top
 	if len(topic) == protocol.UNICAST_ADDRESS_SIZE {
 		return topic
 	}
-	uuids := this.services.UUIDs(topic, vlanId)
+	uuids := this.services.UUIDs(topic, vlanId, false)
 	switch cast {
 	case types.CastMode_All:
 		fallthrough
@@ -99,8 +99,8 @@ func (this *HealthCenter) AllTopics() *types.Topics {
 	return this.services.AllTopics()
 }
 
-func (this *HealthCenter) Uuids(topic string, vlan int32) map[string]bool {
-	return this.services.UUIDs(topic, vlan)
+func (this *HealthCenter) Uuids(topic string, vlan int32, noVnet bool) map[string]bool {
+	return this.services.UUIDs(topic, vlan, noVnet)
 }
 
 func Health(resource interfaces.IResources) *HealthCenter {

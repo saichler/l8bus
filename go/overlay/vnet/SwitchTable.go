@@ -69,12 +69,14 @@ func (this *SwitchTable) newHealthPoint(config *types.VNicConfig) *types.HealthP
 	hp.Status = types.HealthState_Up
 	hp.Topics = config.Topics
 	hp.StartTime = time.Now().UnixMilli()
+	isLocal := protocol.IpSegment.IsLocal(config.Address)
+	hp.IsVnet = config.ForceExternal || !isLocal
 	return hp
 }
 
 func (this *SwitchTable) ServiceUuids(vlan int32, destination, sourceSwitch string) map[string]bool {
 	h := health.Health(this.switchService.resources)
-	uuidsMap := h.Uuids(destination, vlan)
+	uuidsMap := h.Uuids(destination, vlan, false)
 	if uuidsMap != nil && sourceSwitch != this.switchService.resources.Config().LocalUuid {
 		// When the message source is not within this switch,
 		// we should not publish to adjacent as the overlay is o one hope
