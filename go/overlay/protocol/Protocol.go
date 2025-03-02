@@ -43,7 +43,12 @@ func (this *Protocol) ProtoOf(msg *types.Message) (proto.Message, error) {
 		return nil, err
 	}
 
-	info, err := this.resources.Registry().Info(msg.Type)
+	typ := msg.Type
+	if msg.Tr != nil && msg.IsReply {
+		typ = "Transaction"
+	}
+
+	info, err := this.resources.Registry().Info(typ)
 	if err != nil {
 		return nil, this.resources.Logger().Error(err)
 	}
@@ -54,6 +59,7 @@ func (this *Protocol) ProtoOf(msg *types.Message) (proto.Message, error) {
 
 	pb := pbIns.(proto.Message)
 	err = proto.Unmarshal(data, pb)
+
 	return pb, err
 }
 

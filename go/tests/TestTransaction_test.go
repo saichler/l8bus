@@ -25,6 +25,6 @@ func TestTransaction(t *testing.T) {
 	}
 	time.Sleep(1 * time.Second)
 	if tsps["eg2"].PostNumber != 1 {
-		log.Fail(t, "Expected post to be 1")
+		log.Fail(t, "Expected post to be 1 but it is ", tsps["eg2"].PostNumber)
 	}
 }

@@ -50,6 +50,7 @@ func NewVirtualNetworkInterface(resources interfaces.IResources, conn net.Conn) 
 	vnic.components.addComponent(newKeepAlive(vnic))
 	vnic.requests = newRequests()
 	vnic.resources.Registry().Register(&types.Message{})
+	vnic.resources.Registry().Register(&types.Transaction{})
 	vnic.stats = &types.HealthPointStats{}
 	if vnic.resources.Config().LocalUuid == "" {
 		vnic.resources.Config().LocalUuid = uuid.New().String()
