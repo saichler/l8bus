@@ -38,7 +38,11 @@ func (this *Protocol) MessageOf(data []byte) (*types.Message, error) {
 }
 
 func (this *Protocol) ProtoOf(msg *types.Message) (proto.Message, error) {
-	data, err := this.resources.Security().Decrypt(msg.Data)
+	return ProtoOf(msg, this.resources)
+}
+
+func ProtoOf(msg *types.Message, resourcs interfaces.IResources) (proto.Message, error) {
+	data, err := resourcs.Security().Decrypt(msg.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -48,9 +52,9 @@ func (this *Protocol) ProtoOf(msg *types.Message) (proto.Message, error) {
 		typ = "Transaction"
 	}
 
-	info, err := this.resources.Registry().Info(typ)
+	info, err := resourcs.Registry().Info(typ)
 	if err != nil {
-		return nil, this.resources.Logger().Error(err)
+		return nil, resourcs.Logger().Error(err)
 	}
 	pbIns, err := info.NewInstance()
 	if err != nil {
