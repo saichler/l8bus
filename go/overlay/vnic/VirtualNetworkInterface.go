@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
+	"github.com/saichler/reflect/go/reflect/clone"
 	"github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/share/strings"
 	"github.com/saichler/shared/go/types"
@@ -159,14 +160,15 @@ func (vnic *VirtualNetworkInterface) Request(cast types.CastMode, action types.A
 }
 
 func (vnic *VirtualNetworkInterface) Reply(msg *types.Message, resp interface{}) error {
-	msg.Action = types.Action_Reply
-	msg.Topic = msg.SourceUuid
-	msg.SourceUuid = vnic.resources.Config().LocalUuid
-	msg.SourceVnetUuid = vnic.resources.Config().RemoteUuid
-	msg.IsRequest = false
-	msg.IsReply = true
-	
-	data, e := vnic.protocol.CreateMessageForm(msg, resp)
+	reply := clone.NewCloner().Clone(msg).(*types.Message)
+	reply.Action = types.Action_Reply
+	reply.Topic = msg.SourceUuid
+	reply.SourceUuid = vnic.resources.Config().LocalUuid
+	reply.SourceVnetUuid = vnic.resources.Config().RemoteUuid
+	reply.IsRequest = false
+	reply.IsReply = true
+
+	data, e := vnic.protocol.CreateMessageForm(reply, resp)
 	if e != nil {
 		vnic.resources.Logger().Error(e)
 		return e
