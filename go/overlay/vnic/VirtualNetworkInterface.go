@@ -50,7 +50,7 @@ func NewVirtualNetworkInterface(resources interfaces.IResources, conn net.Conn) 
 	vnic.components.addComponent(newKeepAlive(vnic))
 	vnic.requests = newRequests()
 	vnic.resources.Registry().Register(&types.Message{})
-	vnic.resources.Registry().Register(&types.Transaction{})
+	vnic.resources.Registry().Register(&types.Tr{})
 	vnic.stats = &types.HealthPointStats{}
 	if vnic.resources.Config().LocalUuid == "" {
 		vnic.resources.Config().LocalUuid = uuid.New().String()
@@ -165,6 +165,7 @@ func (vnic *VirtualNetworkInterface) Reply(msg *types.Message, resp interface{})
 	msg.SourceVnetUuid = vnic.resources.Config().RemoteUuid
 	msg.IsRequest = false
 	msg.IsReply = true
+	
 	data, e := vnic.protocol.CreateMessageForm(msg, resp)
 	if e != nil {
 		vnic.resources.Logger().Error(e)

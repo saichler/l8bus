@@ -49,7 +49,7 @@ func ProtoOf(msg *types.Message, resourcs interfaces.IResources) (proto.Message,
 
 	typ := msg.Type
 	if msg.Tr != nil && msg.IsReply {
-		typ = "Transaction"
+		typ = reflect.TypeOf(types.Tr{}).Name()
 	}
 
 	info, err := resourcs.Registry().Info(typ)
@@ -72,7 +72,7 @@ func (this *Protocol) NextMessageNumber() int32 {
 }
 
 func (this *Protocol) CreateMessageFor(vlan int32, topic string, priority types.Priority,
-	action types.Action, source, sourceVnet string, any interface{}, isRequest, isReply bool, msgNum int32, tr *types.Transaction) ([]byte, error) {
+	action types.Action, source, sourceVnet string, any interface{}, isRequest, isReply bool, msgNum int32, tr *types.Tr) ([]byte, error) {
 
 	//first marshal the protobuf into bytes
 	var data []byte

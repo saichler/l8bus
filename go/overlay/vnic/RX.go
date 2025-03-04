@@ -118,7 +118,10 @@ func (rx *RX) handleMessage(msg *types.Message, pb proto.Message) {
 			rx.vnic.resources.Logger().Error(err)
 		}
 		if msg.IsRequest {
-			rx.vnic.Reply(msg, resp)
+			err = rx.vnic.Reply(msg, resp)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 }

@@ -23,9 +23,10 @@ func TestTransaction(t *testing.T) {
 		log.Fail(t, err.Error())
 		return
 	}
-	tr := resp.(*types.Transaction)
-	if tr.State != types.TransactionState_Finished {
-		log.Fail(t, "transaction state is not finished")
+	tr := resp.(*types.Tr)
+	if tr.State != types.TrState_Commited {
+		log.Fail(t, "transaction state is not commited,", tr.State.String())
+		return
 	}
 
 	resp, err = eg3.Request(types.CastMode_Single, types.Action_POST, 0, "TestProto", pb)
@@ -33,9 +34,10 @@ func TestTransaction(t *testing.T) {
 		log.Fail(t, err.Error())
 		return
 	}
-	tr = resp.(*types.Transaction)
-	if tr.State != types.TransactionState_Finished {
-		log.Fail(t, "transaction state is not finished")
+	tr = resp.(*types.Tr)
+	if tr.State != types.TrState_Commited {
+		log.Fail(t, "transaction state is not commited,", tr.State.String(), ":", tr.Id)
+		return
 	}
 
 	if tsps["eg1"].PostNumber != 2 {
