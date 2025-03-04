@@ -2,7 +2,6 @@ package protocol
 
 import (
 	"errors"
-	"fmt"
 	"net"
 	"runtime"
 	"strings"
@@ -96,8 +95,10 @@ func IP(ip string) string {
 
 // Iterate over the machine interfaces and map the ip to the interface name
 func LocalIps() (map[string]string, error) {
-	fmt.Println("GOOS=", runtime.GOOS)
-	
+	if runtime.GOOS == "android" {
+		return map[string]string{"127.0.0.1": "eth0"}, nil
+	}
+
 	netIfs, err := net.Interfaces()
 	if err != nil {
 		return nil, errors.New("Could not fetch local interfaces: " + err.Error())
