@@ -152,6 +152,7 @@ A **Topic Overlay** for the provided service. In case of a **Stateful** service,
 can be registered as **Transactional**. When a **Service Point** is defined as **Transactional**,
 the transaction protocol will be applied to distribute the messages between the **Topic** listeners
 to ensure concurrent between the stateful instances.
+![alt text](https://github.com/saichler/layer8/blob/main/docs/transaction.png)
 
 # Model Agnostic Distributed Cache <a name="cache"></a>
 https://github.com/saichler/servicepoints/tree/main/go/points/cache
