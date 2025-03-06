@@ -1,0 +1,25 @@
+title Service Point Topic Transaction
+
+Start->Vnic-Follower 1:Request Hit Follower
+note left of Vnic-Follower 1:Create Transaction
+Vnic-Follower 1->Vnic-Follower 2: Forward Transaction
+Vnic-Follower 1->Vnic-Leader:Forward Transaction
+Transaction
+Vnic-Follower 1->Vnic-Follower 3: Forward Transaction
+note right of Vnic-Follower 1:Confirm all topic instances\nhave transaction
+Vnic-Follower 1->Vnic-Leader:Start transaction
+Vnic-Leader<->Vnic-Follower 2:Request lock\n confirmation
+Vnic-Leader<->Vnic-Follower 1:Request lock\n confirmation
+Vnic-Leader<->Vnic-Follower 3:Request lock\n confirmation
+note right of Vnic-Leader:Local Lock
+Vnic-Leader<->Vnic-Follower 2:Request commit\n confirmation
+Vnic-Leader<->Vnic-Follower 1:Request commit\n confirmation
+Vnic-Leader<->Vnic-Follower 3:Request commit\nconfirmation
+note right of Vnic-Leader: Local commit
+
+Vnic-Leader<->Vnic-Follower 2:Request unlock
+Vnic-Leader<->Vnic-Follower 1:Request unlock
+Vnic-Leader<->Vnic-Follower 3:Request unlock
+note right of Vnic-Leader:Local unlock
+Vnic-Leader->Vnic-Follower 1: Reply with transaction state
+Vnic-Follower 1->Start:Reply with transaction state
