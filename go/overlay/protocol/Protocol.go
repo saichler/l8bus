@@ -69,13 +69,13 @@ func (this *Protocol) NextMessageNumber() int32 {
 }
 
 // For transactions
-func (this *Protocol) DataFor(any interface{}) (string, error) {
+func DataFor(any interface{}, serializer interfaces.ISerializer, security interfaces.ISecurityProvider) (string, error) {
 	var data []byte
 	var err error
 	//first marshal the protobuf into bytes
 	pb, ok := any.(proto.Message)
 	if ok {
-		data, err = this.serializer.Marshal(pb, nil)
+		data, err = serializer.Marshal(pb, nil)
 		if err != nil {
 			return "", err
 		}
@@ -83,7 +83,7 @@ func (this *Protocol) DataFor(any interface{}) (string, error) {
 		data = []byte{}
 	}
 	//Encode the data
-	encData, err := this.resources.Security().Encrypt(data)
+	encData, err := security.Encrypt(data)
 	if err != nil {
 		return "", err
 	}
