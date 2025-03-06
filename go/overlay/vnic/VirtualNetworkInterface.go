@@ -158,6 +158,10 @@ func (vnic *VirtualNetworkInterface) Request(cast types.CastMode, action types.A
 	return request.response, nil
 }
 
+func (vnic *VirtualNetworkInterface) Transaction(action types.Action, vlan int32, topic string, any interface{}) (interface{}, error) {
+	return vnic.Request(types.CastMode_Single, action, vlan, topic, any)
+}
+
 func (vnic *VirtualNetworkInterface) Reply(msg *types.Message, resp interface{}) error {
 	reply := clone.NewCloner().Clone(msg).(*types.Message)
 	reply.Action = types.Action_Reply
