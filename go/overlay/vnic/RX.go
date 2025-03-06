@@ -111,9 +111,9 @@ func (rx *RX) handleMessage(msg *types.Message, pb proto.Message) {
 		request.response = pb
 		request.cond.Broadcast()
 	} else if msg.Action == types.Action_Notify {
-		rx.vnic.resources.ServicePoints().Notify(pb, msg.Action, rx.vnic, msg)
+		rx.vnic.resources.ServicePoints().Notify(pb, msg.Action, rx.vnic, msg, false)
 	} else {
-		resp, err := rx.vnic.resources.ServicePoints().Handle(pb, msg.Action, rx.vnic, msg)
+		resp, err := rx.vnic.resources.ServicePoints().Handle(pb, msg.Action, rx.vnic, msg, false)
 		if err != nil {
 			rx.vnic.resources.Logger().Error(err)
 		}
