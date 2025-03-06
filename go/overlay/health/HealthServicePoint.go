@@ -46,7 +46,7 @@ func (this *HealthServicePoint) Delete(pb proto.Message, resourcs interfaces.IRe
 func (this *HealthServicePoint) GetCopy(pb proto.Message, resourcs interfaces.IResources) (proto.Message, error) {
 	return nil, nil
 }
-func (this *HealthServicePoint) Get(gsql string, resourcs interfaces.IResources) (proto.Message, error) {
+func (this *HealthServicePoint) Get(pb proto.Message, resourcs interfaces.IResources) (proto.Message, error) {
 	return nil, nil
 }
 func (this *HealthServicePoint) Failed(pb proto.Message, resourcs interfaces.IResources, msg *types.Message) (proto.Message, error) {
