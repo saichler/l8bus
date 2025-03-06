@@ -68,7 +68,7 @@ func (this *Protocol) NextMessageNumber() int32 {
 	return this.sequence.Add(1)
 }
 
-//For transactions
+// For transactions
 func (this *Protocol) DataFor(any interface{}) (string, error) {
 	var data []byte
 	var err error
