@@ -257,7 +257,7 @@ func (this *VNet) switchDataReceived(data []byte, vnic interfaces.IVirtualNetwor
 	}
 	// Otherwise call the handler per the action & the type
 	this.resources.Logger().Info("Switch Service is: ", this.resources.Config().LocalUuid)
-	this.resources.ServicePoints().Handle(pb, msg.Action, vnic, msg)
+	this.resources.ServicePoints().Handle(pb, msg.Action, vnic, msg, false)
 }
 
 func (this *VNet) Resources() interfaces.IResources {

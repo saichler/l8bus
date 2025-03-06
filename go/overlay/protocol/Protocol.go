@@ -31,9 +31,6 @@ func (this *Protocol) Serializer() interfaces.ISerializer {
 
 func (this *Protocol) MessageOf(data []byte) (*types.Message, error) {
 	msg, err := this.serializer.Unmarshal(data[HEADER_SIZE:], "Message", this.resources.Registry())
-	if err != nil {
-		panic(err)
-	}
 	return msg.(*types.Message), err
 }
 
@@ -71,13 +68,34 @@ func (this *Protocol) NextMessageNumber() int32 {
 	return this.sequence.Add(1)
 }
 
+func (this *Protocol) DataFor(any interface{}) (string, error) {
+	var data []byte
+	var err error
+	//first marshal the protobuf into bytes
+	pb, ok := any.(proto.Message)
+	if ok {
+		data, err = this.serializer.Marshal(pb, nil)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		data = []byte{}
+	}
+	//Encode the data
+	encData, err := this.resources.Security().Encrypt(data)
+	if err != nil {
+		return "", err
+	}
+	return encData, err
+}
+
 func (this *Protocol) CreateMessageFor(vlan int32, topic string, priority types.Priority,
 	action types.Action, source, sourceVnet string, any interface{}, isRequest, isReply bool, msgNum int32, tr *types.Transaction) ([]byte, error) {
 
-	//first marshal the protobuf into bytes
 	var data []byte
 	var err error
 
+	//first marshal the protobuf into bytes
 	pb, ok := any.(proto.Message)
 	if ok {
 		data, err = this.serializer.Marshal(pb, nil)
