@@ -4,6 +4,11 @@ A GPU that tops at 15W vs. gaming desktops GPUs that sometime tops at 10x then t
 No one imagined that 2 years later, AAA games will be able to run at a decent frame rate on
 the steam deck hardware just via software optimization... **Let's learn the lesson**.
 
+# The Problem Definition
+![alt text](https://github.com/saichler/layer8/blob/main/problem-1.png)
+![alt text](https://github.com/saichler/layer8/blob/main/problem-2.png)
+![alt text](https://github.com/saichler/layer8/blob/main/problem-3.png)
+
 # Base Projects
 - Shared Interfaces & Components - https://github.com/saichler/shared/tree/main
 - Serializers & Protobuf Object - https://github.com/saichler/serializer/tree/main
