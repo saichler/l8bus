@@ -9,6 +9,9 @@ the steam deck hardware just via software optimization... **Let's learn the less
 ![alt text](https://github.com/saichler/layer8/blob/main/problem-2.png)
 ![alt text](https://github.com/saichler/layer8/blob/main/problem-3.png)
 
+# Deep Dive to the Architecture
+https://github.com/saichler/layer8/blob/main/docs/README.md
+
 # Base Projects
 - Shared Interfaces & Components - https://github.com/saichler/shared/tree/main
 - Serializers & Protobuf Object - https://github.com/saichler/serializer/tree/main
