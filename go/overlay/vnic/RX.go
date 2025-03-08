@@ -97,7 +97,11 @@ func (rx *RX) notifyRawDataListener() {
 					continue
 				}
 				// Otherwise call the handler per the action & the type
-				go rx.handleMessage(msg, pb)
+				if msg.Tr != nil {
+					rx.handleMessage(msg, pb)
+				} else {
+					go rx.handleMessage(msg, pb)
+				}
 			}
 		}
 	}
