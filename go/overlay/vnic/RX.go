@@ -3,6 +3,7 @@ package vnic
 import (
 	"github.com/saichler/shared/go/share/nets"
 	"github.com/saichler/shared/go/share/queues"
+	"github.com/saichler/shared/go/share/workers"
 	"github.com/saichler/shared/go/types"
 	"google.golang.org/protobuf/proto"
 )
@@ -11,13 +12,15 @@ type RX struct {
 	vnic         *VirtualNetworkInterface
 	shuttingDown bool
 	// The incoming data queue
-	rx *queues.ByteSliceQueue
+	rx   *queues.ByteSliceQueue
+	pool *workers.Workers
 }
 
 func newRX(vnic *VirtualNetworkInterface) *RX {
 	rx := &RX{}
 	rx.vnic = vnic
 	rx.rx = queues.NewByteSliceQueue("RX", int(vnic.resources.Config().RxQueueSize))
+	rx.pool = workers.NewWorkers(50)
 	return rx
 }
 
@@ -97,16 +100,27 @@ func (rx *RX) notifyRawDataListener() {
 					continue
 				}
 				// Otherwise call the handler per the action & the type
-				if msg.Tr != nil {
-					go rx.handleMessage(msg, pb)
-				} else {
-					rx.handleMessage(msg, pb)
-				}
+				rx.runHandleMessage(msg, pb)
 			}
 		}
 	}
 	rx.vnic.resources.Logger().Debug("ND for ", rx.vnic.name, " has Ended")
 	rx.vnic.Shutdown()
+}
+
+type HandleWorker struct {
+	msg *types.Message
+	pb  proto.Message
+	rx  *RX
+}
+
+func (rx *RX) runHandleMessage(msg *types.Message, pb proto.Message) {
+	hw := &HandleWorker{msg: msg, rx: rx, pb: pb}
+	rx.pool.Run(hw)
+}
+
+func (this *HandleWorker) Run() {
+	this.rx.handleMessage(this.msg, this.pb)
 }
 
 func (rx *RX) handleMessage(msg *types.Message, pb proto.Message) {
