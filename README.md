@@ -1,12 +1,15 @@
 # ***Introducing Layer 8, Micro Service Layer into the OSI model***
-When Steam Deck x86 gaming handheld was released on Feb-2022, the Specs weren't impressive. 
-A GPU that tops at 15W vs. gaming desktops GPUs that sometime tops at 10x then that.
-No one imagined that 2 years later, AAA games will be able to run at a decent frame rate on
-the steam deck hardware just via software optimization... **Let's learn the lesson**.
+**Micro Services**, implemented with **Kubernetes** or **Docker**,
+is introducing an **Internal Integration** challenge between the **Containers**.
+Itemizing the challenges of networking, security, API, stateful vs. statless,
+horizontally scaling, high availability & etc., indicates there is a large, missing,
+infrastructure piece that is causing companies to spend huge amount of resources & money to re-develop
+every time. Equivalent to inventing a Language every time, using the same alphabet.
 
 # The Problem Definition
 ![alt text](https://github.com/saichler/layer8/blob/main/problem-1.png)
 ![alt text](https://github.com/saichler/layer8/blob/main/problem-2.png)
+![alt text](https://github.com/saichler/layer8/blob/main/problem-4.png)
 ![alt text](https://github.com/saichler/layer8/blob/main/problem-3.png)
 
 # Deep Dive to the Architecture
@@ -17,14 +20,6 @@ https://github.com/saichler/layer8/blob/main/docs/README.md
 - Serializers & Protobuf Object - https://github.com/saichler/serializer/tree/main
 - Generic Model Alteration - https://github.com/saichler/reflect/tree/main
 - Service Points & Generic Model Cache - https://github.com/saichler/servicepoints
-
-# Technical Overview for Developers
-**Micro Services**, implemented with **Kubernetes** or **Docker**, 
-is introducing an **Internal Integration** challenge between the **Containers**. 
-Itemizing the challenges of networking, security, API, stateful vs. statless, 
-horizontally scaling, high availability & etc., indicates there is a large, missing, 
-infrastructure piece that is causing companies to spend huge amount of resources & money to re-develop
-every time. Equivalent to inventing a Language every time, using the same alphabet.
 
 **Layer8** is attempting to cover the gap by introducing abstraction and encapsulation of secure, seamless, 
 networking & API invocation between **Micro Services**, alongside built-in features & design patterns
