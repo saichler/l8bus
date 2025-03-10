@@ -2,8 +2,8 @@ package protocol
 
 import (
 	"github.com/saichler/serializer/go/serialize/serializers"
-	"github.com/saichler/shared/go/share/interfaces"
-	"github.com/saichler/shared/go/types"
+	"github.com/saichler/types/go/common"
+	"github.com/saichler/types/go/types"
 	"google.golang.org/protobuf/proto"
 	"reflect"
 	"sync/atomic"
@@ -11,21 +11,21 @@ import (
 
 type Protocol struct {
 	sequence   atomic.Int32
-	resources  interfaces.IResources
-	serializer interfaces.ISerializer
+	resources  common.IResources
+	serializer common.ISerializer
 }
 
-func New(resources interfaces.IResources) *Protocol {
+func New(resources common.IResources) *Protocol {
 	p := &Protocol{}
 	p.resources = resources
-	p.serializer = p.resources.Serializer(interfaces.BINARY)
+	p.serializer = p.resources.Serializer(common.BINARY)
 	if p.serializer == nil {
 		p.serializer = &serializers.ProtoBuffBinary{}
 	}
 	return p
 }
 
-func (this *Protocol) Serializer() interfaces.ISerializer {
+func (this *Protocol) Serializer() common.ISerializer {
 	return this.serializer
 }
 
@@ -38,7 +38,7 @@ func (this *Protocol) ProtoOf(msg *types.Message) (proto.Message, error) {
 	return ProtoOf(msg, this.resources)
 }
 
-func ProtoOf(msg *types.Message, resourcs interfaces.IResources) (proto.Message, error) {
+func ProtoOf(msg *types.Message, resourcs common.IResources) (proto.Message, error) {
 	data, err := resourcs.Security().Decrypt(msg.Data)
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func (this *Protocol) NextMessageNumber() int32 {
 	return this.sequence.Add(1)
 }
 
-func DataFor(any interface{}, serializer interfaces.ISerializer, security interfaces.ISecurityProvider) (string, error) {
+func DataFor(any interface{}, serializer common.ISerializer, security common.ISecurityProvider) (string, error) {
 	var data []byte
 	var err error
 	//first marshal the protobuf into bytes

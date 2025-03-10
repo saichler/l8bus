@@ -1,8 +1,8 @@
 package vnic
 
 import (
-	"github.com/saichler/shared/go/share/interfaces"
-	"github.com/saichler/shared/go/types"
+	"github.com/saichler/types/go/common"
+	"github.com/saichler/types/go/types"
 )
 
 type VnicAPI struct {
@@ -37,7 +37,7 @@ func (v VnicAPI) Get(s string) (interface{}, error) {
 	panic("implement me")
 }
 
-func newAPI(area int32, cast types.CastMode) interfaces.API {
+func newAPI(area int32, cast types.CastMode) common.API {
 	api := &VnicAPI{}
 	api.area = area
 	api.cast = cast

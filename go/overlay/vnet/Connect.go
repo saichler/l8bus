@@ -3,9 +3,9 @@ package vnet
 import (
 	"github.com/saichler/layer8/go/overlay/health"
 	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
-	"github.com/saichler/shared/go/share/interfaces"
 	resources2 "github.com/saichler/shared/go/share/resources"
-	"github.com/saichler/shared/go/types"
+	"github.com/saichler/types/go/common"
+	"github.com/saichler/types/go/types"
 )
 
 func (this *VNet) ConnectNetworks(host string, destPort uint32) error {
@@ -32,13 +32,13 @@ func (this *VNet) ConnectNetworks(host string, destPort uint32) error {
 		this.resources.ServicePoints(),
 		this.resources.Logger(),
 		this,
-		this.resources.Serializer(interfaces.BINARY),
+		this.resources.Serializer(common.BINARY),
 		config,
 		this.resources.Introspector())
 
 	vnic := vnic2.NewVirtualNetworkInterface(resources, conn)
 
-	err = sec.ValidateConnection(conn, config)
+	err = sec.ValidateConnection(conn)
 	if err != nil {
 		return err
 	}

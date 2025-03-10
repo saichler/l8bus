@@ -3,8 +3,8 @@ package vnet
 import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
-	"github.com/saichler/shared/go/share/interfaces"
-	"github.com/saichler/shared/go/types"
+	"github.com/saichler/types/go/common"
+	"github.com/saichler/types/go/types"
 	"google.golang.org/protobuf/proto"
 	"time"
 )
@@ -39,7 +39,7 @@ func (this *SwitchTable) uniCastToAll(vlan int32, topic string, action types.Act
 	}
 }
 
-func (this *SwitchTable) addVNic(vnic interfaces.IVirtualNetworkInterface) {
+func (this *SwitchTable) addVNic(vnic common.IVirtualNetworkInterface) {
 	config := vnic.Resources().Config()
 	//check if this port is local to the machine, e.g. not belong to public subnet
 	isLocal := protocol.IpSegment.IsLocal(config.Address)

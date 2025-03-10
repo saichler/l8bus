@@ -5,9 +5,9 @@ import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/reflect/go/reflect/clone"
-	"github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/share/strings"
-	"github.com/saichler/shared/go/types"
+	"github.com/saichler/types/go/common"
+	"github.com/saichler/types/go/types"
 	"net"
 	"sync"
 	"time"
@@ -15,7 +15,7 @@ import (
 
 type VirtualNetworkInterface struct {
 	// Resources for this VNic such as registry, security & config
-	resources interfaces.IResources
+	resources common.IResources
 	// The socket connection
 	conn net.Conn
 	// The socket connection mutex
@@ -38,7 +38,7 @@ type VirtualNetworkInterface struct {
 	stats *types.HealthPointStats
 }
 
-func NewVirtualNetworkInterface(resources interfaces.IResources, conn net.Conn) *VirtualNetworkInterface {
+func NewVirtualNetworkInterface(resources common.IResources, conn net.Conn) *VirtualNetworkInterface {
 	vnic := &VirtualNetworkInterface{}
 	vnic.conn = conn
 	vnic.resources = resources
@@ -53,7 +53,7 @@ func NewVirtualNetworkInterface(resources interfaces.IResources, conn net.Conn) 
 	vnic.resources.Registry().Register(&types.Transaction{})
 	vnic.stats = &types.HealthPointStats{}
 	if vnic.resources.Config().LocalUuid == "" {
-		vnic.resources.Config().LocalUuid = interfaces.NewUuid()
+		vnic.resources.Config().LocalUuid = common.NewUuid()
 	}
 
 	if conn == nil {
@@ -95,7 +95,7 @@ func (vnic *VirtualNetworkInterface) connect() error {
 		return errors.New("Error connecting to the vnet: " + err.Error())
 	}
 	// Verify that the switch accepts this connection
-	err = vnic.resources.Security().ValidateConnection(conn, vnic.resources.Config())
+	err = vnic.resources.Security().ValidateConnection(conn)
 	if err != nil {
 		return errors.New("Error validating connection: " + err.Error())
 	}
@@ -197,11 +197,11 @@ func (vnic *VirtualNetworkInterface) Forward(msg *types.Message, destination str
 	return request.response, nil
 }
 
-func (vnic *VirtualNetworkInterface) API(vlan int32) interfaces.API {
+func (vnic *VirtualNetworkInterface) API(vlan int32) common.API {
 	return newAPI(vlan, types.CastMode_Leader)
 }
 
-func (vnic *VirtualNetworkInterface) Resources() interfaces.IResources {
+func (vnic *VirtualNetworkInterface) Resources() common.IResources {
 	return vnic.resources
 }
 

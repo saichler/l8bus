@@ -3,17 +3,17 @@ package health
 import (
 	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/servicepoints/go/points/cache"
-	"github.com/saichler/shared/go/share/interfaces"
-	"github.com/saichler/shared/go/types"
+	"github.com/saichler/types/go/common"
+	"github.com/saichler/types/go/types"
 )
 
 type HealthCenter struct {
 	healthPoints *cache.Cache
 	services     *Services
-	resources    interfaces.IResources
+	resources    common.IResources
 }
 
-func newHealthCenter(resources interfaces.IResources, listener cache.ICacheListener) *HealthCenter {
+func newHealthCenter(resources common.IResources, listener cache.ICacheListener) *HealthCenter {
 	hc := &HealthCenter{}
 	rnode, _ := resources.Introspector().Inspect(&types.HealthPoint{})
 	resources.Introspector().AddDecorator(types.DecoratorType_Primary, []string{"AUuid"}, rnode)
@@ -103,7 +103,7 @@ func (this *HealthCenter) Uuids(topic string, vlan int32, noVnet bool) map[strin
 	return this.services.UUIDs(topic, vlan, noVnet)
 }
 
-func Health(resource interfaces.IResources) *HealthCenter {
+func Health(resource common.IResources) *HealthCenter {
 	sp, ok := resource.ServicePoints().ServicePointHandler(TOPIC)
 	if !ok {
 		return nil

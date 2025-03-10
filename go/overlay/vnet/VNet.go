@@ -5,10 +5,10 @@ import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
-	"github.com/saichler/shared/go/share/interfaces"
 	resources2 "github.com/saichler/shared/go/share/resources"
 	"github.com/saichler/shared/go/share/strings"
-	"github.com/saichler/shared/go/types"
+	"github.com/saichler/types/go/common"
+	"github.com/saichler/types/go/types"
 	"google.golang.org/protobuf/proto"
 	"net"
 	"strconv"
@@ -16,7 +16,7 @@ import (
 )
 
 type VNet struct {
-	resources   interfaces.IResources
+	resources   common.IResources
 	socket      net.Listener
 	running     bool
 	ready       bool
@@ -24,18 +24,18 @@ type VNet struct {
 	protocol    *protocol.Protocol
 }
 
-func NewVNet(resources interfaces.IResources) *VNet {
+func NewVNet(resources common.IResources) *VNet {
 	net := &VNet{}
 	net.resources = resources2.NewResources(resources.Registry(),
 		resources.Security(),
 		resources.ServicePoints(),
 		resources.Logger(),
 		net,
-		resources.Serializer(interfaces.BINARY), resources.Config(),
+		resources.Serializer(common.BINARY), resources.Config(),
 		resources.Introspector())
 	net.protocol = protocol.New(net.resources)
 	net.running = true
-	net.resources.Config().LocalUuid = interfaces.NewUuid()
+	net.resources.Config().LocalUuid = common.NewUuid()
 	net.switchTable = newSwitchTable(net)
 	health.RegisterHealth(net.resources, net)
 	return net
@@ -112,14 +112,14 @@ func (this *VNet) connect(conn net.Conn) {
 		this.resources.ServicePoints(),
 		this.resources.Logger(),
 		this,
-		this.resources.Serializer(interfaces.BINARY),
+		this.resources.Serializer(common.BINARY),
 		config,
 		this.resources.Introspector())
 
 	vnic := vnic2.NewVirtualNetworkInterface(resources, conn)
 	vnic.Resources().Config().LocalUuid = this.resources.Config().LocalUuid
 
-	err = sec.ValidateConnection(conn, vnic.Resources().Config())
+	err = sec.ValidateConnection(conn)
 	if err != nil {
 		this.resources.Logger().Error(err)
 		return
@@ -129,7 +129,7 @@ func (this *VNet) connect(conn net.Conn) {
 	this.notifyNewVNic(vnic)
 }
 
-func (this *VNet) notifyNewVNic(vnic interfaces.IVirtualNetworkInterface) {
+func (this *VNet) notifyNewVNic(vnic common.IVirtualNetworkInterface) {
 	this.switchTable.addVNic(vnic)
 }
 
@@ -139,7 +139,7 @@ func (this *VNet) Shutdown() {
 	this.switchTable.shutdown()
 }
 
-func (this *VNet) Failed(data []byte, vnic interfaces.IVirtualNetworkInterface, failMsg string) {
+func (this *VNet) Failed(data []byte, vnic common.IVirtualNetworkInterface, failMsg string) {
 	msg, err := this.protocol.MessageOf(data)
 	this.resources.Logger().Error("Failed Message ", msg.Action)
 	if err != nil {
@@ -161,7 +161,7 @@ func (this *VNet) Failed(data []byte, vnic interfaces.IVirtualNetworkInterface, 
 	}
 }
 
-func (this *VNet) HandleData(data []byte, vnic interfaces.IVirtualNetworkInterface) {
+func (this *VNet) HandleData(data []byte, vnic common.IVirtualNetworkInterface) {
 	this.resources.Logger().Trace("********** Swith Service - HandleData **********")
 	source, sourceVnet, destination, vlan, _ := protocol.HeaderOf(data)
 	this.resources.Logger().Trace("** Switch      : ", this.resources.Config().LocalUuid)
@@ -224,7 +224,7 @@ func (this *VNet) publish(pb proto.Message) {
 
 }
 
-func (this *VNet) ShutdownVNic(vnic interfaces.IVirtualNetworkInterface) {
+func (this *VNet) ShutdownVNic(vnic common.IVirtualNetworkInterface) {
 	h := health.Health(this.resources)
 	uuid := vnic.Resources().Config().RemoteUuid
 	hp := h.HealthPoint(uuid)
@@ -237,7 +237,7 @@ func (this *VNet) ShutdownVNic(vnic interfaces.IVirtualNetworkInterface) {
 	this.resources.Logger().Info("Shutdown complete ", this.resources.Config().LocalAlias)
 }
 
-func (this *VNet) switchDataReceived(data []byte, vnic interfaces.IVirtualNetworkInterface) {
+func (this *VNet) switchDataReceived(data []byte, vnic common.IVirtualNetworkInterface) {
 	msg, err := this.protocol.MessageOf(data)
 	if err != nil {
 		this.resources.Logger().Error(err)
@@ -260,7 +260,7 @@ func (this *VNet) switchDataReceived(data []byte, vnic interfaces.IVirtualNetwor
 	this.resources.ServicePoints().Handle(pb, msg.Action, vnic, msg, false)
 }
 
-func (this *VNet) Resources() interfaces.IResources {
+func (this *VNet) Resources() common.IResources {
 	return this.resources
 }
 

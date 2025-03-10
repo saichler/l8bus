@@ -3,9 +3,9 @@ package vnic
 import (
 	"errors"
 	"github.com/saichler/layer8/go/overlay/protocol"
-	"github.com/saichler/shared/go/share/nets"
 	"github.com/saichler/shared/go/share/queues"
-	"github.com/saichler/shared/go/types"
+	"github.com/saichler/types/go/nets"
+	"github.com/saichler/types/go/types"
 	"strconv"
 	"time"
 )

@@ -2,8 +2,8 @@ package health
 
 import (
 	"github.com/saichler/servicepoints/go/points/cache"
-	"github.com/saichler/shared/go/share/interfaces"
-	"github.com/saichler/shared/go/types"
+	"github.com/saichler/types/go/common"
+	"github.com/saichler/types/go/types"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -16,7 +16,7 @@ type HealthServicePoint struct {
 	healthCenter *HealthCenter
 }
 
-func RegisterHealth(resources interfaces.IResources, listener cache.ICacheListener) {
+func RegisterHealth(resources common.IResources, listener cache.ICacheListener) {
 	health := &HealthServicePoint{}
 	health.healthCenter = newHealthCenter(resources, listener)
 	err := resources.ServicePoints().RegisterServicePoint(0, &types.HealthPoint{}, health)
@@ -25,31 +25,31 @@ func RegisterHealth(resources interfaces.IResources, listener cache.ICacheListen
 	}
 }
 
-func (this *HealthServicePoint) Post(pb proto.Message, resourcs interfaces.IResources) (proto.Message, error) {
+func (this *HealthServicePoint) Post(pb proto.Message, resourcs common.IResources) (proto.Message, error) {
 	hp := pb.(*types.HealthPoint)
 	this.healthCenter.Add(hp)
 	return nil, nil
 }
-func (this *HealthServicePoint) Put(pb proto.Message, resourcs interfaces.IResources) (proto.Message, error) {
+func (this *HealthServicePoint) Put(pb proto.Message, resourcs common.IResources) (proto.Message, error) {
 	hp := pb.(*types.HealthPoint)
 	this.healthCenter.Update(hp)
 	return nil, nil
 }
-func (this *HealthServicePoint) Patch(pb proto.Message, resourcs interfaces.IResources) (proto.Message, error) {
+func (this *HealthServicePoint) Patch(pb proto.Message, resourcs common.IResources) (proto.Message, error) {
 	hp := pb.(*types.HealthPoint)
 	this.healthCenter.Update(hp)
 	return nil, nil
 }
-func (this *HealthServicePoint) Delete(pb proto.Message, resourcs interfaces.IResources) (proto.Message, error) {
+func (this *HealthServicePoint) Delete(pb proto.Message, resourcs common.IResources) (proto.Message, error) {
 	return nil, nil
 }
-func (this *HealthServicePoint) GetCopy(pb proto.Message, resourcs interfaces.IResources) (proto.Message, error) {
+func (this *HealthServicePoint) GetCopy(pb proto.Message, resourcs common.IResources) (proto.Message, error) {
 	return nil, nil
 }
-func (this *HealthServicePoint) Get(pb proto.Message, resourcs interfaces.IResources) (proto.Message, error) {
+func (this *HealthServicePoint) Get(pb proto.Message, resourcs common.IResources) (proto.Message, error) {
 	return nil, nil
 }
-func (this *HealthServicePoint) Failed(pb proto.Message, resourcs interfaces.IResources, msg *types.Message) (proto.Message, error) {
+func (this *HealthServicePoint) Failed(pb proto.Message, resourcs common.IResources, msg *types.Message) (proto.Message, error) {
 	return nil, nil
 }
 func (this *HealthServicePoint) EndPoint() string {

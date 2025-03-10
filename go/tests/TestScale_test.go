@@ -1,13 +1,11 @@
-//go:build scale
-
 package tests
 
 import (
-	"github.com/saichler/shared/go/share/interfaces"
 	"github.com/saichler/shared/go/share/strings"
 	"github.com/saichler/shared/go/tests"
 	"github.com/saichler/shared/go/tests/infra"
-	"github.com/saichler/shared/go/types"
+	"github.com/saichler/types/go/common"
+	"github.com/saichler/types/go/types"
 	"testing"
 	"time"
 )
@@ -51,8 +49,8 @@ func scaleTest(size, exp int, timeout int64, t *testing.T) bool {
 }
 
 func TestScale(t *testing.T) {
-	log.SetLogLevel(interfaces.Info_Level)
-	infra.Log.SetLogLevel(interfaces.Info_Level)
+	log.SetLogLevel(common.Info_Level)
+	infra.Log.SetLogLevel(common.Info_Level)
 	exp := 1000
 	ok := scaleTest(1000, exp, 2, t)
 	if !ok {

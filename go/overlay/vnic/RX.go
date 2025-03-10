@@ -1,10 +1,10 @@
 package vnic
 
 import (
-	"github.com/saichler/shared/go/share/nets"
 	"github.com/saichler/shared/go/share/queues"
 	"github.com/saichler/shared/go/share/workers"
-	"github.com/saichler/shared/go/types"
+	"github.com/saichler/types/go/nets"
+	"github.com/saichler/types/go/types"
 	"google.golang.org/protobuf/proto"
 )
 
