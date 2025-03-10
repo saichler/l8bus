@@ -1,8 +1,8 @@
 package protocol
 
 import (
-	"github.com/saichler/shared/go/share/nets"
-	"github.com/saichler/shared/go/types"
+	"github.com/saichler/types/go/nets"
+	"github.com/saichler/types/go/types"
 )
 
 const (
