@@ -61,3 +61,11 @@ func (this *HealthServicePoint) Topic() string {
 func (this *HealthServicePoint) Transactional() bool {
 	return false
 }
+
+func (this *HealthServicePoint) ReplicationCount() int {
+	return 0
+}
+
+func (this *HealthServicePoint) ReplicationScore() int {
+	return 0
+}
