@@ -95,7 +95,10 @@ func (vnic *VirtualNetworkInterface) connect() error {
 		return errors.New("Error connecting to the vnet: " + err.Error())
 	}
 	// Verify that the switch accepts this connection
-	err = vnic.resources.Security().ValidateConnection(conn)
+	if vnic.resources.Config().LocalUuid == "" {
+		panic("")
+	}
+	err = vnic.resources.Security().ValidateConnection(conn, vnic.resources.Config())
 	if err != nil {
 		return errors.New("Error validating connection: " + err.Error())
 	}

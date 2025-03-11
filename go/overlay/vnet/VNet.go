@@ -119,7 +119,7 @@ func (this *VNet) connect(conn net.Conn) {
 	vnic := vnic2.NewVirtualNetworkInterface(resources, conn)
 	vnic.Resources().Config().LocalUuid = this.resources.Config().LocalUuid
 
-	err = sec.ValidateConnection(conn)
+	err = sec.ValidateConnection(conn, config)
 	if err != nil {
 		this.resources.Logger().Error(err)
 		return

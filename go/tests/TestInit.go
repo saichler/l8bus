@@ -89,7 +89,6 @@ func createSwitch(port uint32, name string) *vnet.VNet {
 	sps := service_points.NewServicePoints(ins, config)
 
 	res := resources.NewResources(reg, secure, sps, log, nil, nil, config, ins)
-	secure.Init(res)
 	res.Config().VnetPort = port
 	sw := vnet.NewVNet(res)
 	sw.Start()
@@ -111,7 +110,6 @@ func createEdge(port uint32, name string, addTestTopic bool) IVirtualNetworkInte
 	sps := service_points.NewServicePoints(ins, config)
 
 	res := resources.NewResources(reg, secure, sps, log, nil, nil, config, ins)
-	secure.Init(res)
 	res.Config().VnetPort = port
 	tsps[name] = infra.NewTestServicePointHandler(name)
 

@@ -38,7 +38,7 @@ func (this *VNet) ConnectNetworks(host string, destPort uint32) error {
 
 	vnic := vnic2.NewVirtualNetworkInterface(resources, conn)
 
-	err = sec.ValidateConnection(conn)
+	err = sec.ValidateConnection(conn, config)
 	if err != nil {
 		return err
 	}
