@@ -18,9 +18,9 @@ type Topic struct {
 }
 
 type Vlan struct {
-	members  map[string]int64
-	leader   string
-	repCount int32
+	members          map[string]int64
+	leader           string
+	replicationScore int32
 }
 
 func newServices() *Services {
@@ -109,12 +109,12 @@ func (this *Services) updateTopics(healthPoint *types.HealthPoint, vlansToCalcLe
 			this.topics[topic].name = topic
 			this.topics[topic].vlans = make(map[int32]*Vlan)
 		}
-		for vlanId, repCount := range vlans.Vlans {
+		for vlanId, score := range vlans.Vlans {
 			_, ok = this.topics[topic].vlans[vlanId]
 			if !ok {
 				this.topics[topic].vlans[vlanId] = &Vlan{}
 				this.topics[topic].vlans[vlanId].members = make(map[string]int64)
-				this.topics[topic].vlans[vlanId].repCount = repCount
+				this.topics[topic].vlans[vlanId].replicationScore = score
 			}
 			this.topics[topic].vlans[vlanId].members[healthPoint.AUuid] = healthPoint.StartTime
 			*vlansToCalcLeader = append(*vlansToCalcLeader, this.topics[topic].vlans[vlanId])
@@ -166,7 +166,7 @@ func (this *Services) AllTopics() *types.Topics {
 		result.TopicToVlan[name] = &types.Vlans{}
 		result.TopicToVlan[name].Vlans = make(map[int32]int32)
 		for vlanId, vlan := range topics.vlans {
-			result.TopicToVlan[name].Vlans[vlanId] = vlan.repCount
+			result.TopicToVlan[name].Vlans[vlanId] = vlan.replicationScore
 		}
 	}
 	return result
