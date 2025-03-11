@@ -3,6 +3,7 @@ package tests
 import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/shared/go/tests/infra"
+	. "github.com/saichler/shared/go/tests/infra"
 	"github.com/saichler/types/go/testtypes"
 	"github.com/saichler/types/go/types"
 	"testing"
@@ -13,7 +14,7 @@ func TestKeepAlive(t *testing.T) {
 	pb := &testtypes.TestProto{}
 	err := eg1.Multicast(types.CastMode_All, types.Action_POST, 0, infra.TEST_TOPIC, pb)
 	if err != nil {
-		log.Fail(t, err)
+		Log.Fail(t, err)
 		return
 	}
 
@@ -21,6 +22,6 @@ func TestKeepAlive(t *testing.T) {
 	hc := health.Health(eg3.Resources())
 	hp := hc.HealthPoint(eg1.Resources().Config().LocalUuid)
 	if hp.Stats.TxMsgCount == 0 {
-		log.Fail(t, "Expected at least one message to be sent for ", eg1.Resources().Config().LocalUuid)
+		Log.Fail(t, "Expected at least one message to be sent for ", eg1.Resources().Config().LocalUuid)
 	}
 }

@@ -115,8 +115,11 @@ type HandleWorker struct {
 }
 
 func (rx *RX) runHandleMessage(msg *types.Message, pb proto.Message) {
+	//rx.handleMessage(msg, pb)
+
 	hw := &HandleWorker{msg: msg, rx: rx, pb: pb}
 	rx.pool.Run(hw)
+
 }
 
 func (this *HandleWorker) Run() {

@@ -8,7 +8,7 @@ rm -rf go.mod
 rm -rf vendor
 
 # fetch dependencies
-go mod init
+cp go.mod.main go.mod
 GOPROXY=direct go mod tidy
 go mod vendor
 

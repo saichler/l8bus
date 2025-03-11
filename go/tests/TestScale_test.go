@@ -1,8 +1,10 @@
+//go:build scale
+
 package tests
 
 import (
 	"github.com/saichler/shared/go/share/strings"
-	"github.com/saichler/shared/go/tests/infra"
+	. "github.com/saichler/shared/go/tests/infra"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/testtypes"
 	"github.com/saichler/types/go/types"
@@ -25,7 +27,7 @@ func scaleTest(size, exp int, timeout int64, t *testing.T) bool {
 		pb.MyInt32 = int32(i)
 		err := eg2.Unicast(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
 		if err != nil {
-			log.Fail(t, err)
+			Log.Fail(t, err)
 			return false
 		}
 	}
@@ -33,40 +35,39 @@ func scaleTest(size, exp int, timeout int64, t *testing.T) bool {
 	eg3 := tsps["eg3"]
 
 	now := time.Now().Unix()
-	for eg3.PostNumber < exp {
+	for eg3.PostN() < exp {
 		if time.Now().Unix()-timeout >= now {
 			break
 		}
 		time.Sleep(time.Millisecond * 100)
 	}
 	end := time.Now().Unix()
-	log.Info("Scale test for ", size, " took ", (end - start), " seconds")
-	if eg3.PostNumber != exp {
-		log.Fail(t, "eg3", " Post count does not equal to ", exp, ":", eg3.PostNumber)
+	Log.Info("Scale test for ", size, " took ", (end - start), " seconds")
+	if eg3.PostN() != exp {
+		Log.Fail(t, "eg3", " Post count does not equal to ", exp, ":", eg3.PostN())
 		return false
 	}
 	return true
 }
 
 func TestScale(t *testing.T) {
-	log.SetLogLevel(common.Info_Level)
-	infra.Log.SetLogLevel(common.Info_Level)
+	Log.SetLogLevel(common.Info_Level)
 	exp := 1000
-	ok := scaleTest(1000, exp, 2, t)
+	ok := scaleTest(1000, exp, 4, t)
 	if !ok {
 		return
 	}
 
 	exp += 10000
-	ok = scaleTest(10000, exp, 2, t)
+	ok = scaleTest(10000, exp, 4, t)
 	if !ok {
 		return
 	}
 	exp += 100000
-	ok = scaleTest(100000, exp, 5, t)
+	ok = scaleTest(100000, exp, 10, t)
 	if !ok {
 		return
 	}
 	exp += 1000000
-	scaleTest(1000000, exp, 5, t)
+	scaleTest(1000000, exp, 20, t)
 }

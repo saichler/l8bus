@@ -8,8 +8,9 @@ rm -rf go.mod
 rm -rf vendor
 
 # fetch dependencies
-go mod init
+cp go.mod.main go.mod
 GOPROXY=direct GOPRIVATE=github.com go mod tidy
+./build-security.sh
 go mod vendor
 
 # Run unit tests with coverage

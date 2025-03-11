@@ -2,6 +2,7 @@ package tests
 
 import (
 	"github.com/saichler/layer8/go/overlay/health"
+	. "github.com/saichler/shared/go/tests/infra"
 	"testing"
 )
 
@@ -17,6 +18,6 @@ func TestLeader(t *testing.T) {
 	sleep()
 	leaderAfter := hc.Leader("TestProto", 0)
 	if leaderAfter == leaderBefore {
-		log.Fail(t, "Expected leader to change")
+		Log.Fail(t, "Expected leader to change")
 	}
 }
