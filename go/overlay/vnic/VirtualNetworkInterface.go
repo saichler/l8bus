@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
-	"github.com/saichler/reflect/go/reflect/clone"
+	"github.com/saichler/reflect/go/reflect/cloning"
 	"github.com/saichler/shared/go/share/strings"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
@@ -163,7 +163,7 @@ func (vnic *VirtualNetworkInterface) Transaction(action types.Action, vlan int32
 }
 
 func (vnic *VirtualNetworkInterface) Reply(msg *types.Message, resp interface{}) error {
-	reply := clone.NewCloner().Clone(msg).(*types.Message)
+	reply := cloning.NewCloner().Clone(msg).(*types.Message)
 	reply.Action = types.Action_Reply
 	reply.Topic = msg.SourceUuid
 	reply.SourceUuid = vnic.resources.Config().LocalUuid
