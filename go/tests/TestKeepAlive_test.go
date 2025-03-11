@@ -2,15 +2,15 @@ package tests
 
 import (
 	"github.com/saichler/layer8/go/overlay/health"
-	"github.com/saichler/shared/go/tests"
 	"github.com/saichler/shared/go/tests/infra"
-	"github.com/saichler/shared/go/types"
+	"github.com/saichler/types/go/testtypes"
+	"github.com/saichler/types/go/types"
 	"testing"
 	"time"
 )
 
 func TestKeepAlive(t *testing.T) {
-	pb := &tests.TestProto{}
+	pb := &testtypes.TestProto{}
 	err := eg1.Multicast(types.CastMode_All, types.Action_POST, 0, infra.TEST_TOPIC, pb)
 	if err != nil {
 		log.Fail(t, err)

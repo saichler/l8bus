@@ -2,9 +2,9 @@ package tests
 
 import (
 	"github.com/saichler/shared/go/share/strings"
-	"github.com/saichler/shared/go/tests"
 	"github.com/saichler/shared/go/tests/infra"
 	"github.com/saichler/types/go/common"
+	"github.com/saichler/types/go/testtypes"
 	"github.com/saichler/types/go/types"
 	"testing"
 	"time"
@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 func scaleTest(size, exp int, timeout int64, t *testing.T) bool {
 	start := time.Now().Unix()
 	for i := 0; i < size; i++ {
-		pb := &tests.TestProto{}
+		pb := &testtypes.TestProto{}
 		pb.MyString = strings.New("Str-", i).String()
 		pb.MyInt32 = int32(i)
 		err := eg2.Unicast(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
