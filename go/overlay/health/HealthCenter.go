@@ -29,7 +29,7 @@ func (this *HealthCenter) Add(healthPoint *types.HealthPoint) {
 }
 
 func (this *HealthCenter) Update(healthPoint *types.HealthPoint) {
-	err := this.healthPoints.Update(healthPoint.AUuid, healthPoint)
+	_, err := this.healthPoints.Update(healthPoint.AUuid, healthPoint)
 	if err != nil {
 		this.resources.Logger().Error("Error updating health point ", err)
 		return
@@ -107,23 +107,26 @@ func (this *HealthCenter) ReplicasFor(topicId string, vlanId int32, numOfReplica
 	return this.services.ReplicasFor(topicId, vlanId, numOfReplicas)
 }
 
-func (this *HealthCenter) AddScore(target, topic string, vlanId int32) {
-	hp := this.healthPoints.Get(target).(*types.HealthPoint)
-	if hp == nil {
+func (this *HealthCenter) AddScore(target, topic string, vlanId int32, vnic common.IVirtualNetworkInterface) {
+	hp1 := this.healthPoints.Get(target).(*types.HealthPoint)
+	if hp1 == nil {
 		panic("HealthPoint is nil!")
 	}
-	if hp.Topics == nil {
+	if hp1.Topics == nil {
 		panic("Topics is nil!")
 	}
-	if hp.Topics.TopicToVlan == nil {
+	if hp1.Topics.TopicToVlan == nil {
 		panic("TopicToVlan is nil!")
 	}
-	vlan, ok := hp.Topics.TopicToVlan[topic]
+	vlan, ok := hp1.Topics.TopicToVlan[topic]
 	if !ok {
 		panic("TopicToVlan is nil!")
 	}
 	vlan.Vlans[vlanId]++
-	this.healthPoints.Update(hp.AUuid, hp)
+	n, e := this.healthPoints.Update(hp1.AUuid, hp1)
+	if e == nil && n != nil {
+		vnic.Multicast(types.CastMode_All, types.Action_Notify, vlanId, TOPIC, n)
+	}
 }
 
 func Health(resource common.IResources) *HealthCenter {
