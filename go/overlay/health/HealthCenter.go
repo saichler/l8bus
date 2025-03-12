@@ -107,6 +107,25 @@ func (this *HealthCenter) ReplicasFor(topicId string, vlanId int32, numOfReplica
 	return this.services.ReplicasFor(topicId, vlanId, numOfReplicas)
 }
 
+func (this *HealthCenter) AddScore(target, topic string, vlanId int32) {
+	hp := this.healthPoints.Get(target).(*types.HealthPoint)
+	if hp == nil {
+		panic("HealthPoint is nil!")
+	}
+	if hp.Topics == nil {
+		panic("Topics is nil!")
+	}
+	if hp.Topics.TopicToVlan == nil {
+		panic("TopicToVlan is nil!")
+	}
+	vlan, ok := hp.Topics.TopicToVlan[topic]
+	if !ok {
+		panic("TopicToVlan is nil!")
+	}
+	vlan.Vlans[vlanId]++
+	this.healthPoints.Update(hp.AUuid, hp)
+}
+
 func Health(resource common.IResources) *HealthCenter {
 	sp, ok := resource.ServicePoints().ServicePointHandler(TOPIC)
 	if !ok {
