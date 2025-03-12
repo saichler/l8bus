@@ -121,6 +121,10 @@ func (this *Services) ScoresFor(topicId string, vlanId int32) map[string]int32 {
 		return result
 	}
 	for target, member := range vlan.members {
+		_, ok = this.vnetUuid[target]
+		if ok {
+			continue
+		}
 		result[target] = member.s
 	}
 	return result
