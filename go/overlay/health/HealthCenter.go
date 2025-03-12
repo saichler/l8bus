@@ -103,6 +103,10 @@ func (this *HealthCenter) Uuids(topic string, vlan int32, noVnet bool) map[strin
 	return this.services.UUIDs(topic, vlan, noVnet)
 }
 
+func (this *HealthCenter) ReplicasFor(topicId string, vlanId int32, numOfReplicas int) map[string]int32 {
+	return this.services.ReplicasFor(topicId, vlanId, numOfReplicas)
+}
+
 func Health(resource common.IResources) *HealthCenter {
 	sp, ok := resource.ServicePoints().ServicePointHandler(TOPIC)
 	if !ok {
