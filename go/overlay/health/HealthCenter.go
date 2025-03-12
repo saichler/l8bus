@@ -127,8 +127,12 @@ func (this *HealthCenter) AddScore(target, topic string, vlanId int32, vnic comm
 	if n == nil && e == nil {
 		panic("Something went wrong with helth notification!")
 	}
-	if e == nil && n != nil {
-		vnic.Multicast(types.CastMode_All, types.Action_Notify, vlanId, TOPIC, n)
+	if e != nil {
+		panic(e)
+	}
+	e = vnic.Multicast(types.CastMode_All, types.Action_Notify, vlanId, TOPIC, n)
+	if e != nil {
+		panic(e)
 	}
 }
 
