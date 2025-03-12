@@ -99,7 +99,7 @@ func (this *Services) ReplicasFor(topicId string, vlanId int32, numOfReplicas in
 		arr = append(arr, &member{target, score})
 	}
 	sort.Slice(arr, func(i, j int) bool {
-		return arr[i].score > arr[j].score
+		return arr[i].score < arr[j].score
 	})
 	result := make(map[string]int32)
 	for i := 0; i < numOfReplicas; i++ {
@@ -165,7 +165,11 @@ func (this *Services) updateTopics(healthPoint *types.HealthPoint, vlansToCalcLe
 				this.topics[topic].vlans[vlanId] = &Vlan{}
 				this.topics[topic].vlans[vlanId].members = make(map[string]*Member)
 			}
-			this.topics[topic].vlans[vlanId].members[healthPoint.AUuid] = &Member{t: healthPoint.StartTime, s: score}
+			if this.topics[topic].vlans[vlanId].members[healthPoint.AUuid] == nil {
+				this.topics[topic].vlans[vlanId].members[healthPoint.AUuid] = &Member{}
+			}
+			this.topics[topic].vlans[vlanId].members[healthPoint.AUuid].t = healthPoint.StartTime
+			this.topics[topic].vlans[vlanId].members[healthPoint.AUuid].s = score
 			*vlansToCalcLeader = append(*vlansToCalcLeader, this.topics[topic].vlans[vlanId])
 		}
 	}

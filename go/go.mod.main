@@ -3,8 +3,8 @@ module github.com/saichler/layer8/go
 go 1.23.2
 
 require (
-	github.com/saichler/reflect main
-	github.com/saichler/serializer main
+	github.com/saichler/reflect/go main
+	github.com/saichler/serializer/go main
 	github.com/saichler/servicepoints/go main
 	github.com/saichler/shared/go main
 	github.com/saichler/types/go main
