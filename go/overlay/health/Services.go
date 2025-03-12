@@ -2,6 +2,7 @@ package health
 
 import (
 	"github.com/saichler/types/go/types"
+	"sort"
 	"sync"
 )
 
@@ -18,9 +19,13 @@ type Topic struct {
 }
 
 type Vlan struct {
-	members          map[string]int64
-	leader           string
-	replicationScore int32
+	members map[string]*Member
+	leader  string
+}
+
+type Member struct {
+	t int64
+	s int32
 }
 
 func newServices() *Services {
@@ -80,6 +85,47 @@ func (this *Services) Leader(topicId string, vlanId int32) string {
 	return vlan.leader
 }
 
+func (this *Services) ReplicasFor(topicId string, vlanId int32, numOfReplicas int) map[string]int32 {
+	scores := this.ScoresFor(topicId, vlanId)
+	if numOfReplicas > len(scores) {
+		return scores
+	}
+	type member struct {
+		target string
+		score  int32
+	}
+	arr := make([]*member, 0)
+	for target, score := range scores {
+		arr = append(arr, &member{target, score})
+	}
+	sort.Slice(arr, func(i, j int) bool {
+		return arr[i].score > arr[j].score
+	})
+	result := make(map[string]int32)
+	for i := 0; i < numOfReplicas; i++ {
+		result[arr[i].target] = arr[i].score
+	}
+	return result
+}
+
+func (this *Services) ScoresFor(topicId string, vlanId int32) map[string]int32 {
+	result := make(map[string]int32)
+	this.mtx.RLock()
+	defer this.mtx.RUnlock()
+	topic, ok := this.topics[topicId]
+	if !ok {
+		return result
+	}
+	vlan, ok := topic.vlans[vlanId]
+	if !ok {
+		return result
+	}
+	for target, member := range vlan.members {
+		result[target] = member.s
+	}
+	return result
+}
+
 func (this *Services) checkHealthPointDown(healthPoint *types.HealthPoint, vlansToCalcLeader *[]*Vlan) {
 	if healthPoint.Status != types.HealthState_Invalid_State &&
 		healthPoint.Status != types.HealthState_Up {
@@ -113,10 +159,9 @@ func (this *Services) updateTopics(healthPoint *types.HealthPoint, vlansToCalcLe
 			_, ok = this.topics[topic].vlans[vlanId]
 			if !ok {
 				this.topics[topic].vlans[vlanId] = &Vlan{}
-				this.topics[topic].vlans[vlanId].members = make(map[string]int64)
-				this.topics[topic].vlans[vlanId].replicationScore = score
+				this.topics[topic].vlans[vlanId].members = make(map[string]*Member)
 			}
-			this.topics[topic].vlans[vlanId].members[healthPoint.AUuid] = healthPoint.StartTime
+			this.topics[topic].vlans[vlanId].members[healthPoint.AUuid] = &Member{t: healthPoint.StartTime, s: score}
 			*vlansToCalcLeader = append(*vlansToCalcLeader, this.topics[topic].vlans[vlanId])
 		}
 	}
@@ -143,9 +188,9 @@ func (this *Services) Update(healthPoint *types.HealthPoint) {
 func calcLeader(vlan *Vlan) {
 	var minTime int64 = -1
 	vlan.leader = ""
-	for uuid, t := range vlan.members {
-		if minTime == -1 || t < minTime {
-			minTime = t
+	for uuid, member := range vlan.members {
+		if minTime == -1 || member.t < minTime {
+			minTime = member.t
 			vlan.leader = uuid
 		}
 	}
@@ -165,8 +210,8 @@ func (this *Services) AllTopics() *types.Topics {
 	for name, topics := range this.topics {
 		result.TopicToVlan[name] = &types.Vlans{}
 		result.TopicToVlan[name].Vlans = make(map[int32]int32)
-		for vlanId, vlan := range topics.vlans {
-			result.TopicToVlan[name].Vlans[vlanId] = vlan.replicationScore
+		for vlanId, _ := range topics.vlans {
+			result.TopicToVlan[name].Vlans[vlanId] = 0
 		}
 	}
 	return result
