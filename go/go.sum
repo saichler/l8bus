@@ -10,8 +10,8 @@ github.com/saichler/servicepoints/go v0.0.0-20250312143811-5b0b98945395 h1:jPmhB
 github.com/saichler/servicepoints/go v0.0.0-20250312143811-5b0b98945395/go.mod h1:8Q2HVwO/YLPZI+XdjAuI6nr4GqCl5CI6oN0vqmh/wgA=
 github.com/saichler/shared/go v0.0.0-20250311194431-666c46978b49 h1:7z4g4r89/LVRcWDM6EzUxqE1UEeLV4OVMU/nf0Mdgrc=
 github.com/saichler/shared/go v0.0.0-20250311194431-666c46978b49/go.mod h1:31bQzZONUZGpLkmtNW4H/HES9+18h/QX3VJd4kP2DHk=
-github.com/saichler/types/go v0.0.0-20250311194358-71f6a59a389f h1:+HUehuwS6ZAqMmpEsaPs0DYXXfczyS73a5H2bp4sPgE=
-github.com/saichler/types/go v0.0.0-20250311194358-71f6a59a389f/go.mod h1:VXMfoEKBR24gtmrpXM8fbOoleMax4m6ppGfitba9BjA=
+github.com/saichler/types/go v0.0.0-20250312151409-525eaf9743ae h1:Sxxo5v9kN8qsMKVj0VSOl+aRZB2q7p3NV1vvqVVcYbQ=
+github.com/saichler/types/go v0.0.0-20250312151409-525eaf9743ae/go.mod h1:VXMfoEKBR24gtmrpXM8fbOoleMax4m6ppGfitba9BjA=
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 h1:E7g+9GITq07hpfrRu66IVDexMakfv52eLZ2CXBWiKr4=
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 google.golang.org/protobuf v1.36.5 h1:tPhr+woSbjfYvY6/GPufUoYizxw1cF/yFoxJ2fmpwlM=

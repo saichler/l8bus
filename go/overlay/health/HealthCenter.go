@@ -108,22 +108,25 @@ func (this *HealthCenter) ReplicasFor(topicId string, vlanId int32, numOfReplica
 }
 
 func (this *HealthCenter) AddScore(target, topic string, vlanId int32, vnic common.IVirtualNetworkInterface) {
-	hp1 := this.healthPoints.Get(target).(*types.HealthPoint)
-	if hp1 == nil {
+	hp := this.healthPoints.Get(target).(*types.HealthPoint)
+	if hp == nil {
 		panic("HealthPoint is nil!")
 	}
-	if hp1.Topics == nil {
+	if hp.Topics == nil {
 		panic("Topics is nil!")
 	}
-	if hp1.Topics.TopicToVlan == nil {
+	if hp.Topics.TopicToVlan == nil {
 		panic("TopicToVlan is nil!")
 	}
-	vlan, ok := hp1.Topics.TopicToVlan[topic]
+	vlan, ok := hp.Topics.TopicToVlan[topic]
 	if !ok {
 		panic("TopicToVlan is nil!")
 	}
 	vlan.Vlans[vlanId]++
-	n, e := this.healthPoints.Update(hp1.AUuid, hp1)
+	n, e := this.healthPoints.Update(hp.AUuid, hp)
+	if n == nil && e == nil {
+		panic("Something went wrong with helth notification!")
+	}
 	if e == nil && n != nil {
 		vnic.Multicast(types.CastMode_All, types.Action_Notify, vlanId, TOPIC, n)
 	}
