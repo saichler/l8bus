@@ -168,8 +168,12 @@ func (this *Services) updateTopics(healthPoint *types.HealthPoint, vlansToCalcLe
 			if this.topics[topic].vlans[vlanId].members[healthPoint.AUuid] == nil {
 				this.topics[topic].vlans[vlanId].members[healthPoint.AUuid] = &Member{}
 			}
-			this.topics[topic].vlans[vlanId].members[healthPoint.AUuid].t = healthPoint.StartTime
-			this.topics[topic].vlans[vlanId].members[healthPoint.AUuid].s = score
+			if healthPoint.StartTime != 0 {
+				this.topics[topic].vlans[vlanId].members[healthPoint.AUuid].t = healthPoint.StartTime
+			}
+			if this.topics[topic].vlans[vlanId].members[healthPoint.AUuid].s < score {
+				this.topics[topic].vlans[vlanId].members[healthPoint.AUuid].s = score
+			}
 			*vlansToCalcLeader = append(*vlansToCalcLeader, this.topics[topic].vlans[vlanId])
 		}
 	}
