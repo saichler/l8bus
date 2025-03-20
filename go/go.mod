@@ -5,9 +5,9 @@ go 1.24.1
 require (
 	github.com/saichler/reflect/go v0.0.0-20250317153135-a0a75946f793
 	github.com/saichler/serializer/go v0.0.0-20250312171751-f16ab3ede337
-	github.com/saichler/servicepoints/go v0.0.0-20250320154933-9d078aebe224
+	github.com/saichler/servicepoints/go v0.0.0-20250320164818-ec0a30ce3ac9
 	github.com/saichler/shared/go v0.0.0-20250320123148-50a37cb685f5
-	github.com/saichler/types/go v0.0.0-20250320153121-ccf64b8985a1
+	github.com/saichler/types/go v0.0.0-20250320164653-f23d0f144748
 	google.golang.org/protobuf v1.36.5
 )
 

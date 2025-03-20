@@ -66,3 +66,7 @@ func (this *HealthServicePoint) ReplicationCount() int {
 func (this *HealthServicePoint) ReplicationScore() int {
 	return 0
 }
+
+func (this *HealthServicePoint) SupportedProto() proto.Message {
+	return &types.HealthPoint{}
+}
