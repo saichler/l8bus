@@ -132,7 +132,7 @@ func (rx *RX) handleMessage(msg *types.Message, pb proto.Message) {
 		request.response = pb
 		request.cond.Broadcast()
 	} else if msg.Action == types.Action_Notify {
-		rx.vnic.resources.ServicePoints().Notify(pb, msg.Action, rx.vnic, msg, false)
+		rx.vnic.resources.ServicePoints().Notify(pb, rx.vnic, msg, false)
 	} else {
 		//Add bool
 		resp, err := rx.vnic.resources.ServicePoints().Handle(pb, msg.Action, rx.vnic, msg, false)

@@ -8,11 +8,6 @@ import (
 	"reflect"
 )
 
-const (
-	MULTICAST = "Health"
-	ENDPOINT  = "health"
-)
-
 type HealthServicePoint struct {
 	healthCenter *HealthCenter
 	typ          *reflect.Type
@@ -21,7 +16,7 @@ type HealthServicePoint struct {
 func RegisterHealth(resources common.IResources, listener cache.ICacheListener) {
 	health := &HealthServicePoint{}
 	health.healthCenter = newHealthCenter(resources, listener)
-	err := resources.ServicePoints().RegisterServicePoint(MULTICAST, 0, health)
+	err := resources.ServicePoints().RegisterServicePoint(Multicast, 0, health)
 	if err != nil {
 		panic(err)
 	}
@@ -55,10 +50,10 @@ func (this *HealthServicePoint) Failed(pb proto.Message, resourcs common.IResour
 	return nil, nil
 }
 func (this *HealthServicePoint) EndPoint() string {
-	return ENDPOINT
+	return Endpoint
 }
 func (this *HealthServicePoint) Multicast() string {
-	return MULTICAST
+	return Multicast
 }
 func (this *HealthServicePoint) Transactional() bool {
 	return false

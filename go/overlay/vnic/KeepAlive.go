@@ -1,6 +1,7 @@
 package vnic
 
 import (
+	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/types/go/types"
 	"runtime"
 	"time"
@@ -53,7 +54,7 @@ func (this *KeepAlive) sendState() {
 	hp.Stats = stats
 	this.vnic.resources.Logger().Debug("Sending Keep Alive for ", this.vnic.resources.Config().LocalUuid, " ", this.vnic.resources.Config().LocalAlias)
 	//We unicast to the vnet, it will multicast the change to all
-	this.vnic.Unicast(types.Action_PATCH, this.vnic.resources.Config().RemoteUuid, hp)
+	this.vnic.Unicast(types.Action_PATCH, this.vnic.resources.Config().RemoteUuid, health.Multicast, hp)
 }
 
 func memoryUsage() uint64 {

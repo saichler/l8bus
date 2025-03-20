@@ -21,7 +21,7 @@ func newHealthCenter(resources common.IResources, listener cache.ICacheListener)
 	hc := &HealthCenter{}
 	rnode, _ := resources.Introspector().Inspect(&types.HealthPoint{})
 	resources.Introspector().AddDecorator(types.DecoratorType_Primary, []string{"AUuid"}, rnode)
-	hc.healthPoints = cache.NewModelCache(resources.Config().LocalUuid, listener, resources.Introspector())
+	hc.healthPoints = cache.NewModelCache(Multicast, "HealthPoint", resources.Config().LocalUuid, listener, resources.Introspector())
 	hc.services = newServices()
 	hc.resources = resources
 	return hc

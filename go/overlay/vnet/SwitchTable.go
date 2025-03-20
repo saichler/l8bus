@@ -24,9 +24,9 @@ func newSwitchTable(switchService *VNet) *SwitchTable {
 	return switchTable
 }
 
-func (this *SwitchTable) uniCastToAll(vlan int32, topic string, action types.Action, pb proto.Message) {
+func (this *SwitchTable) uniCastToAll(vlan int32, multicast string, action types.Action, pb proto.Message) {
 	conns := this.conns.all()
-	data, err := this.switchService.protocol.CreateMessageFor(vlan, topic, types.Priority_P0, action,
+	data, err := this.switchService.protocol.CreateMessageFor(vlan, "", multicast, types.Priority_P0, action,
 		this.switchService.resources.Config().LocalUuid,
 		this.switchService.resources.Config().LocalUuid, pb, false, false, this.switchService.protocol.NextMessageNumber(), nil)
 	if err != nil {
@@ -57,7 +57,7 @@ func (this *SwitchTable) addVNic(vnic common.IVirtualNetworkInterface) {
 	hc.Add(hp)
 
 	for _, healthPoint := range hc.All() {
-		vnic.Multicast(types.CastMode_All, types.Action_POST, 0, health.TOPIC, healthPoint)
+		vnic.Multicast(types.CastMode_All, types.Action_POST, 0, health.Multicast, healthPoint)
 	}
 }
 

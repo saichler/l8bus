@@ -88,11 +88,11 @@ func (this *TX) SendMessage(data []byte) error {
 }
 
 // Unicast is wrapping a protobuf with a secure message and send it to the vnet
-func (this *TX) Unicast(action types.Action, destination string, any interface{}, p types.Priority, isRequest, isReply bool, msgNum int32, tr *types.Transaction) error {
+func (this *TX) Unicast(action types.Action, destination, multicast string, any interface{}, p types.Priority, isRequest, isReply bool, msgNum int32, tr *types.Transaction) error {
 	if len(destination) != protocol.UNICAST_ADDRESS_SIZE {
 		return errors.New("Invalid destination address " + destination + " size " + strconv.Itoa(len(destination)))
 	}
-	return this.Multicast(action, 0, destination, "", any, p, isRequest, isReply, msgNum, tr)
+	return this.Multicast(action, 0, destination, multicast, any, p, isRequest, isReply, msgNum, tr)
 }
 
 // Multicast is wrapping a protobuf with a secure message and send it to the vnet topic

@@ -148,8 +148,8 @@ func (this *VNet) Failed(data []byte, vnic common.IVirtualNetworkInterface, fail
 	}
 	msg.FailMsg = failMsg
 	src := msg.SourceUuid
-	msg.SourceUuid = msg.Topic
-	msg.Topic = src
+	msg.SourceUuid = msg.DestinationUuid
+	msg.DestinationUuid = src
 	data, err = this.protocol.DataFromMessage(msg)
 	if err != nil {
 		this.resources.Logger().Error(err)
@@ -163,16 +163,15 @@ func (this *VNet) Failed(data []byte, vnic common.IVirtualNetworkInterface, fail
 
 func (this *VNet) HandleData(data []byte, vnic common.IVirtualNetworkInterface) {
 	this.resources.Logger().Trace("********** Swith Service - HandleData **********")
-	source, sourceVnet, destination, vlan, _ := protocol.HeaderOf(data)
+	source, sourceVnet, destination, multicast, vlan, _ := protocol.HeaderOf(data)
 	this.resources.Logger().Trace("** Switch      : ", this.resources.Config().LocalUuid)
 	this.resources.Logger().Trace("** Source      : ", source)
 	this.resources.Logger().Trace("** SourceVnet: ", sourceVnet)
 	this.resources.Logger().Trace("** Vlan      : ", vlan)
 	this.resources.Logger().Trace("** Destination : ", destination)
+	this.resources.Logger().Trace("** Multicast : ", multicast)
 
-	dSize := len(destination)
-	switch dSize {
-	case protocol.UNICAST_ADDRESS_SIZE:
+	if destination != "" {
 		//The destination is the vnet
 		if destination == this.resources.Config().LocalUuid {
 			this.switchDataReceived(data, vnic)
@@ -190,11 +189,11 @@ func (this *VNet) HandleData(data []byte, vnic common.IVirtualNetworkInterface) 
 				return
 			}
 		}
-	default:
+	} else {
 		uuidMap := this.switchTable.ServiceUuids(vlan, destination, sourceVnet)
 		if uuidMap != nil {
 			this.uniCastToPorts(uuidMap, data, sourceVnet)
-			if destination == health.TOPIC {
+			if multicast == health.Multicast {
 				this.switchDataReceived(data, vnic)
 			}
 			return
@@ -265,5 +264,5 @@ func (this *VNet) Resources() common.IResources {
 }
 
 func (this *VNet) PropertyChangeNotification(set *types.NotificationSet) {
-	this.switchTable.uniCastToAll(0, set.TypeName, types.Action_Notify, set)
+	this.switchTable.uniCastToAll(0, set.ProtoType, types.Action_Notify, set)
 }
