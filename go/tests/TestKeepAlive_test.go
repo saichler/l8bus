@@ -21,9 +21,6 @@ func TestKeepAlive(t *testing.T) {
 	time.Sleep(time.Second * time.Duration(eg1.Resources().Config().KeepAliveIntervalSeconds+1))
 	hc := health.Health(eg3.Resources())
 	hp := hc.HealthPoint(eg1.Resources().Config().LocalUuid)
-	if hp == nil {
-		panic("nill")
-	}
 	if hp.Stats.TxMsgCount == 0 {
 		Log.Fail(t, "Expected at least one message to be sent for ", eg1.Resources().Config().LocalUuid)
 	}

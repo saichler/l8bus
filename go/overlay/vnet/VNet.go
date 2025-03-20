@@ -190,7 +190,7 @@ func (this *VNet) HandleData(data []byte, vnic common.IVirtualNetworkInterface) 
 			}
 		}
 	} else {
-		uuidMap := this.switchTable.ServiceUuids(vlan, destination, sourceVnet)
+		uuidMap := this.switchTable.ServiceUuids(vlan, multicast, sourceVnet)
 		if uuidMap != nil {
 			this.uniCastToPorts(uuidMap, data, sourceVnet)
 			if multicast == health.Multicast {
@@ -255,8 +255,19 @@ func (this *VNet) switchDataReceived(data []byte, vnic common.IVirtualNetworkInt
 		return
 	}
 	// Otherwise call the handler per the action & the type
-	this.resources.Logger().Info("Switch Service is: ", this.resources.Config().LocalUuid)
-	this.resources.ServicePoints().Handle(pb, msg.Action, vnic, msg, false)
+	this.resources.Logger().Trace("Switch Service is: ", this.resources.Config().LocalUuid)
+	if msg.Action == types.Action_Notify {
+		_, err = this.resources.ServicePoints().Notify(pb, vnic, msg, false)
+		if err != nil {
+			this.resources.Logger().Error(err)
+		}
+	} else {
+		_, err = this.resources.ServicePoints().Handle(pb, msg.Action, vnic, msg, false)
+		if err != nil {
+			this.resources.Logger().Error(err)
+		}
+	}
+
 }
 
 func (this *VNet) Resources() common.IResources {
@@ -264,5 +275,5 @@ func (this *VNet) Resources() common.IResources {
 }
 
 func (this *VNet) PropertyChangeNotification(set *types.NotificationSet) {
-	this.switchTable.uniCastToAll(0, set.ProtoType, types.Action_Notify, set)
+	this.switchTable.uniCastToAll(0, set.MulticastGroup, types.Action_Notify, set)
 }
