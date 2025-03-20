@@ -10,7 +10,7 @@ import (
 func TestRequest(t *testing.T) {
 	defer reset("TestRequest")
 	pb := &testtypes.TestProto{MyString: "request"}
-	resp, err := eg2.Request(types.CastMode_Single, types.Action_POST, 0, eg3.Resources().Config().LocalUuid, pb)
+	resp, err := eg2.UnicastRequest(types.Action_POST, eg3.Resources().Config().LocalUuid, TEST_Multicast, pb)
 	if err != nil {
 		Log.Fail(t, err)
 		return
