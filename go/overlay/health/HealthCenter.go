@@ -1,10 +1,14 @@
 package health
 
 import (
-	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/servicepoints/go/points/cache"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
+)
+
+const (
+	Multicast = "Health"
+	Endpoint  = "health"
 )
 
 type HealthCenter struct {
@@ -50,14 +54,12 @@ func (this *HealthCenter) HealthPoint(uuid string) *types.HealthPoint {
 	return hp
 }
 
-func (this *HealthCenter) UuidsForRequest(cast types.CastMode, vlanId int32, topic, source string) string {
-	if len(topic) == protocol.UNICAST_ADDRESS_SIZE {
-		return topic
+func (this *HealthCenter) DestinationFor(cast types.CastMode, vlanId int32, multicast, source string) string {
+	if cast == types.CastMode_All {
+		return ""
 	}
-	uuids := this.services.UUIDs(topic, vlanId, false)
+	uuids := this.services.UUIDs(multicast, vlanId, false)
 	switch cast {
-	case types.CastMode_All:
-		fallthrough
 	case types.CastMode_Single:
 		_, ok := uuids[source]
 		if ok {
@@ -72,7 +74,7 @@ func (this *HealthCenter) UuidsForRequest(cast types.CastMode, vlanId int32, top
 		}
 		fallthrough
 	case types.CastMode_Leader:
-		return this.services.Leader(topic, vlanId)
+		return this.services.Leader(multicast, vlanId)
 	}
 	return ""
 }
@@ -91,23 +93,23 @@ func (this *HealthCenter) All() map[string]*types.HealthPoint {
 	return result
 }
 
-func (this *HealthCenter) Leader(topic string, vlanId int32) string {
-	return this.services.Leader(topic, vlanId)
+func (this *HealthCenter) Leader(multicast string, vlanId int32) string {
+	return this.services.Leader(multicast, vlanId)
 }
 
 func (this *HealthCenter) AllTopics() *types.Topics {
 	return this.services.AllTopics()
 }
 
-func (this *HealthCenter) Uuids(topic string, vlan int32, noVnet bool) map[string]bool {
-	return this.services.UUIDs(topic, vlan, noVnet)
+func (this *HealthCenter) Uuids(multicast string, vlan int32, noVnet bool) map[string]bool {
+	return this.services.UUIDs(multicast, vlan, noVnet)
 }
 
 func (this *HealthCenter) ReplicasFor(topicId string, vlanId int32, numOfReplicas int) map[string]int32 {
 	return this.services.ReplicasFor(topicId, vlanId, numOfReplicas)
 }
 
-func (this *HealthCenter) AddScore(target, topic string, vlanId int32, vnic common.IVirtualNetworkInterface) {
+func (this *HealthCenter) AddScore(target, multicast string, vlanId int32, vnic common.IVirtualNetworkInterface) {
 	hp := this.healthPoints.Get(target).(*types.HealthPoint)
 	if hp == nil {
 		panic("HealthPoint is nil!")
@@ -118,7 +120,7 @@ func (this *HealthCenter) AddScore(target, topic string, vlanId int32, vnic comm
 	if hp.Topics.TopicToVlan == nil {
 		panic("TopicToVlan is nil!")
 	}
-	vlan, ok := hp.Topics.TopicToVlan[topic]
+	vlan, ok := hp.Topics.TopicToVlan[multicast]
 	if !ok {
 		panic("TopicToVlan is nil!")
 	}
@@ -130,14 +132,14 @@ func (this *HealthCenter) AddScore(target, topic string, vlanId int32, vnic comm
 	if e != nil {
 		panic(e)
 	}
-	e = vnic.Multicast(types.CastMode_All, types.Action_Notify, vlanId, TOPIC, n)
+	e = vnic.Multicast(types.CastMode_All, types.Action_Notify, vlanId, multicast, n)
 	if e != nil {
 		panic(e)
 	}
 }
 
-func Health(resource common.IResources) *HealthCenter {
-	sp, ok := resource.ServicePoints().ServicePointHandler(TOPIC)
+func Health(r common.IResources) *HealthCenter {
+	sp, ok := r.ServicePoints().ServicePointHandler(Multicast)
 	if !ok {
 		return nil
 	}

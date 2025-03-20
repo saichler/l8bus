@@ -5,21 +5,23 @@ import (
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
 	"google.golang.org/protobuf/proto"
+	"reflect"
 )
 
 const (
-	TOPIC    = "HealthPoint"
-	ENDPOINT = "health"
+	MULTICAST = "Health"
+	ENDPOINT  = "health"
 )
 
 type HealthServicePoint struct {
 	healthCenter *HealthCenter
+	typ          *reflect.Type
 }
 
 func RegisterHealth(resources common.IResources, listener cache.ICacheListener) {
 	health := &HealthServicePoint{}
 	health.healthCenter = newHealthCenter(resources, listener)
-	err := resources.ServicePoints().RegisterServicePoint(0, &types.HealthPoint{}, health)
+	err := resources.ServicePoints().RegisterServicePoint(MULTICAST, 0, health)
 	if err != nil {
 		panic(err)
 	}
@@ -55,8 +57,8 @@ func (this *HealthServicePoint) Failed(pb proto.Message, resourcs common.IResour
 func (this *HealthServicePoint) EndPoint() string {
 	return ENDPOINT
 }
-func (this *HealthServicePoint) Topic() string {
-	return TOPIC
+func (this *HealthServicePoint) Multicast() string {
+	return MULTICAST
 }
 func (this *HealthServicePoint) Transactional() bool {
 	return false

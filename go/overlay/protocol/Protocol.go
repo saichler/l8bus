@@ -44,7 +44,7 @@ func ProtoOf(msg *types.Message, resourcs common.IResources) (proto.Message, err
 		return nil, err
 	}
 
-	typ := msg.Type
+	typ := msg.ProtoType
 	if msg.Tr != nil && msg.IsReply {
 		typ = reflect.TypeOf(types.Transaction{}).Name()
 	}
@@ -89,7 +89,7 @@ func DataFor(any interface{}, serializer common.ISerializer, security common.ISe
 	return encData, err
 }
 
-func (this *Protocol) CreateMessageFor(vlan int32, topic string, priority types.Priority,
+func (this *Protocol) CreateMessageFor(vlan int32, destination, multicast string, priority types.Priority,
 	action types.Action, source, sourceVnet string, any interface{}, isRequest, isReply bool, msgNum int32, tr *types.Transaction) ([]byte, error) {
 
 	var data []byte
@@ -113,14 +113,13 @@ func (this *Protocol) CreateMessageFor(vlan int32, topic string, priority types.
 	msg.SourceUuid = source
 	msg.SourceVnetUuid = sourceVnet
 	msg.Vlan = vlan
-	msg.Topic = topic
+	msg.DestinationUuid = destination
+	msg.MulticastGroup = multicast
 	msg.Sequence = msgNum
 	msg.Priority = priority
 	msg.Data = encData
-	if pb == nil {
-		msg.Type = topic
-	} else {
-		msg.Type = reflect.ValueOf(pb).Elem().Type().Name()
+	if pb != nil {
+		msg.ProtoType = reflect.ValueOf(pb).Elem().Type().Name()
 	}
 	msg.Action = action
 	msg.IsRequest = isRequest
