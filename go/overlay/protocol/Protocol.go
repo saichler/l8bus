@@ -89,8 +89,9 @@ func DataFor(any interface{}, serializer common.ISerializer, security common.ISe
 	return encData, err
 }
 
-func (this *Protocol) CreateMessageFor(vlan int32, destination, multicast string, priority types.Priority,
-	action types.Action, source, sourceVnet string, any interface{}, isRequest, isReply bool, msgNum int32, tr *types.Transaction) ([]byte, error) {
+func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceArea int32,
+	priority types.Priority, action types.Action, source, vnet string, any interface{},
+	isRequest, isReply bool, msgNum int32, tr *types.Transaction) ([]byte, error) {
 
 	var data []byte
 	var err error
@@ -110,11 +111,11 @@ func (this *Protocol) CreateMessageFor(vlan int32, destination, multicast string
 	}
 	//create the wrapping message for the destination
 	msg := &types.Message{}
-	msg.SourceUuid = source
-	msg.SourceVnetUuid = sourceVnet
-	msg.Vlan = vlan
-	msg.DestinationUuid = destination
-	msg.MulticastGroup = multicast
+	msg.Source = source
+	msg.SourceVnet = vnet
+	msg.Destination = destination
+	msg.ServiceName = serviceName
+	msg.ServiceArea = serviceArea
 	msg.Sequence = msgNum
 	msg.Priority = priority
 	msg.Data = encData

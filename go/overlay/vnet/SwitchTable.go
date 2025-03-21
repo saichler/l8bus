@@ -24,9 +24,9 @@ func newSwitchTable(switchService *VNet) *SwitchTable {
 	return switchTable
 }
 
-func (this *SwitchTable) uniCastToAll(vlan int32, multicast string, action types.Action, pb proto.Message) {
+func (this *SwitchTable) uniCastToAll(serviceName string, serviceArea int32, action types.Action, pb proto.Message) {
 	conns := this.conns.all()
-	data, err := this.switchService.protocol.CreateMessageFor(vlan, "", multicast, types.Priority_P0, action,
+	data, err := this.switchService.protocol.CreateMessageFor("", serviceName, serviceArea, types.Priority_P1, action,
 		this.switchService.resources.Config().LocalUuid,
 		this.switchService.resources.Config().LocalUuid, pb, false, false, this.switchService.protocol.NextMessageNumber(), nil)
 	if err != nil {
@@ -57,7 +57,10 @@ func (this *SwitchTable) addVNic(vnic common.IVirtualNetworkInterface) {
 	hc.Add(hp)
 
 	for _, healthPoint := range hc.All() {
-		vnic.Multicast(types.CastMode_All, types.Action_POST, 0, health.Multicast, healthPoint)
+		err := vnic.Multicast(health.ServiceName, 0, types.Action_POST, healthPoint)
+		if err != nil {
+			this.switchService.resources.Logger().Error(err)
+		}
 	}
 }
 
@@ -67,16 +70,16 @@ func (this *SwitchTable) newHealthPoint(config *types.VNicConfig) *types.HealthP
 	hp.AUuid = config.RemoteUuid
 	hp.ZUuid = config.LocalUuid
 	hp.Status = types.HealthState_Up
-	hp.Topics = config.Topics
+	hp.Services = config.Services
 	hp.StartTime = time.Now().UnixMilli()
 	isLocal := protocol.IpSegment.IsLocal(config.Address)
 	hp.IsVnet = config.ForceExternal || !isLocal
 	return hp
 }
 
-func (this *SwitchTable) ServiceUuids(vlan int32, destination, sourceSwitch string) map[string]bool {
+func (this *SwitchTable) ServiceUuids(serviceName string, serviceArea int32, sourceSwitch string) map[string]bool {
 	h := health.Health(this.switchService.resources)
-	uuidsMap := h.Uuids(destination, vlan, false)
+	uuidsMap := h.Uuids(serviceName, serviceArea, false)
 	if uuidsMap != nil && sourceSwitch != this.switchService.resources.Config().LocalUuid {
 		// When the message source is not within this switch,
 		// we should not publish to adjacent as the overlay is o one hope

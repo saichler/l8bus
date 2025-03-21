@@ -54,7 +54,7 @@ func (this *KeepAlive) sendState() {
 	hp.Stats = stats
 	this.vnic.resources.Logger().Debug("Sending Keep Alive for ", this.vnic.resources.Config().LocalUuid, " ", this.vnic.resources.Config().LocalAlias)
 	//We unicast to the vnet, it will multicast the change to all
-	this.vnic.Unicast(types.Action_PATCH, this.vnic.resources.Config().RemoteUuid, health.Multicast, hp)
+	this.vnic.Unicast(this.vnic.resources.Config().RemoteUuid, health.ServiceName, 0, types.Action_PATCH, hp)
 }
 
 func memoryUsage() uint64 {

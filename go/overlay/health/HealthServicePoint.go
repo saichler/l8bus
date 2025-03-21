@@ -16,7 +16,7 @@ type HealthServicePoint struct {
 func RegisterHealth(resources common.IResources, listener cache.ICacheListener) {
 	health := &HealthServicePoint{}
 	health.healthCenter = newHealthCenter(resources, listener)
-	err := resources.ServicePoints().RegisterServicePoint(Multicast, 0, health)
+	err := resources.ServicePoints().RegisterServicePoint(health, 0)
 	if err != nil {
 		panic(err)
 	}
@@ -52,8 +52,8 @@ func (this *HealthServicePoint) Failed(pb proto.Message, resourcs common.IResour
 func (this *HealthServicePoint) EndPoint() string {
 	return Endpoint
 }
-func (this *HealthServicePoint) Multicast() string {
-	return Multicast
+func (this *HealthServicePoint) ServiceName() string {
+	return ServiceName
 }
 func (this *HealthServicePoint) Transactional() bool {
 	return false
@@ -67,6 +67,6 @@ func (this *HealthServicePoint) ReplicationScore() int {
 	return 0
 }
 
-func (this *HealthServicePoint) SupportedProto() proto.Message {
+func (this *HealthServicePoint) ServiceModel() proto.Message {
 	return &types.HealthPoint{}
 }

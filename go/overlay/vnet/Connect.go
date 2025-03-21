@@ -22,7 +22,7 @@ func (this *VNet) ConnectNetworks(host string, destPort uint32) error {
 		TxQueueSize:   resources2.DEFAULT_QUEUE_SIZE,
 		VnetPort:      destPort,
 		LocalUuid:     this.resources.Config().LocalUuid,
-		Topics:        hc.AllTopics(),
+		Services:      hc.AllServices(),
 		ForceExternal: true,
 		LocalAlias:    this.resources.Config().LocalAlias,
 	}

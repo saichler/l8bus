@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
-	"github.com/saichler/reflect/go/reflect/cloning"
 	"github.com/saichler/shared/go/share/strings"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
@@ -64,22 +63,22 @@ func NewVirtualNetworkInterface(resources common.IResources, conn net.Conn) *Vir
 	return vnic
 }
 
-func (vnic *VirtualNetworkInterface) Start() {
-	vnic.running = true
-	if vnic.conn == nil {
-		vnic.connectToSwitch()
+func (this *VirtualNetworkInterface) Start() {
+	this.running = true
+	if this.conn == nil {
+		this.connectToSwitch()
 	} else {
-		vnic.receiveConnection()
+		this.receiveConnection()
 	}
-	vnic.name = vnic.resources.Config().LocalAlias + " -->> " + vnic.resources.Config().RemoteAlias
+	this.name = this.resources.Config().LocalAlias + " -->> " + this.resources.Config().RemoteAlias
 }
 
-func (vnic *VirtualNetworkInterface) connectToSwitch() {
-	vnic.connect()
-	vnic.components.start()
+func (this *VirtualNetworkInterface) connectToSwitch() {
+	this.connect()
+	this.components.start()
 }
 
-func (vnic *VirtualNetworkInterface) connect() error {
+func (this *VirtualNetworkInterface) connect() error {
 	// Dial the destination and validate the secret and key
 	destination := protocol.MachineIP
 	if protocol.UsingContainers {
@@ -90,150 +89,82 @@ func (vnic *VirtualNetworkInterface) connect() error {
 		destination = subnet + ".1"
 	}
 	// Try to dial to the switch
-	conn, err := vnic.resources.Security().CanDial(destination, vnic.resources.Config().VnetPort)
+	conn, err := this.resources.Security().CanDial(destination, this.resources.Config().VnetPort)
 	if err != nil {
 		return errors.New("Error connecting to the vnet: " + err.Error())
 	}
 	// Verify that the switch accepts this connection
-	if vnic.resources.Config().LocalUuid == "" {
+	if this.resources.Config().LocalUuid == "" {
 		panic("")
 	}
-	err = vnic.resources.Security().ValidateConnection(conn, vnic.resources.Config())
+	err = this.resources.Security().ValidateConnection(conn, this.resources.Config())
 	if err != nil {
 		return errors.New("Error validating connection: " + err.Error())
 	}
-	vnic.conn = conn
-	vnic.resources.Config().Address = conn.LocalAddr().String()
+	this.conn = conn
+	this.resources.Config().Address = conn.LocalAddr().String()
 	return nil
 }
 
-func (vnic *VirtualNetworkInterface) receiveConnection() {
-	vnic.IsVNet = true
-	vnic.resources.Config().Address = vnic.conn.RemoteAddr().String()
-	vnic.components.start()
+func (this *VirtualNetworkInterface) receiveConnection() {
+	this.IsVNet = true
+	this.resources.Config().Address = this.conn.RemoteAddr().String()
+	this.components.start()
 }
 
-func (vnic *VirtualNetworkInterface) Shutdown() {
-	vnic.running = false
-	if vnic.conn != nil {
-		vnic.conn.Close()
+func (this *VirtualNetworkInterface) Shutdown() {
+	this.running = false
+	if this.conn != nil {
+		this.conn.Close()
 	}
-	vnic.components.shutdown()
-	if vnic.resources.DataListener() != nil {
-		go vnic.resources.DataListener().ShutdownVNic(vnic)
+	this.components.shutdown()
+	if this.resources.DataListener() != nil {
+		go this.resources.DataListener().ShutdownVNic(this)
 	}
 }
 
-func (vnic *VirtualNetworkInterface) Name() string {
-	if vnic.name == "" {
-		vnic.name = strings.New(vnic.resources.Config().LocalUuid,
+func (this *VirtualNetworkInterface) Name() string {
+	if this.name == "" {
+		this.name = strings.New(this.resources.Config().LocalUuid,
 			" -->> ",
-			vnic.resources.Config().RemoteUuid).String()
+			this.resources.Config().RemoteUuid).String()
 	}
-	return vnic.name
+	return this.name
 }
 
-func (vnic *VirtualNetworkInterface) SendMessage(data []byte) error {
-	return vnic.components.TX().SendMessage(data)
+func (this *VirtualNetworkInterface) SendMessage(data []byte) error {
+	return this.components.TX().SendMessage(data)
 }
 
-func (vnic *VirtualNetworkInterface) Unicast(action types.Action, destination, multicast string, any interface{}) error {
-	return vnic.components.TX().Unicast(action, destination, multicast, any, 0,
-		false, false, vnic.protocol.NextMessageNumber(), nil)
+func (this *VirtualNetworkInterface) API(serviceArea int32) common.API {
+	return newAPI(serviceArea, false, false)
 }
 
-func (vnic *VirtualNetworkInterface) Multicast(cast types.CastMode, action types.Action, vlan int32, multicast string, any interface{}) error {
-	return vnic.components.TX().Multicast(action, vlan, "", multicast, any, 0,
-		false, false, vnic.protocol.NextMessageNumber(), nil)
+func (this *VirtualNetworkInterface) Resources() common.IResources {
+	return this.resources
 }
 
-func (vnic *VirtualNetworkInterface) UnicastRequest(action types.Action, destination, multicast string, any interface{}) (interface{}, error) {
-	request := vnic.requests.newRequest(vnic.protocol.NextMessageNumber(), vnic.resources.Config().LocalUuid)
-	request.cond.L.Lock()
-	defer request.cond.L.Unlock()
-
-	e := vnic.components.TX().Unicast(action, destination, multicast, any, 0, true, false, request.msgNum, nil)
-	if e != nil {
-		return nil, e
-	}
-	request.cond.Wait()
-	return request.response, nil
-}
-
-func (vnic *VirtualNetworkInterface) MulticastRequest(castMode types.CastMode, action types.Action, vlan int32, multicastGroup string, any interface{}) (interface{}, error) {
-	hc := health.Health(vnic.resources)
-	destination := hc.DestinationFor(castMode, vlan, multicastGroup, vnic.resources.Config().LocalUuid)
-	return vnic.UnicastRequest(action, destination, multicastGroup, any)
-}
-
-func (vnic *VirtualNetworkInterface) Transaction(action types.Action, vlan int32, topic string, any interface{}) (interface{}, error) {
-	return vnic.MulticastRequest(types.CastMode_Single, action, vlan, topic, any)
-}
-
-func (vnic *VirtualNetworkInterface) Reply(msg *types.Message, resp interface{}) error {
-	reply := cloning.NewCloner().Clone(msg).(*types.Message)
-	reply.Action = types.Action_Reply
-	reply.DestinationUuid = msg.SourceUuid
-	reply.SourceUuid = vnic.resources.Config().LocalUuid
-	reply.SourceVnetUuid = vnic.resources.Config().RemoteUuid
-	reply.IsRequest = false
-	reply.IsReply = true
-
-	data, e := vnic.protocol.CreateMessageForm(reply, resp)
-	if e != nil {
-		vnic.resources.Logger().Error(e)
-		return e
-	}
-	return vnic.SendMessage(data)
-}
-
-func (vnic *VirtualNetworkInterface) Forward(msg *types.Message, destination string) (interface{}, error) {
-	pb, err := vnic.protocol.ProtoOf(msg)
-	if err != nil {
-		return nil, err
-	}
-
-	request := vnic.requests.newRequest(vnic.protocol.NextMessageNumber(), vnic.resources.Config().LocalUuid)
-	request.cond.L.Lock()
-	defer request.cond.L.Unlock()
-
-	e := vnic.components.TX().Unicast(msg.Action, destination, msg.MulticastGroup, pb, 0, true, false, request.msgNum, msg.Tr)
-	if e != nil {
-		return nil, e
-	}
-	request.cond.Wait()
-	return request.response, nil
-}
-
-func (vnic *VirtualNetworkInterface) API(vlan int32) common.API {
-	return newAPI(vlan, types.CastMode_Leader)
-}
-
-func (vnic *VirtualNetworkInterface) Resources() common.IResources {
-	return vnic.resources
-}
-
-func (vnic *VirtualNetworkInterface) reconnect() {
-	if !vnic.running {
+func (this *VirtualNetworkInterface) reconnect() {
+	if !this.running {
 		return
 	}
-	vnic.connMtx.Lock()
-	defer vnic.connMtx.Unlock()
-	if time.Now().Unix()-vnic.last_reconnect_attempt < 5 {
+	this.connMtx.Lock()
+	defer this.connMtx.Unlock()
+	if time.Now().Unix()-this.last_reconnect_attempt < 5 {
 		return
 	}
-	vnic.last_reconnect_attempt = time.Now().Unix()
+	this.last_reconnect_attempt = time.Now().Unix()
 
-	vnic.resources.Logger().Info("***** Trying to reconnect to ", vnic.resources.Config().RemoteAlias, " *****")
+	this.resources.Logger().Info("***** Trying to reconnect to ", this.resources.Config().RemoteAlias, " *****")
 
-	if vnic.conn != nil {
-		vnic.conn.Close()
+	if this.conn != nil {
+		this.conn.Close()
 	}
 
-	err := vnic.connect()
+	err := this.connect()
 	if err != nil {
-		vnic.resources.Logger().Error("***** Failed to reconnect to ", vnic.resources.Config().RemoteAlias, " *****")
+		this.resources.Logger().Error("***** Failed to reconnect to ", this.resources.Config().RemoteAlias, " *****")
 	} else {
-		vnic.resources.Logger().Error("***** Reconnected to ", vnic.resources.Config().RemoteAlias, " *****")
+		this.resources.Logger().Error("***** Reconnected to ", this.resources.Config().RemoteAlias, " *****")
 	}
 }

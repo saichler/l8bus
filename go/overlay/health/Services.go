@@ -7,18 +7,18 @@ import (
 )
 
 type Services struct {
-	multicasts  map[string]*MulticastGroup
+	services    map[string]*ServiceAreas
 	aSide2zSide map[string]string
 	vnetUuid    map[string]bool
 	mtx         *sync.RWMutex
 }
 
-type MulticastGroup struct {
+type ServiceAreas struct {
 	name  string
-	vlans map[int32]*Vlan
+	areas map[int32]*ServiceArea
 }
 
-type Vlan struct {
+type ServiceArea struct {
 	members map[string]*Member
 	leader  string
 }
@@ -30,7 +30,7 @@ type Member struct {
 
 func newServices() *Services {
 	services := &Services{}
-	services.multicasts = make(map[string]*MulticastGroup)
+	services.services = make(map[string]*ServiceAreas)
 	services.aSide2zSide = make(map[string]string)
 	services.mtx = new(sync.RWMutex)
 	services.vnetUuid = make(map[string]bool)
@@ -43,26 +43,26 @@ func (this *Services) ZUuid(auuid string) string {
 	return this.aSide2zSide[auuid]
 }
 
-func (this *Services) UUIDs(multicastId string, vlanId int32, noVnet bool) map[string]bool {
+func (this *Services) UUIDs(serviceName string, serviceArea int32, noVnet bool) map[string]bool {
 	result := make(map[string]bool)
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
-	multicast, ok := this.multicasts[multicastId]
+	serviceAreas, ok := this.services[serviceName]
 	if !ok {
 		return result
 	}
-	vlan, ok := multicast.vlans[vlanId]
+	area, ok := serviceAreas.areas[serviceArea]
 	if !ok {
 		return result
 	}
-	for uuid, _ := range vlan.members {
+	for uuid, _ := range area.members {
 		if noVnet {
 			_, ok = this.vnetUuid[uuid]
 			if ok {
 				continue
 			}
 		}
-		if uuid == vlan.leader {
+		if uuid == area.leader {
 			result[uuid] = true
 		} else {
 			result[uuid] = false
@@ -71,22 +71,22 @@ func (this *Services) UUIDs(multicastId string, vlanId int32, noVnet bool) map[s
 	return result
 }
 
-func (this *Services) Leader(multicastId string, vlanId int32) string {
+func (this *Services) Leader(serviceName string, serviceArea int32) string {
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
-	multicast, ok := this.multicasts[multicastId]
+	serviceAreas, ok := this.services[serviceName]
 	if !ok {
 		return ""
 	}
-	vlan, ok := multicast.vlans[vlanId]
+	area, ok := serviceAreas.areas[serviceArea]
 	if !ok {
 		return ""
 	}
-	return vlan.leader
+	return area.leader
 }
 
-func (this *Services) ReplicasFor(multicastId string, vlanId int32, numOfReplicas int) map[string]int32 {
-	scores := this.ScoresFor(multicastId, vlanId)
+func (this *Services) ReplicasFor(serviceName string, serviceArea int32, numOfReplicas int) map[string]int32 {
+	scores := this.ScoresFor(serviceName, serviceArea)
 	if numOfReplicas > len(scores) {
 		return scores
 	}
@@ -108,19 +108,19 @@ func (this *Services) ReplicasFor(multicastId string, vlanId int32, numOfReplica
 	return result
 }
 
-func (this *Services) ScoresFor(multicastId string, vlanId int32) map[string]int32 {
+func (this *Services) ScoresFor(serviceName string, serviceArea int32) map[string]int32 {
 	result := make(map[string]int32)
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
-	multicast, ok := this.multicasts[multicastId]
+	serviceAreas, ok := this.services[serviceName]
 	if !ok {
 		return result
 	}
-	vlan, ok := multicast.vlans[vlanId]
+	area, ok := serviceAreas.areas[serviceArea]
 	if !ok {
 		return result
 	}
-	for target, member := range vlan.members {
+	for target, member := range area.members {
 		_, ok = this.vnetUuid[target]
 		if ok {
 			continue
@@ -130,59 +130,59 @@ func (this *Services) ScoresFor(multicastId string, vlanId int32) map[string]int
 	return result
 }
 
-func (this *Services) checkHealthPointDown(healthPoint *types.HealthPoint, vlansToCalcLeader *[]*Vlan) {
+func (this *Services) checkHealthPointDown(healthPoint *types.HealthPoint, areasToCalc *[]*ServiceArea) {
 	if healthPoint.Status != types.HealthState_Invalid_State &&
 		healthPoint.Status != types.HealthState_Up {
-		for _, multicast := range this.multicasts {
-			for _, vlan := range multicast.vlans {
-				_, ok := vlan.members[healthPoint.AUuid]
+		for _, serviceAreas := range this.services {
+			for _, area := range serviceAreas.areas {
+				_, ok := area.members[healthPoint.AUuid]
 				if ok {
-					*vlansToCalcLeader = append(*vlansToCalcLeader, vlan)
-					delete(vlan.members, healthPoint.AUuid)
+					*areasToCalc = append(*areasToCalc, area)
+					delete(area.members, healthPoint.AUuid)
 				}
 			}
 		}
 	}
 }
 
-func (this *Services) updateMulticastGroups(healthPoint *types.HealthPoint, vlansToCalcLeader *[]*Vlan) {
-	if healthPoint.Topics == nil {
+func (this *Services) updateServices(healthPoint *types.HealthPoint, areasToCalcLeader *[]*ServiceArea) {
+	if healthPoint.Services == nil {
 		return
 	}
 	if healthPoint.IsVnet {
 		this.vnetUuid[healthPoint.AUuid] = true
 	}
-	for multicast, vlans := range healthPoint.Topics.TopicToVlan {
-		_, ok := this.multicasts[multicast]
+	for serviceName, serviceAreas := range healthPoint.Services.ServiceToAreas {
+		_, ok := this.services[serviceName]
 		if !ok {
-			this.multicasts[multicast] = &MulticastGroup{}
-			this.multicasts[multicast].name = multicast
-			this.multicasts[multicast].vlans = make(map[int32]*Vlan)
+			this.services[serviceName] = &ServiceAreas{}
+			this.services[serviceName].name = serviceName
+			this.services[serviceName].areas = make(map[int32]*ServiceArea)
 		}
-		for vlanId, score := range vlans.Vlans {
-			_, ok = this.multicasts[multicast].vlans[vlanId]
+		for serviceArea, score := range serviceAreas.Areas {
+			_, ok = this.services[serviceName].areas[serviceArea]
 			if !ok {
-				this.multicasts[multicast].vlans[vlanId] = &Vlan{}
-				this.multicasts[multicast].vlans[vlanId].members = make(map[string]*Member)
+				this.services[serviceName].areas[serviceArea] = &ServiceArea{}
+				this.services[serviceName].areas[serviceArea].members = make(map[string]*Member)
 			}
-			if this.multicasts[multicast].vlans[vlanId].members[healthPoint.AUuid] == nil {
-				this.multicasts[multicast].vlans[vlanId].members[healthPoint.AUuid] = &Member{}
+			if this.services[serviceName].areas[serviceArea].members[healthPoint.AUuid] == nil {
+				this.services[serviceName].areas[serviceArea].members[healthPoint.AUuid] = &Member{}
 			}
 			if healthPoint.StartTime != 0 {
-				this.multicasts[multicast].vlans[vlanId].members[healthPoint.AUuid].t = healthPoint.StartTime
+				this.services[serviceName].areas[serviceArea].members[healthPoint.AUuid].t = healthPoint.StartTime
 			}
-			if this.multicasts[multicast].vlans[vlanId].members[healthPoint.AUuid].s < score {
-				this.multicasts[multicast].vlans[vlanId].members[healthPoint.AUuid].s = score
+			if this.services[serviceName].areas[serviceArea].members[healthPoint.AUuid].s < score {
+				this.services[serviceName].areas[serviceArea].members[healthPoint.AUuid].s = score
 			}
-			*vlansToCalcLeader = append(*vlansToCalcLeader, this.multicasts[multicast].vlans[vlanId])
+			*areasToCalcLeader = append(*areasToCalcLeader, this.services[serviceName].areas[serviceArea])
 		}
 	}
 }
 
 func (this *Services) Update(healthPoint *types.HealthPoint) {
-	vlansToCalcLeader := make([]*Vlan, 0)
+	areasToCalcLeader := make([]*ServiceArea, 0)
 	defer func() {
-		for _, vlan := range vlansToCalcLeader {
+		for _, vlan := range areasToCalcLeader {
 			calcLeader(vlan)
 		}
 	}()
@@ -193,17 +193,17 @@ func (this *Services) Update(healthPoint *types.HealthPoint) {
 	if healthPoint.AUuid != "" && healthPoint.ZUuid != "" {
 		this.aSide2zSide[healthPoint.AUuid] = healthPoint.ZUuid
 	}
-	this.checkHealthPointDown(healthPoint, &vlansToCalcLeader)
-	this.updateMulticastGroups(healthPoint, &vlansToCalcLeader)
+	this.checkHealthPointDown(healthPoint, &areasToCalcLeader)
+	this.updateServices(healthPoint, &areasToCalcLeader)
 }
 
-func calcLeader(vlan *Vlan) {
+func calcLeader(serviceArea *ServiceArea) {
 	var minTime int64 = -1
-	vlan.leader = ""
-	for uuid, member := range vlan.members {
+	serviceArea.leader = ""
+	for uuid, member := range serviceArea.members {
 		if minTime == -1 || member.t < minTime {
 			minTime = member.t
-			vlan.leader = uuid
+			serviceArea.leader = uuid
 		}
 	}
 }
@@ -214,16 +214,16 @@ func (this *Services) setVnetUuid(uuid string) {
 	this.vnetUuid[uuid] = true
 }
 
-func (this *Services) AllTopics() *types.Topics {
+func (this *Services) AllServices() *types.Services {
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
-	result := &types.Topics{}
-	result.TopicToVlan = make(map[string]*types.Vlans)
-	for name, multicasts := range this.multicasts {
-		result.TopicToVlan[name] = &types.Vlans{}
-		result.TopicToVlan[name].Vlans = make(map[int32]int32)
-		for vlanId, _ := range multicasts.vlans {
-			result.TopicToVlan[name].Vlans[vlanId] = 0
+	result := &types.Services{}
+	result.ServiceToAreas = make(map[string]*types.ServiceAreas)
+	for name, serviceNames := range this.services {
+		result.ServiceToAreas[name] = &types.ServiceAreas{}
+		result.ServiceToAreas[name].Areas = make(map[int32]int32)
+		for serviceArea, _ := range serviceNames.areas {
+			result.ServiceToAreas[name].Areas[serviceArea] = 0
 		}
 	}
 	return result

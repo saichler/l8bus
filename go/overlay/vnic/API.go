@@ -2,13 +2,13 @@ package vnic
 
 import (
 	"github.com/saichler/types/go/common"
-	"github.com/saichler/types/go/types"
 )
 
 type VnicAPI struct {
-	area int32
-	cast types.CastMode
-	vnic *VirtualNetworkInterface
+	area   int32
+	vnic   *VirtualNetworkInterface
+	leader bool
+	all    bool
 }
 
 func (v VnicAPI) Post(i interface{}) (interface{}, error) {
@@ -37,9 +37,10 @@ func (v VnicAPI) Get(s string) (interface{}, error) {
 	panic("implement me")
 }
 
-func newAPI(area int32, cast types.CastMode) common.API {
+func newAPI(area int32, leader, all bool) common.API {
 	api := &VnicAPI{}
 	api.area = area
-	api.cast = cast
+	api.leader = leader
+	api.all = all
 	return api
 }

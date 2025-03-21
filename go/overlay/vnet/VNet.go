@@ -147,9 +147,9 @@ func (this *VNet) Failed(data []byte, vnic common.IVirtualNetworkInterface, fail
 		return
 	}
 	msg.FailMsg = failMsg
-	src := msg.SourceUuid
-	msg.SourceUuid = msg.DestinationUuid
-	msg.DestinationUuid = src
+	src := msg.Source
+	msg.Source = msg.Destination
+	msg.Destination = src
 	data, err = this.protocol.DataFromMessage(msg)
 	if err != nil {
 		this.resources.Logger().Error(err)
@@ -163,13 +163,13 @@ func (this *VNet) Failed(data []byte, vnic common.IVirtualNetworkInterface, fail
 
 func (this *VNet) HandleData(data []byte, vnic common.IVirtualNetworkInterface) {
 	this.resources.Logger().Trace("********** Swith Service - HandleData **********")
-	source, sourceVnet, destination, multicast, vlan, _ := protocol.HeaderOf(data)
-	this.resources.Logger().Trace("** Switch      : ", this.resources.Config().LocalUuid)
-	this.resources.Logger().Trace("** Source      : ", source)
-	this.resources.Logger().Trace("** SourceVnet: ", sourceVnet)
-	this.resources.Logger().Trace("** Vlan      : ", vlan)
-	this.resources.Logger().Trace("** Destination : ", destination)
-	this.resources.Logger().Trace("** Multicast : ", multicast)
+	source, sourceVnet, destination, serviceName, serviceArea, _ := protocol.HeaderOf(data)
+	this.resources.Logger().Trace("** Switch       : ", this.resources.Config().LocalUuid)
+	this.resources.Logger().Trace("** Source       : ", source)
+	this.resources.Logger().Trace("** SourceVnet   : ", sourceVnet)
+	this.resources.Logger().Trace("** Destination  : ", destination)
+	this.resources.Logger().Trace("** Service Name : ", serviceName)
+	this.resources.Logger().Trace("** Service Area : ", serviceArea)
 
 	if destination != "" {
 		//The destination is the vnet
@@ -190,10 +190,10 @@ func (this *VNet) HandleData(data []byte, vnic common.IVirtualNetworkInterface) 
 			}
 		}
 	} else {
-		uuidMap := this.switchTable.ServiceUuids(vlan, multicast, sourceVnet)
+		uuidMap := this.switchTable.ServiceUuids(serviceName, serviceArea, sourceVnet)
 		if uuidMap != nil {
 			this.uniCastToPorts(uuidMap, data, sourceVnet)
-			if multicast == health.Multicast {
+			if serviceName == health.ServiceName {
 				this.switchDataReceived(data, vnic)
 			}
 			return
@@ -275,5 +275,5 @@ func (this *VNet) Resources() common.IResources {
 }
 
 func (this *VNet) PropertyChangeNotification(set *types.NotificationSet) {
-	this.switchTable.uniCastToAll(0, set.MulticastGroup, types.Action_Notify, set)
+	this.switchTable.uniCastToAll(set.ServiceName, set.ServiceArea, types.Action_Notify, set)
 }
