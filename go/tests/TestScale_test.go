@@ -25,7 +25,7 @@ func scaleTest(size, exp int, timeout int64, t *testing.T) bool {
 		pb := &testtypes.TestProto{}
 		pb.MyString = strings.New("Str-", i).String()
 		pb.MyInt32 = int32(i)
-		err := eg2.Unicast(types.Action_POST, eg3.Resources().Config().LocalUuid, pb)
+		err := eg2.Unicast(eg3.Resources().Config().LocalUuid, ServiceName, 0, types.Action_POST, pb)
 		if err != nil {
 			Log.Fail(t, err)
 			return false

@@ -2,7 +2,6 @@ package tests
 
 import (
 	"github.com/saichler/layer8/go/overlay/health"
-	"github.com/saichler/shared/go/tests/infra"
 	. "github.com/saichler/shared/go/tests/infra"
 	"github.com/saichler/types/go/testtypes"
 	"github.com/saichler/types/go/types"
@@ -12,7 +11,7 @@ import (
 
 func TestKeepAlive(t *testing.T) {
 	pb := &testtypes.TestProto{}
-	err := eg1.Multicast(types.CastMode_All, types.Action_POST, 0, infra.TEST_Multicast, pb)
+	err := eg1.Multicast(ServiceName, 0, types.Action_POST, pb)
 	if err != nil {
 		Log.Fail(t, err)
 		return

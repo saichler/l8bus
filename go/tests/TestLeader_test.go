@@ -8,7 +8,7 @@ import (
 
 func TestLeader(t *testing.T) {
 	hc := health.Health(eg3.Resources())
-	leaderBefore := hc.Leader("TestProto", 0)
+	leaderBefore := hc.Leader(ServiceName, 0)
 	eg1.Shutdown()
 	defer func() {
 		eg1 = createEdge(50000, "eg1", true)
@@ -16,7 +16,7 @@ func TestLeader(t *testing.T) {
 	}()
 	sleep()
 	sleep()
-	leaderAfter := hc.Leader("TestProto", 0)
+	leaderAfter := hc.Leader(ServiceName, 0)
 	if leaderAfter == leaderBefore {
 		Log.Fail(t, "Expected leader to change")
 	}

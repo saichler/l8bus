@@ -30,11 +30,11 @@ func TestTopology(t *testing.T) {
 	}
 
 	hc := health.Health(eg2.Resources())
-	uuids := hc.Uuids("TestProto", 0, false)
+	uuids := hc.Uuids(ServiceName, 0, false)
 	if len(uuids) != 5 {
 		Log.Fail(t, "Expected uuids to be 5, but it is ", len(uuids))
 	}
-	uuids = hc.Uuids("TestProto", 0, true)
+	uuids = hc.Uuids(ServiceName, 0, true)
 	if len(uuids) != 4 {
 		Log.Fail(t, "Expected uuids to be 4, but it is ", len(uuids))
 	}
@@ -43,7 +43,7 @@ func TestTopology(t *testing.T) {
 func TestSendMultiCast(t *testing.T) {
 	defer reset("TestSendMultiCast")
 	pb := &testtypes.TestProto{}
-	err := eg4.Multicast(types.CastMode_All, types.Action_POST, 0, TEST_Multicast, pb)
+	err := eg4.Multicast(ServiceName, 0, types.Action_POST, pb)
 	if err != nil {
 		Log.Fail(t, err)
 		return
@@ -65,7 +65,7 @@ func TestSendMultiCast(t *testing.T) {
 func TestUniCast(t *testing.T) {
 	defer reset("TestUniCast")
 	pb := &testtypes.TestProto{}
-	err := eg2.Unicast(types.Action_POST, eg3.Resources().Config().LocalUuid, TEST_Multicast, pb)
+	err := eg2.Unicast(eg3.Resources().Config().LocalUuid, ServiceName, 0, types.Action_POST, pb)
 	if err != nil {
 		Log.Fail(t, err)
 		return
@@ -81,7 +81,7 @@ func TestUniCast(t *testing.T) {
 func TestReconnect(t *testing.T) {
 	defer reset("TestReconnect")
 	pb := &testtypes.TestProto{}
-	err := eg5.Unicast(types.Action_POST, eg3.Resources().Config().LocalUuid, TEST_Multicast, pb)
+	err := eg5.Unicast(eg3.Resources().Config().LocalUuid, ServiceName, 0, types.Action_POST, pb)
 	if err != nil {
 		Log.Fail(t, err)
 		return
@@ -100,9 +100,9 @@ func TestReconnect(t *testing.T) {
 	data := make([]byte, eg5.Resources().Config().MaxDataSize+1)
 	eg5.SendMessage(data)
 
-	err = eg5.Unicast(types.Action_POST, eg3.Resources().Config().LocalUuid, TEST_Multicast, pb)
-	err = eg5.Unicast(types.Action_POST, eg3.Resources().Config().LocalUuid, TEST_Multicast, pb)
-	err = eg5.Unicast(types.Action_POST, eg3.Resources().Config().LocalUuid, TEST_Multicast, pb)
+	err = eg5.Unicast(eg3.Resources().Config().LocalUuid, ServiceName, 0, types.Action_POST, pb)
+	err = eg5.Unicast(eg3.Resources().Config().LocalUuid, ServiceName, 0, types.Action_POST, pb)
+	err = eg5.Unicast(eg3.Resources().Config().LocalUuid, ServiceName, 0, types.Action_POST, pb)
 	if err != nil {
 		Log.Fail(t, err)
 		return
@@ -119,7 +119,7 @@ func TestReconnect(t *testing.T) {
 func TestDestinationUnreachable(t *testing.T) {
 	defer reset("TestDestinationUnreachable")
 	pb := &testtypes.TestProto{}
-	err := eg2.Unicast(types.Action_POST, eg4.Resources().Config().LocalUuid, TEST_Multicast, pb)
+	err := eg2.Unicast(eg4.Resources().Config().LocalUuid, ServiceName, 0, types.Action_POST, pb)
 	if err != nil {
 		Log.Fail(t, err)
 		return
@@ -136,7 +136,7 @@ func TestDestinationUnreachable(t *testing.T) {
 
 	sleep()
 
-	err = eg2.Unicast(types.Action_POST, eg4.Resources().Config().LocalUuid, TEST_Multicast, pb)
+	err = eg2.Unicast(eg4.Resources().Config().LocalUuid, ServiceName, 0, types.Action_POST, pb)
 	if err != nil {
 		Log.Fail(t, err)
 		return
