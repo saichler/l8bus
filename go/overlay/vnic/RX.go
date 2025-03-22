@@ -123,6 +123,13 @@ func (rx *RX) runHandleMessage(msg *types.Message, pb proto.Message) {
 }
 
 func (this *HandleWorker) Run() {
+	// This message is part of a transaction
+	// We don't want to use the workers for this message
+	// As it might be blocking and we can depute the workers.
+	if this.msg.Tr != nil {
+		go this.rx.handleMessage(this.msg, this.pb)
+		return
+	}
 	this.rx.handleMessage(this.msg, this.pb)
 }
 
