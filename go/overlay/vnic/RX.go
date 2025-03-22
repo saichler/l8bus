@@ -123,10 +123,16 @@ func (rx *RX) runHandleMessage(msg *types.Message, pb proto.Message) {
 }
 
 func (this *HandleWorker) Run() {
-	// This message is part of a transaction
-	// We don't want to use the workers for this message
-	// As it might be blocking and we can depute the workers.
-	if this.msg.Tr != nil {
+	handler, ok := this.rx.vnic.resources.ServicePoints().ServicePointHandler(
+		this.msg.ServiceName, this.msg.ServiceArea)
+	if !ok {
+		this.rx.vnic.resources.Logger().Error("RX: No service point was found for ",
+			this.msg.ServiceName, ":", this.msg.ServiceArea)
+		return
+	}
+	// If the handler is transactional, it means it is blocking
+	// so we don't want to handle it via the workers
+	if handler.Transactional() {
 		go this.rx.handleMessage(this.msg, this.pb)
 		return
 	}
