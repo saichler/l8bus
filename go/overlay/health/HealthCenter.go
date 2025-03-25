@@ -19,6 +19,7 @@ type HealthCenter struct {
 
 func newHealthCenter(resources common.IResources, listener cache.ICacheListener) *HealthCenter {
 	hc := &HealthCenter{}
+	resources.Introspector().Inspect(&types.ServiceAreaInfo{})
 	rnode, _ := resources.Introspector().Inspect(&types.HealthPoint{})
 	resources.Introspector().AddDecorator(types.DecoratorType_Primary, []string{"AUuid"}, rnode)
 	hc.healthPoints = cache.NewModelCache(ServiceName, 0, "HealthPoint",
@@ -130,7 +131,7 @@ func (this *HealthCenter) AddScore(target, serviceName string, serviceArea int32
 	if e != nil {
 		panic(e)
 	}
-	e = vnic.Multicast(ServiceName, 0, types.Action_Notify, n)
+	e = vnic.Unicast(vnic.Resources().Config().RemoteUuid, ServiceName, 0, types.Action_Notify, n)
 	if e != nil {
 		panic(e)
 	}
