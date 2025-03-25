@@ -19,9 +19,10 @@ type HealthCenter struct {
 
 func newHealthCenter(resources common.IResources, listener cache.ICacheListener) *HealthCenter {
 	hc := &HealthCenter{}
-	resources.Introspector().Inspect(&types.ServiceAreaInfo{})
+	scoreNode, _ := resources.Introspector().Inspect(&types.ServiceAreaInfo{})
+	resources.Introspector().AddDeepDecorator(scoreNode)
 	rnode, _ := resources.Introspector().Inspect(&types.HealthPoint{})
-	resources.Introspector().AddDecorator(types.DecoratorType_Primary, []string{"AUuid"}, rnode)
+	resources.Introspector().AddPrimaryKeyDecorator(rnode, "AUuid")
 	hc.healthPoints = cache.NewModelCache(ServiceName, 0, "HealthPoint",
 		resources.Config().LocalUuid, listener, resources.Introspector())
 	hc.services = newServices()
