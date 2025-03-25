@@ -22,7 +22,7 @@ func newHealthCenter(resources common.IResources, listener cache.ICacheListener)
 	hc := &HealthCenter{}
 	rnode, _ := resources.Introspector().Inspect(&types.HealthPoint{})
 	introspecting.AddPrimaryKeyDecorator(rnode, "AUuid")
-	scoreInfo, _ := resources.Introspector().NodeByTypeName("ServiceAreaInfo")
+	scoreInfo, _ := resources.Introspector().Node("healthpoint.services.servicetoareas")
 	introspecting.AddDeepDecorator(scoreInfo)
 	hc.healthPoints = cache.NewModelCache(ServiceName, 0, "HealthPoint",
 		resources.Config().LocalUuid, listener, resources.Introspector())

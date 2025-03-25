@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	github.com/saichler/l8test v0.0.0-20250325003525-28895eb7e99a
-	github.com/saichler/reflect/go v0.0.0-20250325142519-284708ce91b7
+	github.com/saichler/reflect/go v0.0.0-20250325165743-7f7da944422a
 	github.com/saichler/serializer/go v0.0.0-20250312171751-f16ab3ede337
 	github.com/saichler/servicepoints/go v0.0.0-20250322142621-626d3c5ab6f4
 	github.com/saichler/shared/go v0.0.0-20250325020725-e996ba087e15
