@@ -4,7 +4,6 @@ package tests
 
 import (
 	"github.com/saichler/shared/go/share/strings"
-	. "github.com/saichler/shared/go/tests/infra"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/testtypes"
 	"github.com/saichler/types/go/types"

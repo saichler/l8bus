@@ -171,8 +171,8 @@ func (this *Services) updateServices(healthPoint *types.HealthPoint, areasToCalc
 			if healthPoint.StartTime != 0 {
 				this.services[serviceName].areas[serviceArea].members[healthPoint.AUuid].t = healthPoint.StartTime
 			}
-			if this.services[serviceName].areas[serviceArea].members[healthPoint.AUuid].s < score {
-				this.services[serviceName].areas[serviceArea].members[healthPoint.AUuid].s = score
+			if this.services[serviceName].areas[serviceArea].members[healthPoint.AUuid].s < score.Score {
+				this.services[serviceName].areas[serviceArea].members[healthPoint.AUuid].s = score.Score
 			}
 			*areasToCalcLeader = append(*areasToCalcLeader, this.services[serviceName].areas[serviceArea])
 		}
@@ -221,9 +221,9 @@ func (this *Services) AllServices() *types.Services {
 	result.ServiceToAreas = make(map[string]*types.ServiceAreas)
 	for name, serviceNames := range this.services {
 		result.ServiceToAreas[name] = &types.ServiceAreas{}
-		result.ServiceToAreas[name].Areas = make(map[int32]int32)
+		result.ServiceToAreas[name].Areas = make(map[int32]*types.ServiceAreaInfo)
 		for serviceArea, _ := range serviceNames.areas {
-			result.ServiceToAreas[name].Areas[serviceArea] = 0
+			result.ServiceToAreas[name].Areas[serviceArea] = &types.ServiceAreaInfo{}
 		}
 	}
 	return result

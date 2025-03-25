@@ -122,7 +122,7 @@ func (this *HealthCenter) AddScore(target, serviceName string, serviceArea int32
 	if !ok {
 		panic("Area is nil!")
 	}
-	area.Areas[serviceArea]++
+	area.Areas[serviceArea].Score++
 	n, e := this.healthPoints.Update(hp.AUuid, hp)
 	if n == nil && e == nil {
 		panic("Something went wrong with helth notification!")
