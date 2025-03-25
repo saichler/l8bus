@@ -44,7 +44,6 @@ func (this *VNet) ConnectNetworks(host string, destPort uint32) error {
 	}
 
 	vnic.Start()
-
 	this.notifyNewVNic(vnic)
 	return nil
 }

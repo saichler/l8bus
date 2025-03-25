@@ -1,23 +1,38 @@
 package tests
 
 import (
+	. "github.com/saichler/l8test/go/infra/t_resources"
+	. "github.com/saichler/l8test/go/infra/t_servicepoints"
+	. "github.com/saichler/l8test/go/infra/t_topology"
 	"github.com/saichler/layer8/go/overlay/health"
-	. "github.com/saichler/shared/go/tests/infra"
+	"github.com/saichler/types/go/common"
 	"testing"
 )
 
-func TestLeader(t *testing.T) {
-	hc := health.Health(eg3.Resources())
+func getLeader(uuid string) common.IVirtualNetworkInterface {
+	all := topo.AllVnics()
+	for _, nic := range all {
+		if nic.Resources().Config().LocalUuid == uuid {
+			return nic
+		}
+	}
+	panic("No Leader")
+}
+
+func testLeader(t *testing.T) {
+	eg2_3 := topo.VnicByVnetNum(2, 3)
+	hc := health.Health(eg2_3.Resources())
 	leaderBefore := hc.Leader(ServiceName, 0)
-	eg1.Shutdown()
+	leader := getLeader(leaderBefore)
+	leader.Shutdown()
 	defer func() {
-		eg1 = createEdge(50000, "eg1", true)
-		sleep()
+		topo.RenewVnic(leader.Resources().Config().LocalAlias)
 	}()
-	sleep()
-	sleep()
+	Sleep()
+	Sleep()
 	leaderAfter := hc.Leader(ServiceName, 0)
 	if leaderAfter == leaderBefore {
 		Log.Fail(t, "Expected leader to change")
+		return
 	}
 }

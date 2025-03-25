@@ -29,7 +29,7 @@ func (this *HealthServicePoint) Post(pb proto.Message, resourcs common.IResource
 }
 func (this *HealthServicePoint) Put(pb proto.Message, resourcs common.IResources) (proto.Message, error) {
 	hp := pb.(*types.HealthPoint)
-	this.healthCenter.Update(hp)
+	this.healthCenter.Add(hp)
 	return nil, nil
 }
 func (this *HealthServicePoint) Patch(pb proto.Message, resourcs common.IResources) (proto.Message, error) {

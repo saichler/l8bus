@@ -141,7 +141,7 @@ func (this *VNet) Shutdown() {
 
 func (this *VNet) Failed(data []byte, vnic common.IVirtualNetworkInterface, failMsg string) {
 	msg, err := this.protocol.MessageOf(data)
-	this.resources.Logger().Error("Failed Message ", msg.Action)
+	this.resources.Logger().Error("Failed Message ", msg.Action, ":", failMsg)
 	if err != nil {
 		this.resources.Logger().Error(err)
 		return

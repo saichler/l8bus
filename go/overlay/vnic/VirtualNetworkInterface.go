@@ -165,6 +165,6 @@ func (this *VirtualNetworkInterface) reconnect() {
 	if err != nil {
 		this.resources.Logger().Error("***** Failed to reconnect to ", this.resources.Config().RemoteAlias, " *****")
 	} else {
-		this.resources.Logger().Error("***** Reconnected to ", this.resources.Config().RemoteAlias, " *****")
+		this.resources.Logger().Info("***** Reconnected to ", this.resources.Config().RemoteAlias, " *****")
 	}
 }

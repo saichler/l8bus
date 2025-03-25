@@ -32,6 +32,7 @@ func (this *Connections) addInternal(uuid string, vnic common.IVirtualNetworkInt
 	if ok {
 		this.logger.Info("Internal Connection ", uuid, " already exists, shutting down")
 		exist.Shutdown()
+		delete(this.internal, uuid)
 	}
 	this.internal[uuid] = vnic
 }
@@ -112,4 +113,24 @@ func (this *Connections) isInterval(uuid string) bool {
 	defer this.mtx.RUnlock()
 	_, ok := this.internal[uuid]
 	return ok
+}
+
+func (this *Connections) allInternals() []common.IVirtualNetworkInterface {
+	this.mtx.RLock()
+	defer this.mtx.RUnlock()
+	result := make([]common.IVirtualNetworkInterface, 0)
+	for _, vnic := range this.internal {
+		result = append(result, vnic)
+	}
+	return result
+}
+
+func (this *Connections) allExternals() []string {
+	this.mtx.RLock()
+	defer this.mtx.RUnlock()
+	result := make([]string, 0)
+	for uuid, _ := range this.external {
+		result = append(result, uuid)
+	}
+	return result
 }

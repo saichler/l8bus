@@ -51,16 +51,43 @@ func (this *SwitchTable) addVNic(vnic common.IVirtualNetworkInterface) {
 		this.conns.addExternal(config.RemoteUuid, vnic)
 	}
 
-	hp := this.newHealthPoint(config)
-
 	hc := health.Health(this.switchService.resources)
+	hp := hc.HealthPoint(config.RemoteUuid)
+	if hp == nil {
+		hp = this.newHealthPoint(config)
+	} else {
+		this.mergeServices(hp, config)
+	}
 	hc.Add(hp)
 
-	for _, healthPoint := range hc.All() {
-		err := vnic.Multicast(health.ServiceName, 0, types.Action_POST, healthPoint)
-		if err != nil {
-			this.switchService.resources.Logger().Error(err)
+	if !(isLocal && !config.ForceExternal) {
+		time.Sleep(time.Millisecond * 100)
+		allHealthPoints := hc.All()
+		for _, hpe := range allHealthPoints {
+			vnic.Multicast(health.ServiceName, 0, types.Action_POST, hpe)
 		}
+	}
+}
+
+func (this *SwitchTable) mergeServices(hp *types.HealthPoint, config *types.VNicConfig) {
+	if hp.Services == nil {
+		hp.Services = config.Services
+		return
+	}
+	if hp.Services.ServiceToAreas == nil {
+		hp.Services.ServiceToAreas = config.Services.ServiceToAreas
+		return
+	}
+	for k1, v1 := range config.Services.ServiceToAreas {
+		exist, ok := hp.Services.ServiceToAreas[k1]
+		if !ok {
+			hp.Services.ServiceToAreas[k1] = v1
+		} else {
+			for k2, v2 := range v1.Areas {
+				exist.Areas[k2] = v2
+			}
+		}
+
 	}
 }
 

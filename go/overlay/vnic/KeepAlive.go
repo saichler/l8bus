@@ -26,7 +26,6 @@ func (this *KeepAlive) run() {
 	if this.vnic.resources.Config().KeepAliveIntervalSeconds == 0 {
 		return
 	}
-
 	for this.vnic.running {
 		for i := 0; i < int(this.vnic.resources.Config().KeepAliveIntervalSeconds*10); i++ {
 			time.Sleep(time.Millisecond * 100)
