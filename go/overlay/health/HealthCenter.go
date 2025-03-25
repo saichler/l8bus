@@ -1,6 +1,7 @@
 package health
 
 import (
+	"github.com/saichler/reflect/go/reflect/introspecting"
 	"github.com/saichler/servicepoints/go/points/cache"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
@@ -19,10 +20,10 @@ type HealthCenter struct {
 
 func newHealthCenter(resources common.IResources, listener cache.ICacheListener) *HealthCenter {
 	hc := &HealthCenter{}
-	scoreNode, _ := resources.Introspector().Inspect(&types.ServiceAreaInfo{})
-	resources.Introspector().AddDeepDecorator(scoreNode)
 	rnode, _ := resources.Introspector().Inspect(&types.HealthPoint{})
-	resources.Introspector().AddPrimaryKeyDecorator(rnode, "AUuid")
+	introspecting.AddPrimaryKeyDecorator(rnode, "AUuid")
+	scoreInfo, _ := resources.Introspector().NodeByTypeName("ServiceAreaInfo")
+	introspecting.AddDeepDecorator(scoreInfo)
 	hc.healthPoints = cache.NewModelCache(ServiceName, 0, "HealthPoint",
 		resources.Config().LocalUuid, listener, resources.Introspector())
 	hc.services = newServices()
