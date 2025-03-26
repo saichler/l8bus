@@ -106,6 +106,15 @@ func (rx *RX) notifyRawDataListener() {
 					}
 					continue
 				}
+
+				//This is a reply message, should not find a handler
+				//and just notify
+				if msg.IsReply {
+					request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.Config().LocalUuid)
+					request.response = pb
+					request.cond.Broadcast()
+					continue
+				}
 				// Otherwise call the handler per the action & the type
 				rx.runHandleMessage(msg, pb)
 			}
