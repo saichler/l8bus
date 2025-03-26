@@ -150,7 +150,8 @@ func (this *Protocol) CreateMessageForm(msg *types.Message, any interface{}) ([]
 	}
 	//create the wrapping message for the destination
 	msg.Data = encData
-
+	msg.ProtoType = reflect.ValueOf(any).Elem().Type().Name()
+	
 	d, e := this.DataFromMessage(msg)
 	return d, e
 }

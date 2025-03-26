@@ -98,7 +98,11 @@ func (rx *RX) notifyRawDataListener() {
 				if err != nil {
 					rx.vnic.resources.Logger().Error(err)
 					if msg.IsRequest {
-						rx.vnic.Reply(msg, types.Error{ErrMessage: err.Error()})
+						rx.vnic.Reply(msg, &types.Error{ErrMessage: err.Error()})
+					} else if msg.IsReply {
+						request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.Config().LocalUuid)
+						request.response = &types.Error{ErrMessage: err.Error()}
+						request.cond.Broadcast()
 					}
 					continue
 				}
