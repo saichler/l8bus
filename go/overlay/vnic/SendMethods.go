@@ -1,9 +1,10 @@
 package vnic
 
 import (
-	"errors"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/reflect/go/reflect/cloning"
+	"github.com/saichler/serializer/go/serialize/response"
+	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
 )
 
@@ -14,7 +15,7 @@ func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, se
 }
 
 func (this *VirtualNetworkInterface) Request(destination, serviceName string, serviceArea int32,
-	action types.Action, any interface{}) (interface{}, error) {
+	action types.Action, any interface{}) common.IResponse {
 	request := this.requests.newRequest(this.protocol.NextMessageNumber(), this.resources.Config().LocalUuid)
 	request.cond.L.Lock()
 	defer request.cond.L.Unlock()
@@ -22,17 +23,13 @@ func (this *VirtualNetworkInterface) Request(destination, serviceName string, se
 	e := this.components.TX().Unicast(destination, serviceName, serviceArea, action, any, 0,
 		true, false, request.msgNum, nil)
 	if e != nil {
-		return nil, e
+		return response.New(nil, e)
 	}
 	request.cond.Wait()
-	eMsg, ok := request.response.(*types.Error)
-	if ok {
-		return nil, errors.New(eMsg.ErrMessage)
-	}
-	return request.response, nil
+	return response.FromProto(request.response, this.resources)
 }
 
-func (this *VirtualNetworkInterface) Reply(msg *types.Message, resp interface{}) error {
+func (this *VirtualNetworkInterface) Reply(msg *types.Message, response common.IResponse) error {
 	reply := cloning.NewCloner().Clone(msg).(*types.Message)
 	reply.Action = types.Action_Reply
 	reply.Destination = msg.Source
@@ -41,7 +38,7 @@ func (this *VirtualNetworkInterface) Reply(msg *types.Message, resp interface{})
 	reply.IsRequest = false
 	reply.IsReply = true
 
-	data, e := this.protocol.CreateMessageForm(reply, resp)
+	data, e := this.protocol.CreateMessageForm(reply, response.ToProto())
 	if e != nil {
 		this.resources.Logger().Error(e)
 		return e
@@ -60,22 +57,22 @@ func (this *VirtualNetworkInterface) Single(serviceName string, serviceArea int3
 	return this.Unicast(destination, serviceName, serviceArea, action, any)
 }
 
-func (this *VirtualNetworkInterface) SingleRequest(serviceName string, serviceArea int32, action types.Action, any interface{}) (interface{}, error) {
+func (this *VirtualNetworkInterface) SingleRequest(serviceName string, serviceArea int32, action types.Action, any interface{}) common.IResponse {
 	hc := health.Health(this.resources)
 	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.Config().LocalUuid, false, false)
 	return this.Request(destination, serviceName, serviceArea, action, any)
 }
 
-func (this *VirtualNetworkInterface) Leader(serviceName string, serviceArea int32, action types.Action, any interface{}) (interface{}, error) {
+func (this *VirtualNetworkInterface) Leader(serviceName string, serviceArea int32, action types.Action, any interface{}) common.IResponse {
 	hc := health.Health(this.resources)
 	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.Config().LocalUuid, false, true)
 	return this.Request(destination, serviceName, serviceArea, action, any)
 }
 
-func (this *VirtualNetworkInterface) Forward(msg *types.Message, destination string) (interface{}, error) {
+func (this *VirtualNetworkInterface) Forward(msg *types.Message, destination string) common.IResponse {
 	pb, err := this.protocol.ProtoOf(msg)
 	if err != nil {
-		return nil, err
+		return response.New(nil, err)
 	}
 
 	request := this.requests.newRequest(this.protocol.NextMessageNumber(), this.resources.Config().LocalUuid)
@@ -85,8 +82,8 @@ func (this *VirtualNetworkInterface) Forward(msg *types.Message, destination str
 	e := this.components.TX().Unicast(destination, msg.ServiceName, msg.ServiceArea, msg.Action,
 		pb, 0, true, false, request.msgNum, msg.Tr)
 	if e != nil {
-		return nil, e
+		return response.New(nil, e)
 	}
 	request.cond.Wait()
-	return request.response, nil
+	return response.FromProto(request.response, this.resources)
 }

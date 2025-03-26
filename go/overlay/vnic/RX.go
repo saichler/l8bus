@@ -1,6 +1,7 @@
 package vnic
 
 import (
+	"github.com/saichler/serializer/go/serialize/response"
 	"github.com/saichler/shared/go/share/queues"
 	"github.com/saichler/shared/go/share/workers"
 	"github.com/saichler/types/go/nets"
@@ -98,10 +99,15 @@ func (rx *RX) notifyRawDataListener() {
 				if err != nil {
 					rx.vnic.resources.Logger().Error(err)
 					if msg.IsRequest {
-						rx.vnic.Reply(msg, &types.Error{ErrMessage: err.Error()})
+						resp := response.New(nil, err).ToProto()
+						err = rx.vnic.Reply(msg, resp)
+						if err != nil {
+							rx.vnic.resources.Logger().Error(err)
+						}
 					} else if msg.IsReply {
+						resp := response.New(nil, err).ToProto()
 						request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.Config().LocalUuid)
-						request.response = &types.Error{ErrMessage: err.Error()}
+						request.response = resp
 						request.cond.Broadcast()
 					}
 					continue
@@ -111,7 +117,6 @@ func (rx *RX) notifyRawDataListener() {
 				//and just notify
 				if msg.IsReply {
 					request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.Config().LocalUuid)
-					request.response = pb
 					request.cond.Broadcast()
 					continue
 				}
@@ -158,23 +163,23 @@ func (this *HandleWorker) Run() {
 func (rx *RX) handleMessage(msg *types.Message, pb proto.Message) {
 	if msg.Action == types.Action_Reply {
 		request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.Config().LocalUuid)
-		request.response = pb
+		request.response = pb.(*types.Response)
 		request.cond.Broadcast()
 	} else if msg.Action == types.Action_Notify {
-		_, err := rx.vnic.resources.ServicePoints().Notify(pb, rx.vnic, msg, false)
-		if err != nil {
-			rx.vnic.resources.Logger().Error(err)
+		resp := rx.vnic.resources.ServicePoints().Notify(pb, rx.vnic, msg, false)
+		if resp.Error() != nil {
+			rx.vnic.resources.Logger().Error(resp.Error())
 		}
 	} else {
 		//Add bool
-		resp, err := rx.vnic.resources.ServicePoints().Handle(pb, msg.Action, rx.vnic, msg, false)
-		if err != nil {
-			rx.vnic.resources.Logger().Error(err)
+		resp := rx.vnic.resources.ServicePoints().Handle(pb, msg.Action, rx.vnic, msg, false)
+		if resp.Error() != nil {
+			rx.vnic.resources.Logger().Error(resp.Error())
 		}
 		if msg.IsRequest {
-			err = rx.vnic.Reply(msg, resp)
+			err := rx.vnic.Reply(msg, resp.ToProto())
 			if err != nil {
-				panic(err)
+				rx.vnic.resources.Logger().Error(resp.Error())
 			}
 		}
 	}

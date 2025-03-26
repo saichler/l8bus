@@ -22,32 +22,32 @@ func RegisterHealth(resources common.IResources, listener cache.ICacheListener) 
 	}
 }
 
-func (this *HealthServicePoint) Post(pb proto.Message, resourcs common.IResources) (proto.Message, error) {
+func (this *HealthServicePoint) Post(pb proto.Message, resourcs common.IResources) common.IResponse {
 	hp := pb.(*types.HealthPoint)
 	this.healthCenter.Add(hp)
-	return nil, nil
+	return nil
 }
-func (this *HealthServicePoint) Put(pb proto.Message, resourcs common.IResources) (proto.Message, error) {
+func (this *HealthServicePoint) Put(pb proto.Message, resourcs common.IResources) common.IResponse {
 	hp := pb.(*types.HealthPoint)
 	this.healthCenter.Add(hp)
-	return nil, nil
+	return nil
 }
-func (this *HealthServicePoint) Patch(pb proto.Message, resourcs common.IResources) (proto.Message, error) {
+func (this *HealthServicePoint) Patch(pb proto.Message, resourcs common.IResources) common.IResponse {
 	hp := pb.(*types.HealthPoint)
 	this.healthCenter.Update(hp)
-	return nil, nil
+	return nil
 }
-func (this *HealthServicePoint) Delete(pb proto.Message, resourcs common.IResources) (proto.Message, error) {
-	return nil, nil
+func (this *HealthServicePoint) Delete(pb proto.Message, resourcs common.IResources) common.IResponse {
+	return nil
 }
-func (this *HealthServicePoint) GetCopy(pb proto.Message, resourcs common.IResources) (proto.Message, error) {
-	return nil, nil
+func (this *HealthServicePoint) GetCopy(pb proto.Message, resourcs common.IResources) common.IResponse {
+	return nil
 }
-func (this *HealthServicePoint) Get(pb proto.Message, resourcs common.IResources) (proto.Message, error) {
-	return nil, nil
+func (this *HealthServicePoint) Get(pb proto.Message, resourcs common.IResources) common.IResponse {
+	return nil
 }
-func (this *HealthServicePoint) Failed(pb proto.Message, resourcs common.IResources, msg *types.Message) (proto.Message, error) {
-	return nil, nil
+func (this *HealthServicePoint) Failed(pb proto.Message, resourcs common.IResources, msg *types.Message) common.IResponse {
+	return nil
 }
 func (this *HealthServicePoint) EndPoint() string {
 	return Endpoint
