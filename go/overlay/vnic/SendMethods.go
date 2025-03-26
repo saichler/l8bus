@@ -1,6 +1,7 @@
 package vnic
 
 import (
+	"errors"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/reflect/go/reflect/cloning"
 	"github.com/saichler/types/go/types"
@@ -24,6 +25,10 @@ func (this *VirtualNetworkInterface) Request(destination, serviceName string, se
 		return nil, e
 	}
 	request.cond.Wait()
+	eMsg, ok := request.response.(*types.Error)
+	if ok {
+		return nil, errors.New(eMsg.ErrMessage)
+	}
 	return request.response, nil
 }
 

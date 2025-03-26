@@ -97,6 +97,9 @@ func (rx *RX) notifyRawDataListener() {
 				pb, err := rx.vnic.protocol.ProtoOf(msg)
 				if err != nil {
 					rx.vnic.resources.Logger().Error(err)
+					if msg.IsRequest {
+						rx.vnic.Reply(msg, types.Error{ErrMessage: err.Error()})
+					}
 					continue
 				}
 				// Otherwise call the handler per the action & the type
