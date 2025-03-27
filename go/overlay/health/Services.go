@@ -181,11 +181,6 @@ func (this *Services) updateServices(healthPoint *types.HealthPoint, areasToCalc
 
 func (this *Services) Update(healthPoint *types.HealthPoint) {
 	areasToCalcLeader := make([]*ServiceArea, 0)
-	defer func() {
-		for _, vlan := range areasToCalcLeader {
-			calcLeader(vlan)
-		}
-	}()
 
 	this.mtx.Lock()
 	defer this.mtx.Unlock()
@@ -195,6 +190,9 @@ func (this *Services) Update(healthPoint *types.HealthPoint) {
 	}
 	this.checkHealthPointDown(healthPoint, &areasToCalcLeader)
 	this.updateServices(healthPoint, &areasToCalcLeader)
+	for _, vlan := range areasToCalcLeader {
+		calcLeader(vlan)
+	}
 }
 
 func calcLeader(serviceArea *ServiceArea) {
