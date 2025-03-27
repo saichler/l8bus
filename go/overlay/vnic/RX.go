@@ -99,13 +99,13 @@ func (rx *RX) notifyRawDataListener() {
 				if err != nil {
 					rx.vnic.resources.Logger().Error(err)
 					if msg.IsRequest {
-						resp := response.NewErr(err.Error())
+						resp := response.NewError(err.Error())
 						err = rx.vnic.Reply(msg, resp)
 						if err != nil {
 							rx.vnic.resources.Logger().Error(err)
 						}
 					} else if msg.IsReply {
-						resp := response.NewErr(err.Error()).ToProto()
+						resp := response.NewError(err.Error()).ToProto()
 						request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.Config().LocalUuid)
 						request.response = resp
 						request.cond.Broadcast()
@@ -168,19 +168,19 @@ func (rx *RX) handleMessage(msg *types.Message, pb proto.Message) {
 		request.cond.Broadcast()
 	} else if msg.Action == types.Action_Notify {
 		resp := rx.vnic.resources.ServicePoints().Notify(pb, rx.vnic, msg, false)
-		if resp != nil && resp.Error() != nil {
-			rx.vnic.resources.Logger().Error(resp.Error())
+		if resp.Err() != nil {
+			rx.vnic.resources.Logger().Error(resp.Err())
 		}
 	} else {
 		//Add bool
 		resp := rx.vnic.resources.ServicePoints().Handle(pb, msg.Action, rx.vnic, msg, false)
-		if resp != nil && resp.Error() != nil {
-			rx.vnic.resources.Logger().Error(resp.Error())
+		if resp.Err() != nil {
+			rx.vnic.resources.Logger().Error(resp.Err())
 		}
 		if msg.IsRequest {
 			err := rx.vnic.Reply(msg, resp)
 			if err != nil {
-				rx.vnic.resources.Logger().Error(resp.Error())
+				rx.vnic.resources.Logger().Error(err)
 			}
 		}
 	}
