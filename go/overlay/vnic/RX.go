@@ -168,14 +168,14 @@ func (rx *RX) handleMessage(msg *types.Message, pb proto.Message) {
 		request.cond.Broadcast()
 	} else if msg.Action == types.Action_Notify {
 		resp := rx.vnic.resources.ServicePoints().Notify(pb, rx.vnic, msg, false)
-		if resp.Err() != nil {
-			rx.vnic.resources.Logger().Error(resp.Err())
+		if resp != nil && resp.Error() != nil {
+			rx.vnic.resources.Logger().Error(resp.Error())
 		}
 	} else {
 		//Add bool
 		resp := rx.vnic.resources.ServicePoints().Handle(pb, msg.Action, rx.vnic, msg, false)
-		if resp.Err() != nil {
-			rx.vnic.resources.Logger().Error(resp.Err())
+		if resp != nil && resp.Error() != nil {
+			rx.vnic.resources.Logger().Error(resp.Error())
 		}
 		if msg.IsRequest {
 			err := rx.vnic.Reply(msg, resp)
