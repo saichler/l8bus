@@ -10,7 +10,7 @@ import (
 
 func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, serviceArea int32,
 	action types.Action, any interface{}) error {
-	mobjects := object.New("", any)
+	mobjects := object.New(nil, any)
 	return this.components.TX().Unicast(destination, serviceName, serviceArea, action, mobjects, 0,
 		false, false, this.protocol.NextMessageNumber(), nil)
 }
@@ -20,7 +20,7 @@ func (this *VirtualNetworkInterface) Request(destination, serviceName string, se
 	request := this.requests.newRequest(this.protocol.NextMessageNumber(), this.resources.Config().LocalUuid)
 	request.cond.L.Lock()
 	defer request.cond.L.Unlock()
-	mobjects := object.New("", any)
+	mobjects := object.New(nil, any)
 	e := this.components.TX().Unicast(destination, serviceName, serviceArea, action, mobjects, 0,
 		true, false, request.msgNum, nil)
 	if e != nil {
@@ -48,7 +48,7 @@ func (this *VirtualNetworkInterface) Reply(msg *types.Message, response common.I
 }
 
 func (this *VirtualNetworkInterface) Multicast(serviceName string, serviceArea int32, action types.Action, any interface{}) error {
-	mobjects := object.New("", any)
+	mobjects := object.New(nil, any)
 	return this.components.TX().Multicast("", serviceName, serviceArea, action, mobjects, 0,
 		false, false, this.protocol.NextMessageNumber(), nil)
 }
