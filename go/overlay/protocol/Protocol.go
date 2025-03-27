@@ -45,9 +45,6 @@ func ProtoOf(msg *types.Message, resourcs common.IResources) (proto.Message, err
 	}
 
 	typ := msg.ProtoType
-	if msg.Tr != nil && msg.IsReply {
-		typ = reflect.TypeOf(types.Transaction{}).Name()
-	}
 
 	info, err := resourcs.Registry().Info(typ)
 	if err != nil {
@@ -151,7 +148,7 @@ func (this *Protocol) CreateMessageForm(msg *types.Message, any interface{}) ([]
 	//create the wrapping message for the destination
 	msg.Data = encData
 	msg.ProtoType = reflect.ValueOf(any).Elem().Type().Name()
-	
+
 	d, e := this.DataFromMessage(msg)
 	return d, e
 }
