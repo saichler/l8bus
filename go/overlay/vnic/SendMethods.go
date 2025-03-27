@@ -3,7 +3,6 @@ package vnic
 import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/reflect/go/reflect/cloning"
-	"github.com/saichler/serializer/go/serialize/response"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
 )
@@ -15,7 +14,7 @@ func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, se
 }
 
 func (this *VirtualNetworkInterface) Request(destination, serviceName string, serviceArea int32,
-	action types.Action, any interface{}) common.IResponse {
+	action types.Action, any interface{}) common.IMObjects {
 	request := this.requests.newRequest(this.protocol.NextMessageNumber(), this.resources.Config().LocalUuid)
 	request.cond.L.Lock()
 	defer request.cond.L.Unlock()
@@ -29,7 +28,7 @@ func (this *VirtualNetworkInterface) Request(destination, serviceName string, se
 	return response.FromProto(request.response, this.resources)
 }
 
-func (this *VirtualNetworkInterface) Reply(msg *types.Message, response common.IResponse) error {
+func (this *VirtualNetworkInterface) Reply(msg *types.Message, response common.IMObjects) error {
 	reply := cloning.NewCloner().Clone(msg).(*types.Message)
 	reply.Action = types.Action_Reply
 	reply.Destination = msg.Source
@@ -57,19 +56,19 @@ func (this *VirtualNetworkInterface) Single(serviceName string, serviceArea int3
 	return this.Unicast(destination, serviceName, serviceArea, action, any)
 }
 
-func (this *VirtualNetworkInterface) SingleRequest(serviceName string, serviceArea int32, action types.Action, any interface{}) common.IResponse {
+func (this *VirtualNetworkInterface) SingleRequest(serviceName string, serviceArea int32, action types.Action, any interface{}) common.IMObjects {
 	hc := health.Health(this.resources)
 	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.Config().LocalUuid, false, false)
 	return this.Request(destination, serviceName, serviceArea, action, any)
 }
 
-func (this *VirtualNetworkInterface) Leader(serviceName string, serviceArea int32, action types.Action, any interface{}) common.IResponse {
+func (this *VirtualNetworkInterface) Leader(serviceName string, serviceArea int32, action types.Action, any interface{}) common.IMObjects {
 	hc := health.Health(this.resources)
 	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.Config().LocalUuid, false, true)
 	return this.Request(destination, serviceName, serviceArea, action, any)
 }
 
-func (this *VirtualNetworkInterface) Forward(msg *types.Message, destination string) common.IResponse {
+func (this *VirtualNetworkInterface) Forward(msg *types.Message, destination string) common.IMObjects {
 	pb, err := this.protocol.ProtoOf(msg)
 	if err != nil {
 		return response.NewError(err.Error())

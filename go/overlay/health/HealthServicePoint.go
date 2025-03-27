@@ -22,31 +22,31 @@ func RegisterHealth(resources common.IResources, listener cache.ICacheListener) 
 	}
 }
 
-func (this *HealthServicePoint) Post(pb proto.Message, resourcs common.IResources) common.IResponse {
+func (this *HealthServicePoint) Post(pb proto.Message, resourcs common.IResources) common.IMObjects {
 	hp := pb.(*types.HealthPoint)
 	this.healthCenter.Add(hp)
 	return nil
 }
-func (this *HealthServicePoint) Put(pb proto.Message, resourcs common.IResources) common.IResponse {
+func (this *HealthServicePoint) Put(pb proto.Message, resourcs common.IResources) common.IMObjects {
 	hp := pb.(*types.HealthPoint)
 	this.healthCenter.Add(hp)
 	return nil
 }
-func (this *HealthServicePoint) Patch(pb proto.Message, resourcs common.IResources) common.IResponse {
+func (this *HealthServicePoint) Patch(pb proto.Message, resourcs common.IResources) common.IMObjects {
 	hp := pb.(*types.HealthPoint)
 	this.healthCenter.Update(hp)
 	return nil
 }
-func (this *HealthServicePoint) Delete(pb proto.Message, resourcs common.IResources) common.IResponse {
+func (this *HealthServicePoint) Delete(pb proto.Message, resourcs common.IResources) common.IMObjects {
 	return nil
 }
-func (this *HealthServicePoint) GetCopy(pb proto.Message, resourcs common.IResources) common.IResponse {
+func (this *HealthServicePoint) GetCopy(pb proto.Message, resourcs common.IResources) common.IMObjects {
 	return nil
 }
-func (this *HealthServicePoint) Get(pb proto.Message, resourcs common.IResources) common.IResponse {
+func (this *HealthServicePoint) Get(pb proto.Message, resourcs common.IResources) common.IMObjects {
 	return nil
 }
-func (this *HealthServicePoint) Failed(pb proto.Message, resourcs common.IResources, msg *types.Message) common.IResponse {
+func (this *HealthServicePoint) Failed(pb proto.Message, resourcs common.IResources, msg *types.Message) common.IMObjects {
 	return nil
 }
 func (this *HealthServicePoint) EndPoint() string {

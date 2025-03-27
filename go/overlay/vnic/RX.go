@@ -1,7 +1,6 @@
 package vnic
 
 import (
-	"github.com/saichler/serializer/go/serialize/response"
 	"github.com/saichler/shared/go/share/queues"
 	"github.com/saichler/shared/go/share/workers"
 	"github.com/saichler/types/go/nets"
@@ -99,13 +98,13 @@ func (rx *RX) notifyRawDataListener() {
 				if err != nil {
 					rx.vnic.resources.Logger().Error(err)
 					if msg.IsRequest {
-						resp := response.NewError(err.Error())
+						resp := object.NewError(err.Error())
 						err = rx.vnic.Reply(msg, resp)
 						if err != nil {
 							rx.vnic.resources.Logger().Error(err)
 						}
 					} else if msg.IsReply {
-						resp := response.NewError(err.Error()).ToProto()
+						resp := object.NewError(err.Error()).ToProto()
 						request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.Config().LocalUuid)
 						request.response = resp
 						request.cond.Broadcast()
