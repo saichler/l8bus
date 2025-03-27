@@ -99,13 +99,13 @@ func (rx *RX) notifyRawDataListener() {
 				if err != nil {
 					rx.vnic.resources.Logger().Error(err)
 					if msg.IsRequest {
-						resp := response.New(nil, err).ToProto()
+						resp := response.NewErr(err.Error())
 						err = rx.vnic.Reply(msg, resp)
 						if err != nil {
 							rx.vnic.resources.Logger().Error(err)
 						}
 					} else if msg.IsReply {
-						resp := response.New(nil, err).ToProto()
+						resp := response.NewErr(err.Error()).ToProto()
 						request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.Config().LocalUuid)
 						request.response = resp
 						request.cond.Broadcast()
@@ -177,7 +177,7 @@ func (rx *RX) handleMessage(msg *types.Message, pb proto.Message) {
 			rx.vnic.resources.Logger().Error(resp.Error())
 		}
 		if msg.IsRequest {
-			err := rx.vnic.Reply(msg, resp.ToProto())
+			err := rx.vnic.Reply(msg, resp)
 			if err != nil {
 				rx.vnic.resources.Logger().Error(resp.Error())
 			}
