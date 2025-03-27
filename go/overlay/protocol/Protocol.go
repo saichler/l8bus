@@ -1,11 +1,11 @@
 package protocol
 
 import (
+	"github.com/saichler/serializer/go/serialize/object"
 	"github.com/saichler/serializer/go/serialize/serializers"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
 	"google.golang.org/protobuf/proto"
-	"reflect"
 	"sync/atomic"
 )
 
@@ -30,35 +30,32 @@ func (this *Protocol) Serializer() common.ISerializer {
 }
 
 func (this *Protocol) MessageOf(data []byte) (*types.Message, error) {
-	msg, err := this.serializer.Unmarshal(data[HEADER_SIZE:], "Message", this.resources.Registry())
+	msg, err := this.serializer.Unmarshal(data[HEADER_SIZE:], this.resources.Registry())
 	return msg.(*types.Message), err
 }
 
-func (this *Protocol) ProtoOf(msg *types.Message) (proto.Message, error) {
-	return ProtoOf(msg, this.resources)
+func (this *Protocol) MObjectsOf(msg *types.Message) (common.IMObjects, error) {
+	return MObjectsOf(msg, this.resources)
 }
 
-func ProtoOf(msg *types.Message, resourcs common.IResources) (proto.Message, error) {
+func MObjectsOf(msg *types.Message, resourcs common.IResources) (common.IMObjects, error) {
 	data, err := resourcs.Security().Decrypt(msg.Data)
 	if err != nil {
 		return nil, err
 	}
 
-	typ := msg.ProtoType
-
-	info, err := resourcs.Registry().Info(typ)
-	if err != nil {
-		return nil, resourcs.Logger().Error(err)
-	}
-	pbIns, err := info.NewInstance()
+	mobjects := &types.MObjects{}
+	err = proto.Unmarshal(data, mobjects)
 	if err != nil {
 		return nil, err
 	}
 
-	pb := pbIns.(proto.Message)
-	err = proto.Unmarshal(data, pb)
-
-	return pb, err
+	result := &object.MObjects{}
+	err = result.Deserialize(mobjects, resourcs.Registry())
+	if err != nil {
+		return nil, err
+	}
+	return result, err
 }
 
 func (this *Protocol) NextMessageNumber() int32 {
@@ -87,20 +84,22 @@ func DataFor(any interface{}, serializer common.ISerializer, security common.ISe
 }
 
 func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceArea int32,
-	priority types.Priority, action types.Action, source, vnet string, any interface{},
+	priority types.Priority, action types.Action, source, vnet string, o common.IMObjects,
 	isRequest, isReply bool, msgNum int32, tr *types.Transaction) ([]byte, error) {
 
 	var data []byte
 	var err error
 
-	//first marshal the protobuf into bytes
-	pb, ok := any.(proto.Message)
-	if ok {
-		data, err = this.serializer.Marshal(pb, nil)
-		if err != nil {
-			return nil, err
-		}
+	objs, err := o.Serialize()
+	if err != nil {
+		return nil, err
 	}
+
+	data, err = this.serializer.Marshal(objs, nil)
+	if err != nil {
+		return nil, err
+	}
+
 	//Encode the data
 	encData, err := this.resources.Security().Encrypt(data)
 	if err != nil {
@@ -116,9 +115,6 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 	msg.Sequence = msgNum
 	msg.Priority = priority
 	msg.Data = encData
-	if pb != nil {
-		msg.ProtoType = reflect.ValueOf(pb).Elem().Type().Name()
-	}
 	msg.Action = action
 	msg.IsRequest = isRequest
 	msg.IsReply = isReply
@@ -127,19 +123,20 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 	return d, e
 }
 
-func (this *Protocol) CreateMessageForm(msg *types.Message, any interface{}) ([]byte, error) {
-	//first marshal the protobuf into bytes
-	//Expecting a crash here if it is not a protocol buffer
-	//Will implement generic serializer via registry in the future
+func (this *Protocol) CreateMessageForm(msg *types.Message, o common.IMObjects) ([]byte, error) {
 	var data []byte
 	var err error
-	pb, ok := any.(proto.Message)
-	if ok {
-		data, err = this.serializer.Marshal(pb, nil)
-	}
+
+	mobjects, err := o.Serialize()
 	if err != nil {
 		return nil, err
 	}
+
+	data, err = this.serializer.Marshal(mobjects, nil)
+	if err != nil {
+		return nil, err
+	}
+
 	//Encode the data
 	encData, err := this.resources.Security().Encrypt(data)
 	if err != nil {
@@ -147,8 +144,6 @@ func (this *Protocol) CreateMessageForm(msg *types.Message, any interface{}) ([]
 	}
 	//create the wrapping message for the destination
 	msg.Data = encData
-	msg.ProtoType = reflect.ValueOf(any).Elem().Type().Name()
-
 	d, e := this.DataFromMessage(msg)
 	return d, e
 }

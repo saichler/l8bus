@@ -1,11 +1,12 @@
 package vnic
 
 import (
+	"github.com/saichler/serializer/go/serialize/object"
 	"github.com/saichler/shared/go/share/queues"
 	"github.com/saichler/shared/go/share/workers"
+	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/nets"
 	"github.com/saichler/types/go/types"
-	"google.golang.org/protobuf/proto"
 )
 
 type RX struct {
@@ -94,7 +95,7 @@ func (rx *RX) notifyRawDataListener() {
 					rx.vnic.resources.Logger().Error(err)
 					continue
 				}
-				pb, err := rx.vnic.protocol.ProtoOf(msg)
+				pb, err := rx.vnic.protocol.MObjectsOf(msg)
 				if err != nil {
 					rx.vnic.resources.Logger().Error(err)
 					if msg.IsRequest {
@@ -104,7 +105,7 @@ func (rx *RX) notifyRawDataListener() {
 							rx.vnic.resources.Logger().Error(err)
 						}
 					} else if msg.IsReply {
-						resp := object.NewError(err.Error()).ToProto()
+						resp := object.NewError(err.Error())
 						request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.Config().LocalUuid)
 						request.response = resp
 						request.cond.Broadcast()
@@ -116,7 +117,7 @@ func (rx *RX) notifyRawDataListener() {
 				//and just notify
 				if msg.IsReply {
 					request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.Config().LocalUuid)
-					request.response = pb.(*types.Response)
+					request.response = pb
 					request.cond.Broadcast()
 					continue
 				}
@@ -131,11 +132,11 @@ func (rx *RX) notifyRawDataListener() {
 
 type HandleWorker struct {
 	msg *types.Message
-	pb  proto.Message
+	pb  common.IMObjects
 	rx  *RX
 }
 
-func (rx *RX) runHandleMessage(msg *types.Message, pb proto.Message) {
+func (rx *RX) runHandleMessage(msg *types.Message, pb common.IMObjects) {
 	//rx.handleMessage(msg, pb)
 
 	hw := &HandleWorker{msg: msg, rx: rx, pb: pb}
@@ -160,10 +161,10 @@ func (this *HandleWorker) Run() {
 	this.rx.handleMessage(this.msg, this.pb)
 }
 
-func (rx *RX) handleMessage(msg *types.Message, pb proto.Message) {
+func (rx *RX) handleMessage(msg *types.Message, pb common.IMObjects) {
 	if msg.Action == types.Action_Reply {
 		request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.Config().LocalUuid)
-		request.response = pb.(*types.Response)
+		request.response = pb
 		request.cond.Broadcast()
 	} else if msg.Action == types.Action_Notify {
 		resp := rx.vnic.resources.ServicePoints().Notify(pb, rx.vnic, msg, false)

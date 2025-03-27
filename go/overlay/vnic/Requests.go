@@ -2,7 +2,7 @@ package vnic
 
 import (
 	"bytes"
-	"github.com/saichler/types/go/types"
+	"github.com/saichler/types/go/common"
 	"strconv"
 	"sync"
 )
@@ -16,7 +16,7 @@ type Request struct {
 	cond      *sync.Cond
 	msgSource string
 	msgNum    int32
-	response  *types.Response
+	response  common.IMObjects
 }
 
 func newRequests() *Requests {

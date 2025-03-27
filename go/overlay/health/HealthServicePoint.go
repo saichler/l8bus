@@ -1,10 +1,10 @@
 package health
 
 import (
+	"github.com/saichler/serializer/go/serialize/object"
 	"github.com/saichler/servicepoints/go/points/cache"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
-	"google.golang.org/protobuf/proto"
 	"reflect"
 )
 
@@ -22,31 +22,31 @@ func RegisterHealth(resources common.IResources, listener cache.ICacheListener) 
 	}
 }
 
-func (this *HealthServicePoint) Post(pb proto.Message, resourcs common.IResources) common.IMObjects {
-	hp := pb.(*types.HealthPoint)
+func (this *HealthServicePoint) Post(pb common.IMObjects, resourcs common.IResources) common.IMObjects {
+	hp := pb.Element().(*types.HealthPoint)
 	this.healthCenter.Add(hp)
 	return nil
 }
-func (this *HealthServicePoint) Put(pb proto.Message, resourcs common.IResources) common.IMObjects {
-	hp := pb.(*types.HealthPoint)
+func (this *HealthServicePoint) Put(pb common.IMObjects, resourcs common.IResources) common.IMObjects {
+	hp := pb.Element().(*types.HealthPoint)
 	this.healthCenter.Add(hp)
 	return nil
 }
-func (this *HealthServicePoint) Patch(pb proto.Message, resourcs common.IResources) common.IMObjects {
-	hp := pb.(*types.HealthPoint)
+func (this *HealthServicePoint) Patch(pb common.IMObjects, resourcs common.IResources) common.IMObjects {
+	hp := pb.Element().(*types.HealthPoint)
 	this.healthCenter.Update(hp)
 	return nil
 }
-func (this *HealthServicePoint) Delete(pb proto.Message, resourcs common.IResources) common.IMObjects {
+func (this *HealthServicePoint) Delete(pb common.IMObjects, resourcs common.IResources) common.IMObjects {
 	return nil
 }
-func (this *HealthServicePoint) GetCopy(pb proto.Message, resourcs common.IResources) common.IMObjects {
+func (this *HealthServicePoint) GetCopy(pb common.IMObjects, resourcs common.IResources) common.IMObjects {
 	return nil
 }
-func (this *HealthServicePoint) Get(pb proto.Message, resourcs common.IResources) common.IMObjects {
+func (this *HealthServicePoint) Get(pb common.IMObjects, resourcs common.IResources) common.IMObjects {
 	return nil
 }
-func (this *HealthServicePoint) Failed(pb proto.Message, resourcs common.IResources, msg *types.Message) common.IMObjects {
+func (this *HealthServicePoint) Failed(pb common.IMObjects, resourcs common.IResources, msg *types.Message) common.IMObjects {
 	return nil
 }
 func (this *HealthServicePoint) EndPoint() string {
@@ -67,6 +67,6 @@ func (this *HealthServicePoint) ReplicationScore() int {
 	return 0
 }
 
-func (this *HealthServicePoint) ServiceModel() proto.Message {
-	return &types.HealthPoint{}
+func (this *HealthServicePoint) ServiceModel() common.IMObjects {
+	return object.New("", &types.HealthPoint{})
 }

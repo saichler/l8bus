@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/shared/go/share/queues"
+	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/nets"
 	"github.com/saichler/types/go/types"
 	"strconv"
@@ -88,7 +89,7 @@ func (this *TX) SendMessage(data []byte) error {
 }
 
 // Unicast is wrapping a protobuf with a secure message and send it to the vnet
-func (this *TX) Unicast(destination, serviceName string, serviceArea int32, action types.Action, any interface{},
+func (this *TX) Unicast(destination, serviceName string, serviceArea int32, action types.Action, any common.IMObjects,
 	p types.Priority, isRequest, isReply bool, msgNum int32, tr *types.Transaction) error {
 	if len(destination) != protocol.UNICAST_ADDRESS_SIZE {
 		return errors.New("Invalid destination address " + destination + " size " + strconv.Itoa(len(destination)))
@@ -98,7 +99,7 @@ func (this *TX) Unicast(destination, serviceName string, serviceArea int32, acti
 }
 
 // Multicast is wrapping a protobuf with a secure message and send it to the vnet topic
-func (this *TX) Multicast(destination, serviceName string, serviceArea int32, action types.Action, any interface{},
+func (this *TX) Multicast(destination, serviceName string, serviceArea int32, action types.Action, any common.IMObjects,
 	p types.Priority, isRequest, isReply bool, msgNum int32, tr *types.Transaction) error {
 	// Create message payload
 	data, err := this.vnic.protocol.CreateMessageFor(destination, serviceName, serviceArea, p, action,
