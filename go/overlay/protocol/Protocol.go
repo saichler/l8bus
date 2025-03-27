@@ -2,7 +2,6 @@ package protocol
 
 import (
 	"github.com/saichler/serializer/go/serialize/object"
-	"github.com/saichler/serializer/go/serialize/serializers"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
 	"google.golang.org/protobuf/proto"
@@ -10,28 +9,23 @@ import (
 )
 
 type Protocol struct {
-	sequence   atomic.Int32
-	resources  common.IResources
-	serializer common.ISerializer
+	sequence  atomic.Int32
+	resources common.IResources
 }
 
 func New(resources common.IResources) *Protocol {
 	p := &Protocol{}
 	p.resources = resources
-	p.serializer = p.resources.Serializer(common.BINARY)
-	if p.serializer == nil {
-		p.serializer = &serializers.ProtoBuffBinary{}
-	}
 	return p
 }
 
-func (this *Protocol) Serializer() common.ISerializer {
-	return this.serializer
-}
-
 func (this *Protocol) MessageOf(data []byte) (*types.Message, error) {
-	msg, err := this.serializer.Unmarshal(data[HEADER_SIZE:], this.resources.Registry())
-	return msg.(*types.Message), err
+	msg := &types.Message{}
+	err := proto.Unmarshal(data[HEADER_SIZE:], msg)
+	if err != nil {
+		return nil, err
+	}
+	return msg, err
 }
 
 func (this *Protocol) MObjectsOf(msg *types.Message) (common.IMObjects, error) {
@@ -62,19 +56,21 @@ func (this *Protocol) NextMessageNumber() int32 {
 	return this.sequence.Add(1)
 }
 
-func DataFor(any interface{}, serializer common.ISerializer, security common.ISecurityProvider) (string, error) {
+func DataFor(any common.IMObjects, security common.ISecurityProvider) (string, error) {
 	var data []byte
 	var err error
-	//first marshal the protobuf into bytes
-	pb, ok := any.(proto.Message)
-	if ok {
-		data, err = serializer.Marshal(pb, nil)
-		if err != nil {
-			return "", err
-		}
-	} else {
-		data = []byte{}
+
+	mobjects := object.New(nil, any)
+	objs, err := mobjects.Serialize()
+	if err != nil {
+		return "", err
 	}
+
+	data, err = proto.Marshal(objs)
+	if err != nil {
+		return "", err
+	}
+
 	//Encode the data
 	encData, err := security.Encrypt(data)
 	if err != nil {
@@ -95,7 +91,7 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 		return nil, err
 	}
 
-	data, err = this.serializer.Marshal(objs, nil)
+	data, err = proto.Marshal(objs)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +128,7 @@ func (this *Protocol) CreateMessageForm(msg *types.Message, o common.IMObjects) 
 		return nil, err
 	}
 
-	data, err = this.serializer.Marshal(mobjects, nil)
+	data, err = proto.Marshal(mobjects)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +146,7 @@ func (this *Protocol) CreateMessageForm(msg *types.Message, o common.IMObjects) 
 
 func (this *Protocol) DataFromMessage(msg *types.Message) ([]byte, error) {
 	//Now serialize the message
-	msgData, err := this.serializer.Marshal(msg, nil)
+	msgData, err := proto.Marshal(msg)
 	if err != nil {
 		return nil, err
 	}

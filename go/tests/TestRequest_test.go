@@ -19,7 +19,7 @@ func TestRequest(t *testing.T) {
 		return
 	}
 
-	if resp.Elem().(*testtypes.TestProto).MyString != "request" {
+	if resp.Element().(*testtypes.TestProto).MyString != "request" {
 		Log.Fail(t, "Expected response to be 'request")
 		return
 	}
