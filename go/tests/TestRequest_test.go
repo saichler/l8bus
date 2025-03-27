@@ -13,13 +13,13 @@ func TestRequest(t *testing.T) {
 	pb := &testtypes.TestProto{MyString: "request"}
 	eg3_1 := topo.VnicByVnetNum(3, 1)
 	eg1_2 := topo.VnicByVnetNum(1, 2)
-	resp, err := eg3_1.Request(eg1_2.Resources().Config().LocalUuid, ServiceName, 0, types.Action_POST, pb)
-	if err != nil {
-		Log.Fail(t, err)
+	resp := eg3_1.Request(eg1_2.Resources().Config().LocalUuid, ServiceName, 0, types.Action_POST, pb)
+	if resp.Error() != nil {
+		Log.Fail(t, resp.Error())
 		return
 	}
 
-	if resp.(*testtypes.TestProto).MyString != "request" {
+	if resp.List()[0].(*testtypes.TestProto).MyString != "request" {
 		Log.Fail(t, "Expected response to be 'request")
 		return
 	}

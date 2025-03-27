@@ -117,6 +117,7 @@ func (rx *RX) notifyRawDataListener() {
 				//and just notify
 				if msg.IsReply {
 					request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.Config().LocalUuid)
+					request.response = pb.(*types.Response)
 					request.cond.Broadcast()
 					continue
 				}
