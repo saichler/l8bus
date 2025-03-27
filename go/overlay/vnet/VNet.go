@@ -243,7 +243,7 @@ func (this *VNet) switchDataReceived(data []byte, vnic common.IVirtualNetworkInt
 		return
 	}
 
-	pb, err := this.protocol.ProtoOf(msg)
+	pb, err := this.protocol.MObjectsOf(msg)
 	if err != nil {
 		if msg.Tr != nil {
 			//This message should not be processed and we should just

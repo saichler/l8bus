@@ -3,6 +3,7 @@ package vnet
 import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
+	"github.com/saichler/serializer/go/serialize/object"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
 	"google.golang.org/protobuf/proto"
@@ -26,9 +27,10 @@ func newSwitchTable(switchService *VNet) *SwitchTable {
 
 func (this *SwitchTable) uniCastToAll(serviceName string, serviceArea int32, action types.Action, pb proto.Message) {
 	conns := this.conns.all()
+	mobjects := object.New(nil, pb)
 	data, err := this.switchService.protocol.CreateMessageFor("", serviceName, serviceArea, types.Priority_P1, action,
 		this.switchService.resources.Config().LocalUuid,
-		this.switchService.resources.Config().LocalUuid, pb, false, false, this.switchService.protocol.NextMessageNumber(), nil)
+		this.switchService.resources.Config().LocalUuid, mobjects, false, false, this.switchService.protocol.NextMessageNumber(), nil)
 	if err != nil {
 		this.switchService.resources.Logger().Error("Failed to create message to send to all: ", err)
 		return
