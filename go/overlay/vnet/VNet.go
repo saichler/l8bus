@@ -263,7 +263,7 @@ func (this *VNet) switchDataReceived(data []byte, vnic common.IVirtualNetworkInt
 		}
 	} else {
 		resp := this.resources.ServicePoints().Handle(pb, msg.Action, vnic, msg, false)
-		if resp.Error() != nil {
+		if resp != nil && resp.Error() != nil {
 			this.resources.Logger().Error(resp.Error())
 		}
 	}
