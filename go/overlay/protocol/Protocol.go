@@ -56,11 +56,10 @@ func (this *Protocol) NextMessageNumber() int32 {
 	return this.sequence.Add(1)
 }
 
-func DataFor(any common.IMObjects, security common.ISecurityProvider) (string, error) {
+func DataFor(mobjects common.IMObjects, security common.ISecurityProvider) (string, error) {
 	var data []byte
 	var err error
-
-	mobjects := object.New(nil, any)
+	
 	objs, err := mobjects.Serialize()
 	if err != nil {
 		return "", err
