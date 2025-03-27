@@ -258,13 +258,13 @@ func (this *VNet) switchDataReceived(data []byte, vnic common.IVirtualNetworkInt
 	this.resources.Logger().Trace("Switch Service is: ", this.resources.Config().LocalUuid)
 	if msg.Action == types.Action_Notify {
 		resp := this.resources.ServicePoints().Notify(pb, vnic, msg, false)
-		if resp.Err() != nil {
-			this.resources.Logger().Error(resp.Err())
+		if resp != nil && resp.Error() != nil {
+			this.resources.Logger().Error(resp.Error())
 		}
 	} else {
 		resp := this.resources.ServicePoints().Handle(pb, msg.Action, vnic, msg, false)
-		if resp.Err() != nil {
-			this.resources.Logger().Error(resp.Err())
+		if resp != nil && resp.Error() != nil {
+			this.resources.Logger().Error(resp.Error())
 		}
 	}
 
