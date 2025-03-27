@@ -167,7 +167,7 @@ func (rx *RX) handleMessage(msg *types.Message, pb proto.Message) {
 		request.cond.Broadcast()
 	} else if msg.Action == types.Action_Notify {
 		resp := rx.vnic.resources.ServicePoints().Notify(pb, rx.vnic, msg, false)
-		if resp.Error() != nil {
+		if resp != nil && resp.Error() != nil {
 			rx.vnic.resources.Logger().Error(resp.Error())
 		}
 	} else {
