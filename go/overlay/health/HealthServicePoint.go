@@ -68,5 +68,5 @@ func (this *HealthServicePoint) ReplicationScore() int {
 }
 
 func (this *HealthServicePoint) ServiceModel() common.IMObjects {
-	return object.New("", &types.HealthPoint{})
+	return object.New(nil, &types.HealthPoint{})
 }
