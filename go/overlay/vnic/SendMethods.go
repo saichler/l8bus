@@ -23,7 +23,7 @@ func (this *VirtualNetworkInterface) Request(destination, serviceName string, se
 	e := this.components.TX().Unicast(destination, serviceName, serviceArea, action, any, 0,
 		true, false, request.msgNum, nil)
 	if e != nil {
-		return response.NewErr(e)
+		return response.NewErr(e.Error())
 	}
 	request.cond.Wait()
 	return response.FromProto(request.response, this.resources)
@@ -72,7 +72,7 @@ func (this *VirtualNetworkInterface) Leader(serviceName string, serviceArea int3
 func (this *VirtualNetworkInterface) Forward(msg *types.Message, destination string) common.IResponse {
 	pb, err := this.protocol.ProtoOf(msg)
 	if err != nil {
-		return response.NewErr(err)
+		return response.NewErr(err.Error())
 	}
 
 	request := this.requests.newRequest(this.protocol.NextMessageNumber(), this.resources.Config().LocalUuid)
@@ -82,7 +82,7 @@ func (this *VirtualNetworkInterface) Forward(msg *types.Message, destination str
 	e := this.components.TX().Unicast(destination, msg.ServiceName, msg.ServiceArea, msg.Action,
 		pb, 0, true, false, request.msgNum, msg.Tr)
 	if e != nil {
-		return response.NewErr(e)
+		return response.NewErr(e.Error())
 	}
 	request.cond.Wait()
 	return response.FromProto(request.response, this.resources)
