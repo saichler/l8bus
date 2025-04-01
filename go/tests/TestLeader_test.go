@@ -12,7 +12,7 @@ import (
 func getLeader(uuid string) common.IVirtualNetworkInterface {
 	all := topo.AllVnics()
 	for _, nic := range all {
-		if nic.Resources().Config().LocalUuid == uuid {
+		if nic.Resources().SysConfig().LocalUuid == uuid {
 			return nic
 		}
 	}
@@ -26,7 +26,7 @@ func testLeader(t *testing.T) {
 	leader := getLeader(leaderBefore)
 	leader.Shutdown()
 	defer func() {
-		topo.RenewVnic(leader.Resources().Config().LocalAlias)
+		topo.RenewVnic(leader.Resources().SysConfig().LocalAlias)
 	}()
 	Sleep()
 	Sleep()
