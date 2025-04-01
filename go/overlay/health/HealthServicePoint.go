@@ -43,7 +43,7 @@ func (this *HealthServicePoint) Delete(pb common.IElements, resourcs common.IRes
 func (this *HealthServicePoint) GetCopy(pb common.IElements, resourcs common.IResources) common.IElements {
 	return nil
 }
-func (this *HealthServicePoint) Get(gsql string, resourcs common.IResources) common.IElements {
+func (this *HealthServicePoint) Get(pb common.IElements, resourcs common.IResources) common.IElements {
 	return nil
 }
 func (this *HealthServicePoint) Failed(pb common.IElements, resourcs common.IResources, msg *types.Message) common.IElements {
