@@ -23,7 +23,7 @@ func newHealthCenter(resources common.IResources, listener cache.ICacheListener)
 	rnode, _ := resources.Introspector().Inspect(&types.HealthPoint{})
 	introspecting.AddPrimaryKeyDecorator(rnode, "AUuid")
 	hc.healthPoints = cache.NewModelCache(ServiceName, 0, "HealthPoint",
-		resources.Config().LocalUuid, listener, resources.Introspector())
+		resources.SysConfig().LocalUuid, listener, resources.Introspector())
 	hc.services = newServices()
 	hc.resources = resources
 	return hc
@@ -131,7 +131,7 @@ func (this *HealthCenter) AddScore(target, serviceName string, serviceArea int32
 	if e != nil {
 		panic(e)
 	}
-	e = vnic.Unicast(vnic.Resources().Config().RemoteUuid, ServiceName, 0, types.Action_Notify, n)
+	e = vnic.Unicast(vnic.Resources().SysConfig().RemoteUuid, ServiceName, 0, types.Action_Notify, n)
 	if e != nil {
 		panic(e)
 	}

@@ -16,8 +16,8 @@ func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, se
 }
 
 func (this *VirtualNetworkInterface) Request(destination, serviceName string, serviceArea int32,
-	action types.Action, any interface{}) common.IMObjects {
-	request := this.requests.newRequest(this.protocol.NextMessageNumber(), this.resources.Config().LocalUuid)
+	action types.Action, any interface{}) common.IElements {
+	request := this.requests.newRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid)
 	request.cond.L.Lock()
 	defer request.cond.L.Unlock()
 	mobjects := object.New(nil, any)
@@ -30,12 +30,12 @@ func (this *VirtualNetworkInterface) Request(destination, serviceName string, se
 	return request.response
 }
 
-func (this *VirtualNetworkInterface) Reply(msg *types.Message, response common.IMObjects) error {
+func (this *VirtualNetworkInterface) Reply(msg *types.Message, response common.IElements) error {
 	reply := cloning.NewCloner().Clone(msg).(*types.Message)
 	reply.Action = types.Action_Reply
 	reply.Destination = msg.Source
-	reply.Source = this.resources.Config().LocalUuid
-	reply.SourceVnet = this.resources.Config().RemoteUuid
+	reply.Source = this.resources.SysConfig().LocalUuid
+	reply.SourceVnet = this.resources.SysConfig().RemoteUuid
 	reply.IsRequest = false
 	reply.IsReply = true
 
@@ -55,29 +55,29 @@ func (this *VirtualNetworkInterface) Multicast(serviceName string, serviceArea i
 
 func (this *VirtualNetworkInterface) Single(serviceName string, serviceArea int32, action types.Action, any interface{}) error {
 	hc := health.Health(this.resources)
-	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.Config().LocalUuid, false, false)
+	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.SysConfig().LocalUuid, false, false)
 	return this.Unicast(destination, serviceName, serviceArea, action, any)
 }
 
-func (this *VirtualNetworkInterface) SingleRequest(serviceName string, serviceArea int32, action types.Action, any interface{}) common.IMObjects {
+func (this *VirtualNetworkInterface) SingleRequest(serviceName string, serviceArea int32, action types.Action, any interface{}) common.IElements {
 	hc := health.Health(this.resources)
-	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.Config().LocalUuid, false, false)
+	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.SysConfig().LocalUuid, false, false)
 	return this.Request(destination, serviceName, serviceArea, action, any)
 }
 
-func (this *VirtualNetworkInterface) Leader(serviceName string, serviceArea int32, action types.Action, any interface{}) common.IMObjects {
+func (this *VirtualNetworkInterface) Leader(serviceName string, serviceArea int32, action types.Action, any interface{}) common.IElements {
 	hc := health.Health(this.resources)
-	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.Config().LocalUuid, false, true)
+	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.SysConfig().LocalUuid, false, true)
 	return this.Request(destination, serviceName, serviceArea, action, any)
 }
 
-func (this *VirtualNetworkInterface) Forward(msg *types.Message, destination string) common.IMObjects {
-	pb, err := this.protocol.MObjectsOf(msg)
+func (this *VirtualNetworkInterface) Forward(msg *types.Message, destination string) common.IElements {
+	pb, err := this.protocol.ElementsOf(msg)
 	if err != nil {
 		return object.NewError(err.Error())
 	}
 
-	request := this.requests.newRequest(this.protocol.NextMessageNumber(), this.resources.Config().LocalUuid)
+	request := this.requests.newRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid)
 	request.cond.L.Lock()
 	defer request.cond.L.Unlock()
 

@@ -21,7 +21,7 @@ func newSwitchTable(switchService *VNet) *SwitchTable {
 	switchTable := &SwitchTable{}
 	switchTable.conns = newConnections(switchService.resources.Logger())
 	switchTable.switchService = switchService
-	switchTable.desc = "SwitchTable (" + switchService.resources.Config().LocalUuid + ") - "
+	switchTable.desc = "SwitchTable (" + switchService.resources.SysConfig().LocalUuid + ") - "
 	return switchTable
 }
 
@@ -29,20 +29,20 @@ func (this *SwitchTable) uniCastToAll(serviceName string, serviceArea int32, act
 	conns := this.conns.all()
 	mobjects := object.New(nil, pb)
 	data, err := this.switchService.protocol.CreateMessageFor("", serviceName, serviceArea, types.Priority_P1, action,
-		this.switchService.resources.Config().LocalUuid,
-		this.switchService.resources.Config().LocalUuid, mobjects, false, false, this.switchService.protocol.NextMessageNumber(), nil)
+		this.switchService.resources.SysConfig().LocalUuid,
+		this.switchService.resources.SysConfig().LocalUuid, mobjects, false, false, this.switchService.protocol.NextMessageNumber(), nil)
 	if err != nil {
 		this.switchService.resources.Logger().Error("Failed to create message to send to all: ", err)
 		return
 	}
 	for _, vnic := range conns {
-		this.switchService.resources.Logger().Trace(this.desc, "sending message to ", vnic.Resources().Config().RemoteUuid)
+		this.switchService.resources.Logger().Trace(this.desc, "sending message to ", vnic.Resources().SysConfig().RemoteUuid)
 		vnic.SendMessage(data)
 	}
 }
 
 func (this *SwitchTable) addVNic(vnic common.IVirtualNetworkInterface) {
-	config := vnic.Resources().Config()
+	config := vnic.Resources().SysConfig()
 	//check if this port is local to the machine, e.g. not belong to public subnet
 	isLocal := protocol.IpSegment.IsLocal(config.Address)
 	// If it is local, add it to the internal map
@@ -71,7 +71,7 @@ func (this *SwitchTable) addVNic(vnic common.IVirtualNetworkInterface) {
 	}
 }
 
-func (this *SwitchTable) mergeServices(hp *types.HealthPoint, config *types.VNicConfig) {
+func (this *SwitchTable) mergeServices(hp *types.HealthPoint, config *types.SysConfig) {
 	if hp.Services == nil {
 		hp.Services = config.Services
 		return
@@ -93,7 +93,7 @@ func (this *SwitchTable) mergeServices(hp *types.HealthPoint, config *types.VNic
 	}
 }
 
-func (this *SwitchTable) newHealthPoint(config *types.VNicConfig) *types.HealthPoint {
+func (this *SwitchTable) newHealthPoint(config *types.SysConfig) *types.HealthPoint {
 	hp := &types.HealthPoint{}
 	hp.Alias = config.RemoteAlias
 	hp.AUuid = config.RemoteUuid
@@ -109,7 +109,7 @@ func (this *SwitchTable) newHealthPoint(config *types.VNicConfig) *types.HealthP
 func (this *SwitchTable) ServiceUuids(serviceName string, serviceArea int32, sourceSwitch string) map[string]bool {
 	h := health.Health(this.switchService.resources)
 	uuidsMap := h.Uuids(serviceName, serviceArea, false)
-	if uuidsMap != nil && sourceSwitch != this.switchService.resources.Config().LocalUuid {
+	if uuidsMap != nil && sourceSwitch != this.switchService.resources.SysConfig().LocalUuid {
 		// When the message source is not within this switch,
 		// we should not publish to adjacent as the overlay is o one hope
 		// publish.

@@ -20,7 +20,7 @@ type RX struct {
 func newRX(vnic *VirtualNetworkInterface) *RX {
 	rx := &RX{}
 	rx.vnic = vnic
-	rx.rx = queues.NewByteSliceQueue("RX", int(vnic.resources.Config().RxQueueSize))
+	rx.rx = queues.NewByteSliceQueue("RX", int(vnic.resources.SysConfig().RxQueueSize))
 	rx.pool = workers.NewWorkers(50)
 	return rx
 }
@@ -47,7 +47,7 @@ func (rx *RX) readFromSocket() {
 	// While the port is active
 	for rx.vnic.running {
 		// read data ([]byte) from socket
-		data, err := nets.Read(rx.vnic.conn, rx.vnic.resources.Config())
+		data, err := nets.Read(rx.vnic.conn, rx.vnic.resources.SysConfig())
 		//If therer is an error
 		if err != nil {
 			if rx.vnic.IsVNet {
@@ -95,7 +95,7 @@ func (rx *RX) notifyRawDataListener() {
 					rx.vnic.resources.Logger().Error(err)
 					continue
 				}
-				pb, err := rx.vnic.protocol.MObjectsOf(msg)
+				pb, err := rx.vnic.protocol.ElementsOf(msg)
 				if err != nil {
 					rx.vnic.resources.Logger().Error(err)
 					if msg.IsRequest {
@@ -106,7 +106,7 @@ func (rx *RX) notifyRawDataListener() {
 						}
 					} else if msg.IsReply {
 						resp := object.NewError(err.Error())
-						request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.Config().LocalUuid)
+						request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.SysConfig().LocalUuid)
 						request.response = resp
 						request.cond.Broadcast()
 					}
@@ -116,7 +116,7 @@ func (rx *RX) notifyRawDataListener() {
 				//This is a reply message, should not find a handler
 				//and just notify
 				if msg.IsReply {
-					request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.Config().LocalUuid)
+					request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.SysConfig().LocalUuid)
 					request.response = pb
 					request.cond.Broadcast()
 					continue
@@ -132,11 +132,11 @@ func (rx *RX) notifyRawDataListener() {
 
 type HandleWorker struct {
 	msg *types.Message
-	pb  common.IMObjects
+	pb  common.IElements
 	rx  *RX
 }
 
-func (rx *RX) runHandleMessage(msg *types.Message, pb common.IMObjects) {
+func (rx *RX) runHandleMessage(msg *types.Message, pb common.IElements) {
 	//rx.handleMessage(msg, pb)
 
 	hw := &HandleWorker{msg: msg, rx: rx, pb: pb}
@@ -161,9 +161,9 @@ func (this *HandleWorker) Run() {
 	this.rx.handleMessage(this.msg, this.pb)
 }
 
-func (rx *RX) handleMessage(msg *types.Message, pb common.IMObjects) {
+func (rx *RX) handleMessage(msg *types.Message, pb common.IElements) {
 	if msg.Action == types.Action_Reply {
-		request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.Config().LocalUuid)
+		request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.SysConfig().LocalUuid)
 		request.response = pb
 		request.cond.Broadcast()
 	} else if msg.Action == types.Action_Notify {

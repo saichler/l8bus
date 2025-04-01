@@ -31,11 +31,11 @@ func NewVNet(resources common.IResources) *VNet {
 		resources.ServicePoints(),
 		resources.Logger(),
 		net,
-		resources.Serializer(common.BINARY), resources.Config(),
+		resources.Serializer(common.BINARY), resources.SysConfig(),
 		resources.Introspector())
 	net.protocol = protocol.New(net.resources)
 	net.running = true
-	net.resources.Config().LocalUuid = common.NewUuid()
+	net.resources.SysConfig().LocalUuid = common.NewUuid()
 	net.switchTable = newSwitchTable(net)
 	health.RegisterHealth(net.resources, net)
 	return net
@@ -53,7 +53,7 @@ func (this *VNet) Start() error {
 }
 
 func (this *VNet) start(err *error) {
-	if this.resources.Config().VnetPort == 0 {
+	if this.resources.SysConfig().VnetPort == 0 {
 		er := errors.New("Switch Port does not have a port defined")
 		err = &er
 		return
@@ -78,17 +78,17 @@ func (this *VNet) start(err *error) {
 			go this.connect(conn)
 		}
 	}
-	this.resources.Logger().Warning("Vnet ", this.resources.Config().LocalAlias, " has ended")
+	this.resources.Logger().Warning("Vnet ", this.resources.SysConfig().LocalAlias, " has ended")
 }
 
 func (this *VNet) bind() error {
-	socket, e := net.Listen("tcp", ":"+strconv.Itoa(int(this.resources.Config().VnetPort)))
+	socket, e := net.Listen("tcp", ":"+strconv.Itoa(int(this.resources.SysConfig().VnetPort)))
 	if e != nil {
 		return this.resources.Logger().Error("Unable to bind to port ",
-			this.resources.Config().VnetPort, e.Error())
+			this.resources.SysConfig().VnetPort, e.Error())
 	}
 	this.resources.Logger().Info("Bind Successfully to port ",
-		this.resources.Config().VnetPort)
+		this.resources.SysConfig().VnetPort)
 	this.socket = socket
 	return nil
 }
@@ -101,11 +101,11 @@ func (this *VNet) connect(conn net.Conn) {
 		return
 	}
 
-	config := &types.VNicConfig{MaxDataSize: resources2.DEFAULT_MAX_DATA_SIZE,
+	config := &types.SysConfig{MaxDataSize: resources2.DEFAULT_MAX_DATA_SIZE,
 		RxQueueSize: resources2.DEFAULT_QUEUE_SIZE,
 		TxQueueSize: resources2.DEFAULT_QUEUE_SIZE,
-		LocalAlias:  this.resources.Config().LocalAlias,
-		LocalUuid:   this.resources.Config().LocalUuid}
+		LocalAlias:  this.resources.SysConfig().LocalAlias,
+		LocalUuid:   this.resources.SysConfig().LocalUuid}
 
 	resources := resources2.NewResources(this.resources.Registry(),
 		this.resources.Security(),
@@ -117,7 +117,7 @@ func (this *VNet) connect(conn net.Conn) {
 		this.resources.Introspector())
 
 	vnic := vnic2.NewVirtualNetworkInterface(resources, conn)
-	vnic.Resources().Config().LocalUuid = this.resources.Config().LocalUuid
+	vnic.Resources().SysConfig().LocalUuid = this.resources.SysConfig().LocalUuid
 
 	err = sec.ValidateConnection(conn, config)
 	if err != nil {
@@ -164,7 +164,7 @@ func (this *VNet) Failed(data []byte, vnic common.IVirtualNetworkInterface, fail
 func (this *VNet) HandleData(data []byte, vnic common.IVirtualNetworkInterface) {
 	this.resources.Logger().Trace("********** Swith Service - HandleData **********")
 	source, sourceVnet, destination, serviceName, serviceArea, _ := protocol.HeaderOf(data)
-	this.resources.Logger().Trace("** Switch       : ", this.resources.Config().LocalUuid)
+	this.resources.Logger().Trace("** Switch       : ", this.resources.SysConfig().LocalUuid)
 	this.resources.Logger().Trace("** Source       : ", source)
 	this.resources.Logger().Trace("** SourceVnet   : ", sourceVnet)
 	this.resources.Logger().Trace("** Destination  : ", destination)
@@ -173,7 +173,7 @@ func (this *VNet) HandleData(data []byte, vnic common.IVirtualNetworkInterface) 
 
 	if destination != "" {
 		//The destination is the vnet
-		if destination == this.resources.Config().LocalUuid {
+		if destination == this.resources.SysConfig().LocalUuid {
 			this.switchDataReceived(data, vnic)
 			return
 		} else {
@@ -204,7 +204,7 @@ func (this *VNet) HandleData(data []byte, vnic common.IVirtualNetworkInterface) 
 func (this *VNet) uniCastToPorts(uuids map[string]bool, data []byte, sourceSwitch string) {
 	alreadySent := make(map[string]bool)
 	for vnicUuid, _ := range uuids {
-		isHope0 := this.resources.Config().LocalUuid == sourceSwitch
+		isHope0 := this.resources.SysConfig().LocalUuid == sourceSwitch
 		usedUuid, port := this.switchTable.conns.getConnection(vnicUuid, isHope0, this.resources)
 		if port != nil {
 			// if the port is external, it may already been forward this message
@@ -212,7 +212,7 @@ func (this *VNet) uniCastToPorts(uuids map[string]bool, data []byte, sourceSwitc
 			_, ok := alreadySent[usedUuid]
 			if !ok {
 				alreadySent[usedUuid] = true
-				this.resources.Logger().Trace("Sending from ", this.resources.Config().LocalUuid, " to ", usedUuid)
+				this.resources.Logger().Trace("Sending from ", this.resources.SysConfig().LocalUuid, " to ", usedUuid)
 				port.SendMessage(data)
 			}
 		}
@@ -225,15 +225,15 @@ func (this *VNet) publish(pb proto.Message) {
 
 func (this *VNet) ShutdownVNic(vnic common.IVirtualNetworkInterface) {
 	h := health.Health(this.resources)
-	uuid := vnic.Resources().Config().RemoteUuid
+	uuid := vnic.Resources().SysConfig().RemoteUuid
 	hp := h.HealthPoint(uuid)
 	if hp.Status != types.HealthState_Down {
 		hp.Status = types.HealthState_Down
 		h.Update(hp)
-		//this.resources.Logger().Trace(this.resources.Config().LocalAlias, " Updated health state: ", hp.Alias, " to ", hp.Status)
+		//this.resources.Logger().Trace(this.resources.SysConfig().LocalAlias, " Updated health state: ", hp.Alias, " to ", hp.Status)
 		//this.switchTable.sendToAll(health.TOPIC, types.Action_PUT, hp)
 	}
-	this.resources.Logger().Info("Shutdown complete ", this.resources.Config().LocalAlias)
+	this.resources.Logger().Info("Shutdown complete ", this.resources.SysConfig().LocalAlias)
 }
 
 func (this *VNet) switchDataReceived(data []byte, vnic common.IVirtualNetworkInterface) {
@@ -243,7 +243,7 @@ func (this *VNet) switchDataReceived(data []byte, vnic common.IVirtualNetworkInt
 		return
 	}
 
-	pb, err := this.protocol.MObjectsOf(msg)
+	pb, err := this.protocol.ElementsOf(msg)
 	if err != nil {
 		if msg.Tr != nil {
 			//This message should not be processed and we should just
@@ -255,7 +255,7 @@ func (this *VNet) switchDataReceived(data []byte, vnic common.IVirtualNetworkInt
 		return
 	}
 	// Otherwise call the handler per the action & the type
-	this.resources.Logger().Trace("Switch Service is: ", this.resources.Config().LocalUuid)
+	this.resources.Logger().Trace("Switch Service is: ", this.resources.SysConfig().LocalUuid)
 	if msg.Action == types.Action_Notify {
 		resp := this.resources.ServicePoints().Notify(pb, vnic, msg, false)
 		if resp != nil && resp.Error() != nil {

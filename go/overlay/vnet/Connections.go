@@ -25,7 +25,7 @@ func newConnections(logger common.ILogger) *Connections {
 }
 
 func (this *Connections) addInternal(uuid string, vnic common.IVirtualNetworkInterface) {
-	this.logger.Info("Adding internal with alias ", vnic.Resources().Config().RemoteAlias)
+	this.logger.Info("Adding internal with alias ", vnic.Resources().SysConfig().RemoteAlias)
 	this.mtx.Lock()
 	defer this.mtx.Unlock()
 	exist, ok := this.internal[uuid]
@@ -38,7 +38,7 @@ func (this *Connections) addInternal(uuid string, vnic common.IVirtualNetworkInt
 }
 
 func (this *Connections) addExternal(uuid string, vnic common.IVirtualNetworkInterface) {
-	this.logger.Info("Adding external with alias ", vnic.Resources().Config().RemoteAlias)
+	this.logger.Info("Adding external with alias ", vnic.Resources().SysConfig().RemoteAlias)
 	this.mtx.Lock()
 	defer this.mtx.Unlock()
 	exist, ok := this.external[uuid]

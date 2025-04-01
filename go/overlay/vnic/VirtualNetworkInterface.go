@@ -50,10 +50,10 @@ func NewVirtualNetworkInterface(resources common.IResources, conn net.Conn) *Vir
 	vnic.requests = newRequests()
 	vnic.resources.Registry().Register(&types.Message{})
 	vnic.resources.Registry().Register(&types.Transaction{})
-	vnic.resources.Registry().Register(&types.MObjects{})
+	vnic.resources.Registry().Register(&types.Elements{})
 	vnic.stats = &types.HealthPointStats{}
-	if vnic.resources.Config().LocalUuid == "" {
-		vnic.resources.Config().LocalUuid = common.NewUuid()
+	if vnic.resources.SysConfig().LocalUuid == "" {
+		vnic.resources.SysConfig().LocalUuid = common.NewUuid()
 	}
 
 	if conn == nil {
@@ -71,7 +71,7 @@ func (this *VirtualNetworkInterface) Start() {
 	} else {
 		this.receiveConnection()
 	}
-	this.name = this.resources.Config().LocalAlias + " -->> " + this.resources.Config().RemoteAlias
+	this.name = this.resources.SysConfig().LocalAlias + " -->> " + this.resources.SysConfig().RemoteAlias
 }
 
 func (this *VirtualNetworkInterface) connectToSwitch() {
@@ -90,26 +90,26 @@ func (this *VirtualNetworkInterface) connect() error {
 		destination = subnet + ".1"
 	}
 	// Try to dial to the switch
-	conn, err := this.resources.Security().CanDial(destination, this.resources.Config().VnetPort)
+	conn, err := this.resources.Security().CanDial(destination, this.resources.SysConfig().VnetPort)
 	if err != nil {
 		return errors.New("Error connecting to the vnet: " + err.Error())
 	}
 	// Verify that the switch accepts this connection
-	if this.resources.Config().LocalUuid == "" {
+	if this.resources.SysConfig().LocalUuid == "" {
 		panic("")
 	}
-	err = this.resources.Security().ValidateConnection(conn, this.resources.Config())
+	err = this.resources.Security().ValidateConnection(conn, this.resources.SysConfig())
 	if err != nil {
 		return errors.New("Error validating connection: " + err.Error())
 	}
 	this.conn = conn
-	this.resources.Config().Address = conn.LocalAddr().String()
+	this.resources.SysConfig().Address = conn.LocalAddr().String()
 	return nil
 }
 
 func (this *VirtualNetworkInterface) receiveConnection() {
 	this.IsVNet = true
-	this.resources.Config().Address = this.conn.RemoteAddr().String()
+	this.resources.SysConfig().Address = this.conn.RemoteAddr().String()
 	this.components.start()
 }
 
@@ -126,9 +126,9 @@ func (this *VirtualNetworkInterface) Shutdown() {
 
 func (this *VirtualNetworkInterface) Name() string {
 	if this.name == "" {
-		this.name = strings.New(this.resources.Config().LocalUuid,
+		this.name = strings.New(this.resources.SysConfig().LocalUuid,
 			" -->> ",
-			this.resources.Config().RemoteUuid).String()
+			this.resources.SysConfig().RemoteUuid).String()
 	}
 	return this.name
 }
@@ -156,7 +156,7 @@ func (this *VirtualNetworkInterface) reconnect() {
 	}
 	this.last_reconnect_attempt = time.Now().Unix()
 
-	this.resources.Logger().Info("***** Trying to reconnect to ", this.resources.Config().RemoteAlias, " *****")
+	this.resources.Logger().Info("***** Trying to reconnect to ", this.resources.SysConfig().RemoteAlias, " *****")
 
 	if this.conn != nil {
 		this.conn.Close()
@@ -164,8 +164,8 @@ func (this *VirtualNetworkInterface) reconnect() {
 
 	err := this.connect()
 	if err != nil {
-		this.resources.Logger().Error("***** Failed to reconnect to ", this.resources.Config().RemoteAlias, " *****")
+		this.resources.Logger().Error("***** Failed to reconnect to ", this.resources.SysConfig().RemoteAlias, " *****")
 	} else {
-		this.resources.Logger().Info("***** Reconnected to ", this.resources.Config().RemoteAlias, " *****")
+		this.resources.Logger().Info("***** Reconnected to ", this.resources.SysConfig().RemoteAlias, " *****")
 	}
 }

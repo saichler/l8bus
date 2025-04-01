@@ -12,28 +12,28 @@ type VnicAPI struct {
 	all         bool
 }
 
-func (v VnicAPI) Post(i interface{}) common.IMObjects {
+func (v VnicAPI) Post(i interface{}) common.IElements {
 
 	//TODO implement me
 	panic("implement me")
 }
 
-func (v VnicAPI) Put(i interface{}) common.IMObjects {
+func (v VnicAPI) Put(i interface{}) common.IElements {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (v VnicAPI) Patch(i interface{}) common.IMObjects {
+func (v VnicAPI) Patch(i interface{}) common.IElements {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (v VnicAPI) Delete(i interface{}) common.IMObjects {
+func (v VnicAPI) Delete(i interface{}) common.IElements {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (v VnicAPI) Get(s string) common.IMObjects {
+func (v VnicAPI) Get(s string) common.IElements {
 	//TODO implement me
 	panic("implement me")
 }

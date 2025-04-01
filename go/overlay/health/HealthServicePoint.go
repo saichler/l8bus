@@ -22,31 +22,31 @@ func RegisterHealth(resources common.IResources, listener cache.ICacheListener) 
 	}
 }
 
-func (this *HealthServicePoint) Post(pb common.IMObjects, resourcs common.IResources) common.IMObjects {
+func (this *HealthServicePoint) Post(pb common.IElements, resourcs common.IResources) common.IElements {
 	hp := pb.Element().(*types.HealthPoint)
 	this.healthCenter.Add(hp)
 	return nil
 }
-func (this *HealthServicePoint) Put(pb common.IMObjects, resourcs common.IResources) common.IMObjects {
+func (this *HealthServicePoint) Put(pb common.IElements, resourcs common.IResources) common.IElements {
 	hp := pb.Element().(*types.HealthPoint)
 	this.healthCenter.Add(hp)
 	return nil
 }
-func (this *HealthServicePoint) Patch(pb common.IMObjects, resourcs common.IResources) common.IMObjects {
+func (this *HealthServicePoint) Patch(pb common.IElements, resourcs common.IResources) common.IElements {
 	hp := pb.Element().(*types.HealthPoint)
 	this.healthCenter.Update(hp)
 	return nil
 }
-func (this *HealthServicePoint) Delete(pb common.IMObjects, resourcs common.IResources) common.IMObjects {
+func (this *HealthServicePoint) Delete(pb common.IElements, resourcs common.IResources) common.IElements {
 	return nil
 }
-func (this *HealthServicePoint) GetCopy(pb common.IMObjects, resourcs common.IResources) common.IMObjects {
+func (this *HealthServicePoint) GetCopy(pb common.IElements, resourcs common.IResources) common.IElements {
 	return nil
 }
-func (this *HealthServicePoint) Get(pb common.IMObjects, resourcs common.IResources) common.IMObjects {
+func (this *HealthServicePoint) Get(gsql string, resourcs common.IResources) common.IElements {
 	return nil
 }
-func (this *HealthServicePoint) Failed(pb common.IMObjects, resourcs common.IResources, msg *types.Message) common.IMObjects {
+func (this *HealthServicePoint) Failed(pb common.IElements, resourcs common.IResources, msg *types.Message) common.IElements {
 	return nil
 }
 func (this *HealthServicePoint) EndPoint() string {
@@ -67,6 +67,6 @@ func (this *HealthServicePoint) ReplicationScore() int {
 	return 0
 }
 
-func (this *HealthServicePoint) ServiceModel() common.IMObjects {
+func (this *HealthServicePoint) ServiceModel() common.IElements {
 	return object.New(nil, &types.HealthPoint{})
 }

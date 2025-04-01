@@ -16,7 +16,7 @@ type Request struct {
 	cond      *sync.Cond
 	msgSource string
 	msgNum    int32
-	response  common.IMObjects
+	response  common.IElements
 }
 
 func newRequests() *Requests {

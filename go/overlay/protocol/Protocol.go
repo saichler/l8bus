@@ -28,17 +28,17 @@ func (this *Protocol) MessageOf(data []byte) (*types.Message, error) {
 	return msg, err
 }
 
-func (this *Protocol) MObjectsOf(msg *types.Message) (common.IMObjects, error) {
-	return MObjectsOf(msg, this.resources)
+func (this *Protocol) ElementsOf(msg *types.Message) (common.IElements, error) {
+	return ElementsOf(msg, this.resources)
 }
 
-func MObjectsOf(msg *types.Message, resourcs common.IResources) (common.IMObjects, error) {
+func ElementsOf(msg *types.Message, resourcs common.IResources) (common.IElements, error) {
 	data, err := resourcs.Security().Decrypt(msg.Data)
 	if err != nil {
 		return nil, err
 	}
 
-	mobjects := &types.MObjects{}
+	mobjects := &types.Elements{}
 	err = proto.Unmarshal(data, mobjects)
 	if err != nil {
 		return nil, err
@@ -56,11 +56,11 @@ func (this *Protocol) NextMessageNumber() int32 {
 	return this.sequence.Add(1)
 }
 
-func DataFor(mobjects common.IMObjects, security common.ISecurityProvider) (string, error) {
+func DataFor(elems common.IElements, security common.ISecurityProvider) (string, error) {
 	var data []byte
 	var err error
-	
-	objs, err := mobjects.Serialize()
+
+	objs, err := elems.Serialize()
 	if err != nil {
 		return "", err
 	}
@@ -79,7 +79,7 @@ func DataFor(mobjects common.IMObjects, security common.ISecurityProvider) (stri
 }
 
 func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceArea int32,
-	priority types.Priority, action types.Action, source, vnet string, o common.IMObjects,
+	priority types.Priority, action types.Action, source, vnet string, o common.IElements,
 	isRequest, isReply bool, msgNum int32, tr *types.Transaction) ([]byte, error) {
 
 	var data []byte
@@ -118,7 +118,7 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 	return d, e
 }
 
-func (this *Protocol) CreateMessageForm(msg *types.Message, o common.IMObjects) ([]byte, error) {
+func (this *Protocol) CreateMessageForm(msg *types.Message, o common.IElements) ([]byte, error) {
 	var data []byte
 	var err error
 

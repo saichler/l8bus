@@ -17,14 +17,14 @@ func (this *VNet) ConnectNetworks(host string, destPort uint32) error {
 	}
 
 	hc := health.Health(this.resources)
-	config := &types.VNicConfig{MaxDataSize: resources2.DEFAULT_MAX_DATA_SIZE,
+	config := &types.SysConfig{MaxDataSize: resources2.DEFAULT_MAX_DATA_SIZE,
 		RxQueueSize:   resources2.DEFAULT_QUEUE_SIZE,
 		TxQueueSize:   resources2.DEFAULT_QUEUE_SIZE,
 		VnetPort:      destPort,
-		LocalUuid:     this.resources.Config().LocalUuid,
+		LocalUuid:     this.resources.SysConfig().LocalUuid,
 		Services:      hc.AllServices(),
 		ForceExternal: true,
-		LocalAlias:    this.resources.Config().LocalAlias,
+		LocalAlias:    this.resources.SysConfig().LocalAlias,
 	}
 
 	resources := resources2.NewResources(this.resources.Registry(),

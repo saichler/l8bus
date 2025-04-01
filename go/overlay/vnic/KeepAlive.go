@@ -23,11 +23,11 @@ func (this *KeepAlive) name() string {
 	return "KA"
 }
 func (this *KeepAlive) run() {
-	if this.vnic.resources.Config().KeepAliveIntervalSeconds == 0 {
+	if this.vnic.resources.SysConfig().KeepAliveIntervalSeconds == 0 {
 		return
 	}
 	for this.vnic.running {
-		for i := 0; i < int(this.vnic.resources.Config().KeepAliveIntervalSeconds*10); i++ {
+		for i := 0; i < int(this.vnic.resources.SysConfig().KeepAliveIntervalSeconds*10); i++ {
 			time.Sleep(time.Millisecond * 100)
 			if !this.vnic.running {
 				return
@@ -48,12 +48,12 @@ func (this *KeepAlive) sendState() {
 	stats.CpuUsage = cpuUsage()
 
 	hp := &types.HealthPoint{}
-	hp.AUuid = this.vnic.resources.Config().LocalUuid
+	hp.AUuid = this.vnic.resources.SysConfig().LocalUuid
 	hp.Status = types.HealthState_Up
 	hp.Stats = stats
-	this.vnic.resources.Logger().Debug("Sending Keep Alive for ", this.vnic.resources.Config().LocalUuid, " ", this.vnic.resources.Config().LocalAlias)
+	this.vnic.resources.Logger().Debug("Sending Keep Alive for ", this.vnic.resources.SysConfig().LocalUuid, " ", this.vnic.resources.SysConfig().LocalAlias)
 	//We unicast to the vnet, it will multicast the change to all
-	this.vnic.Unicast(this.vnic.resources.Config().RemoteUuid, health.ServiceName, 0, types.Action_PATCH, hp)
+	this.vnic.Unicast(this.vnic.resources.SysConfig().RemoteUuid, health.ServiceName, 0, types.Action_PATCH, hp)
 }
 
 func memoryUsage() uint64 {
