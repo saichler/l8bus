@@ -44,7 +44,7 @@ func ElementsOf(msg *types.Message, resourcs common.IResources) (common.IElement
 		return nil, err
 	}
 
-	result := &object.MObjects{}
+	result := &object.Elements{}
 	err = result.Deserialize(mobjects, resourcs.Registry())
 	if err != nil {
 		return nil, err

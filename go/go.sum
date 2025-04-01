@@ -6,8 +6,8 @@ github.com/saichler/l8test/go v0.0.0-20250331141617-04c64718b5cb h1:weow+xTFAQYh
 github.com/saichler/l8test/go v0.0.0-20250331141617-04c64718b5cb/go.mod h1:rHGDsa1tZv4CPzvPF1999UQdAL7VRRTjdmmB8AHuv3Y=
 github.com/saichler/reflect/go v0.0.0-20250331164246-d7b9b678fa7d h1:/QpjdLxfT49nprW15z2DuiONnTPl5EAsQF3Y0qHxaq8=
 github.com/saichler/reflect/go v0.0.0-20250331164246-d7b9b678fa7d/go.mod h1:LY22HpuV6A5xlQGng2rLv5e5U3zFuc34cukufLqCjNc=
-github.com/saichler/serializer/go v0.0.0-20250329145326-7a5a5b76ba26 h1:sUw0oFHDQqkXyFzr+lBLMJGpvwoYPn+Xe6teSzExJRk=
-github.com/saichler/serializer/go v0.0.0-20250329145326-7a5a5b76ba26/go.mod h1:ZU8SPJdE6WU/TDx+oNu/vb9qnWGaqvYiEeqC/dgE5nI=
+github.com/saichler/serializer/go v0.0.0-20250401003554-a480a69c22bb h1:ttFtWvuaVf8w4bLq2xlZJPEVPGj0uknugZzxjOjUeKE=
+github.com/saichler/serializer/go v0.0.0-20250401003554-a480a69c22bb/go.mod h1:skasz9zyZBlTKetATr+MaP7evjmQ2esTxhwJ6vcARPY=
 github.com/saichler/servicepoints/go v0.0.0-20250327183714-c026a96f20d6 h1:oCMke/dQnI/pRcf2pJPqe7dC5G5GBsrllfZ9gif1RNQ=
 github.com/saichler/servicepoints/go v0.0.0-20250327183714-c026a96f20d6/go.mod h1:70EUzQkMKNlaMB+FSWq2zPbiEN/D28tIF7SwyB2Wbpo=
 github.com/saichler/shared/go v0.0.0-20250401001154-c1e50505e5c3 h1:i3ccRNTn0olhBNqu6lwhodbW2mgGMMfliZwRcVvzXhw=
