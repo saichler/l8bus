@@ -38,14 +38,8 @@ func ElementsOf(msg *types.Message, resourcs common.IResources) (common.IElement
 		return nil, err
 	}
 
-	mobjects := &types.Elements{}
-	err = proto.Unmarshal(data, mobjects)
-	if err != nil {
-		return nil, err
-	}
-
 	result := &object.Elements{}
-	err = result.Deserialize(mobjects, resourcs.Registry())
+	err = result.Deserialize(data, resourcs.Registry())
 	if err != nil {
 		return nil, err
 	}
@@ -60,12 +54,7 @@ func DataFor(elems common.IElements, security common.ISecurityProvider) (string,
 	var data []byte
 	var err error
 
-	objs, err := elems.Serialize()
-	if err != nil {
-		return "", err
-	}
-
-	data, err = proto.Marshal(objs)
+	data, err = elems.Serialize()
 	if err != nil {
 		return "", err
 	}
@@ -85,12 +74,7 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 	var data []byte
 	var err error
 
-	objs, err := o.Serialize()
-	if err != nil {
-		return nil, err
-	}
-
-	data, err = proto.Marshal(objs)
+	data, err = o.Serialize()
 	if err != nil {
 		return nil, err
 	}
@@ -122,12 +106,7 @@ func (this *Protocol) CreateMessageForm(msg *types.Message, o common.IElements) 
 	var data []byte
 	var err error
 
-	mobjects, err := o.Serialize()
-	if err != nil {
-		return nil, err
-	}
-
-	data, err = proto.Marshal(mobjects)
+	data, err = o.Serialize()
 	if err != nil {
 		return nil, err
 	}
