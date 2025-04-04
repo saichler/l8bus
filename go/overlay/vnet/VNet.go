@@ -241,7 +241,7 @@ func (this *VNet) switchDataReceived(data []byte, vnic common.IVirtualNetworkInt
 
 	pb, err := this.protocol.ElementsOf(msg)
 	if err != nil {
-		if !protocol.IsNil(msg.Tr()) {
+		if !common.IsNil(msg.Tr()) {
 			//This message should not be processed and we should just
 			//reply with nil to unblock the transaction
 			vnic.Reply(msg, nil)

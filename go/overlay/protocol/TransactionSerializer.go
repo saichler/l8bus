@@ -20,7 +20,7 @@ func (this *TransactionSerializer) Mode() common.SerializerMode {
 }
 
 func (this *TransactionSerializer) Marshal(any interface{}, r common.IRegistry) ([]byte, error) {
-	if IsNil(any) {
+	if common.IsNil(any) {
 		return []byte{0}, nil
 	}
 	tr := any.(*Transaction)

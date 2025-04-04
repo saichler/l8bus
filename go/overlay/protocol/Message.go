@@ -3,7 +3,6 @@ package protocol
 import (
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/nets"
-	"reflect"
 	"time"
 )
 
@@ -66,7 +65,7 @@ func (this *Message) Clone() *Message {
 	clone.data = this.data
 	clone.failMessage = this.failMessage
 	clone.timeout = this.timeout
-	if !IsNil(this.tr) {
+	if !common.IsNil(this.tr) {
 		clone.tr = &Transaction{
 			id:        this.tr.id,
 			state:     this.tr.state,
@@ -114,11 +113,4 @@ func HeaderOf(data []byte) (string, string, string, string, uint16, common.Prior
 		string(data[POS_Service_Name+2 : POS_Sequence]),
 		nets.Bytes2UInt16(data[POS_Service_Area:POS_Service_Name]),
 		common.Priority(data[POS_Priority])
-}
-
-func IsNil(any interface{}) bool {
-	if any == nil {
-		return true
-	}
-	return reflect.ValueOf(any).IsNil()
 }
