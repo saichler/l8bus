@@ -3,13 +3,11 @@ package protocol
 import (
 	"github.com/saichler/serializer/go/serialize/object"
 	"github.com/saichler/types/go/common"
-	"github.com/saichler/types/go/types"
-	"google.golang.org/protobuf/proto"
 	"sync/atomic"
 )
 
 type Protocol struct {
-	sequence  atomic.Int32
+	sequence  atomic.Uint32
 	resources common.IResources
 }
 
@@ -19,21 +17,17 @@ func New(resources common.IResources) *Protocol {
 	return p
 }
 
-func (this *Protocol) MessageOf(data []byte) (*types.Message, error) {
-	msg := &types.Message{}
-	err := proto.Unmarshal(data[HEADER_SIZE:], msg)
-	if err != nil {
-		return nil, err
-	}
-	return msg, err
+func (this *Protocol) MessageOf(data []byte) (common.IMessage, error) {
+	msg := Deserialize(data)
+	return msg, nil
 }
 
-func (this *Protocol) ElementsOf(msg *types.Message) (common.IElements, error) {
+func (this *Protocol) ElementsOf(msg common.IMessage) (common.IElements, error) {
 	return ElementsOf(msg, this.resources)
 }
 
-func ElementsOf(msg *types.Message, resourcs common.IResources) (common.IElements, error) {
-	data, err := resourcs.Security().Decrypt(msg.Data)
+func ElementsOf(msg common.IMessage, resourcs common.IResources) (common.IElements, error) {
+	data, err := resourcs.Security().Decrypt(msg.Data())
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +40,7 @@ func ElementsOf(msg *types.Message, resourcs common.IResources) (common.IElement
 	return result, err
 }
 
-func (this *Protocol) NextMessageNumber() int32 {
+func (this *Protocol) NextMessageNumber() uint32 {
 	return this.sequence.Add(1)
 }
 
@@ -67,9 +61,9 @@ func DataFor(elems common.IElements, security common.ISecurityProvider) (string,
 	return encData, err
 }
 
-func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceArea int32,
-	priority types.Priority, action types.Action, source, vnet string, o common.IElements,
-	isRequest, isReply bool, msgNum int32, tr *types.Transaction) ([]byte, error) {
+func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceArea uint16,
+	priority common.Priority, action common.Action, source, vnet string, o common.IElements,
+	isRequest, isReply bool, msgNum uint32, tr common.ITransaction) ([]byte, error) {
 
 	var data []byte
 	var err error
@@ -85,24 +79,23 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 		return nil, err
 	}
 	//create the wrapping message for the destination
-	msg := &types.Message{}
-	msg.Source = source
-	msg.SourceVnet = vnet
-	msg.Destination = destination
-	msg.ServiceName = serviceName
-	msg.ServiceArea = serviceArea
-	msg.Sequence = msgNum
-	msg.Priority = priority
-	msg.Data = encData
-	msg.Action = action
-	msg.IsRequest = isRequest
-	msg.IsReply = isReply
-	msg.Tr = tr
-	d, e := this.DataFromMessage(msg)
-	return d, e
+	msg := &Message{}
+	copy(msg.source[0:36], source)
+	copy(msg.vnet[0:36], vnet)
+	copy(msg.destination[0:36], destination)
+	msg.serviceName = serviceName
+	msg.serviceArea = serviceArea
+	msg.sequence = msgNum
+	msg.priority = priority
+	msg.data = encData
+	msg.action = action
+	msg.request = isRequest
+	msg.reply = isReply
+	msg.tr = tr.(*Transaction)
+	return msg.Serialize(), nil
 }
 
-func (this *Protocol) CreateMessageForm(msg *types.Message, o common.IElements) ([]byte, error) {
+func (this *Protocol) CreateMessageForm(msg common.IMessage, o common.IElements) ([]byte, error) {
 	var data []byte
 	var err error
 
@@ -117,20 +110,6 @@ func (this *Protocol) CreateMessageForm(msg *types.Message, o common.IElements) 
 		return nil, err
 	}
 	//create the wrapping message for the destination
-	msg.Data = encData
-	d, e := this.DataFromMessage(msg)
-	return d, e
-}
-
-func (this *Protocol) DataFromMessage(msg *types.Message) ([]byte, error) {
-	//Now serialize the message
-	msgData, err := proto.Marshal(msg)
-	if err != nil {
-		return nil, err
-	}
-	//Create the header for the switch
-	header := CreateHeader(msg)
-	//Append the msgData to the header
-	header = append(header, msgData...)
-	return header, nil
+	msg.SetData(encData)
+	return msg.Serialize(), nil
 }

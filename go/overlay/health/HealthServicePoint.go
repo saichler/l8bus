@@ -46,7 +46,7 @@ func (this *HealthServicePoint) GetCopy(pb common.IElements, resourcs common.IRe
 func (this *HealthServicePoint) Get(pb common.IElements, resourcs common.IResources) common.IElements {
 	return nil
 }
-func (this *HealthServicePoint) Failed(pb common.IElements, resourcs common.IResources, msg *types.Message) common.IElements {
+func (this *HealthServicePoint) Failed(pb common.IElements, resourcs common.IResources, msg common.IMessage) common.IElements {
 	return nil
 }
 func (this *HealthServicePoint) EndPoint() string {

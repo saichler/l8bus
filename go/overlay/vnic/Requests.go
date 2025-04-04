@@ -15,7 +15,7 @@ type Requests struct {
 type Request struct {
 	cond      *sync.Cond
 	msgSource string
-	msgNum    int32
+	msgNum    uint32
 	response  common.IElements
 }
 
@@ -26,7 +26,7 @@ func newRequests() *Requests {
 	return this
 }
 
-func (this *Requests) newRequest(msgNum int32, msgSource string) *Request {
+func (this *Requests) newRequest(msgNum uint32, msgSource string) *Request {
 	request := &Request{}
 	request.msgNum = msgNum
 	request.msgSource = msgSource
@@ -44,7 +44,7 @@ func (this *Requests) newRequest(msgNum int32, msgSource string) *Request {
 	return request
 }
 
-func (this *Requests) getRequest(msgNum int32, msgSource string) *Request {
+func (this *Requests) getRequest(msgNum uint32, msgSource string) *Request {
 	key := bytes.Buffer{}
 	key.WriteString(msgSource)
 	key.WriteString(strconv.Itoa(int(msgNum)))

@@ -6,7 +6,6 @@ import (
 	"github.com/saichler/shared/go/share/workers"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/nets"
-	"github.com/saichler/types/go/types"
 )
 
 type RX struct {
@@ -98,15 +97,15 @@ func (rx *RX) notifyRawDataListener() {
 				pb, err := rx.vnic.protocol.ElementsOf(msg)
 				if err != nil {
 					rx.vnic.resources.Logger().Error(err)
-					if msg.IsRequest {
+					if msg.Request() {
 						resp := object.NewError(err.Error())
 						err = rx.vnic.Reply(msg, resp)
 						if err != nil {
 							rx.vnic.resources.Logger().Error(err)
 						}
-					} else if msg.IsReply {
+					} else if msg.Reply() {
 						resp := object.NewError(err.Error())
-						request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.SysConfig().LocalUuid)
+						request := rx.vnic.requests.getRequest(msg.Sequence(), rx.vnic.resources.SysConfig().LocalUuid)
 						request.response = resp
 						request.cond.Broadcast()
 					}
@@ -115,8 +114,8 @@ func (rx *RX) notifyRawDataListener() {
 
 				//This is a reply message, should not find a handler
 				//and just notify
-				if msg.IsReply {
-					request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.SysConfig().LocalUuid)
+				if msg.Reply() {
+					request := rx.vnic.requests.getRequest(msg.Sequence(), rx.vnic.resources.SysConfig().LocalUuid)
 					request.response = pb
 					request.cond.Broadcast()
 					continue
@@ -131,12 +130,12 @@ func (rx *RX) notifyRawDataListener() {
 }
 
 type HandleWorker struct {
-	msg *types.Message
+	msg common.IMessage
 	pb  common.IElements
 	rx  *RX
 }
 
-func (rx *RX) runHandleMessage(msg *types.Message, pb common.IElements) {
+func (rx *RX) runHandleMessage(msg common.IMessage, pb common.IElements) {
 	//rx.handleMessage(msg, pb)
 
 	hw := &HandleWorker{msg: msg, rx: rx, pb: pb}
@@ -146,7 +145,7 @@ func (rx *RX) runHandleMessage(msg *types.Message, pb common.IElements) {
 
 func (this *HandleWorker) Run() {
 	handler, ok := this.rx.vnic.resources.ServicePoints().ServicePointHandler(
-		this.msg.ServiceName, this.msg.ServiceArea)
+		this.msg.ServiceName(), this.msg.ServiceArea())
 	if !ok {
 		this.rx.vnic.resources.Logger().Error("RX: No service point was found for ",
 			this.msg.ServiceName, ":", this.msg.ServiceArea)
@@ -161,23 +160,23 @@ func (this *HandleWorker) Run() {
 	this.rx.handleMessage(this.msg, this.pb)
 }
 
-func (rx *RX) handleMessage(msg *types.Message, pb common.IElements) {
-	if msg.Action == types.Action_Reply {
-		request := rx.vnic.requests.getRequest(msg.Sequence, rx.vnic.resources.SysConfig().LocalUuid)
+func (rx *RX) handleMessage(msg common.IMessage, pb common.IElements) {
+	if msg.Action() == common.Reply {
+		request := rx.vnic.requests.getRequest(msg.Sequence(), rx.vnic.resources.SysConfig().LocalUuid)
 		request.response = pb
 		request.cond.Broadcast()
-	} else if msg.Action == types.Action_Notify {
+	} else if msg.Action() == common.Notify {
 		resp := rx.vnic.resources.ServicePoints().Notify(pb, rx.vnic, msg, false)
 		if resp != nil && resp.Error() != nil {
 			rx.vnic.resources.Logger().Error(resp.Error())
 		}
 	} else {
 		//Add bool
-		resp := rx.vnic.resources.ServicePoints().Handle(pb, msg.Action, rx.vnic, msg, false)
+		resp := rx.vnic.resources.ServicePoints().Handle(pb, msg.Action(), rx.vnic, msg, false)
 		if resp != nil && resp.Error() != nil {
 			rx.vnic.resources.Logger().Error(resp.Error())
 		}
-		if msg.IsRequest {
+		if msg.Request() {
 			err := rx.vnic.Reply(msg, resp)
 			if err != nil {
 				rx.vnic.resources.Logger().Error(err)

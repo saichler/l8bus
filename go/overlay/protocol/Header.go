@@ -1,5 +1,6 @@
 package protocol
 
+/*
 import (
 	"github.com/saichler/types/go/nets"
 	"github.com/saichler/types/go/types"
@@ -9,10 +10,11 @@ const (
 	UNICAST_ADDRESS_SIZE = 36
 	INT_SIZE             = 4
 	PRIORITY_SIZE        = 1
-	SOURCE_VNET_POS      = UNICAST_ADDRESS_SIZE
-	DESTINATION_POS      = SOURCE_VNET_POS + UNICAST_ADDRESS_SIZE
+	SOURCE_POS           = 0
+	VNET_POS             = UNICAST_ADDRESS_SIZE
+	DESTINATION_POS      = VNET_POS + UNICAST_ADDRESS_SIZE
+	SERVICE_AREA_POS     = DESTINATION_POS + 2
 	SERVICE_NAME_POS     = DESTINATION_POS + UNICAST_ADDRESS_SIZE
-	SERVICE_AREA_POS     = SERVICE_NAME_POS + UNICAST_ADDRESS_SIZE
 	PRIORITY_POS         = SERVICE_AREA_POS + 4
 	HEADER_SIZE          = PRIORITY_POS + 1
 )
@@ -62,3 +64,4 @@ func HeaderOf(data []byte) (string, string, string, string, int32, types.Priorit
 	pri := types.Priority(data[PRIORITY_POS])
 	return source, sourceVnet, destination, serviceName, serviceArea, pri
 }
+*/

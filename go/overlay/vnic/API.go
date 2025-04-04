@@ -6,7 +6,7 @@ import (
 
 type VnicAPI struct {
 	serviceName string
-	serviceArea int32
+	serviceArea uint16
 	vnic        *VirtualNetworkInterface
 	leader      bool
 	all         bool
@@ -38,7 +38,7 @@ func (v VnicAPI) Get(s string) common.IElements {
 	panic("implement me")
 }
 
-func newAPI(serviceName string, serviceArea int32, leader, all bool) common.API {
+func newAPI(serviceName string, serviceArea uint16, leader, all bool) common.API {
 	api := &VnicAPI{}
 	api.serviceName = serviceName
 	api.serviceArea = serviceArea

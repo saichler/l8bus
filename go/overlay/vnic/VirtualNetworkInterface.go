@@ -48,8 +48,6 @@ func NewVirtualNetworkInterface(resources common.IResources, conn net.Conn) *Vir
 	vnic.components.addComponent(newTX(vnic))
 	vnic.components.addComponent(newKeepAlive(vnic))
 	vnic.requests = newRequests()
-	vnic.resources.Registry().Register(&types.Message{})
-	vnic.resources.Registry().Register(&types.Transaction{})
 	vnic.stats = &types.HealthPointStats{}
 	if vnic.resources.SysConfig().LocalUuid == "" {
 		vnic.resources.SysConfig().LocalUuid = common.NewUuid()
@@ -136,7 +134,7 @@ func (this *VirtualNetworkInterface) SendMessage(data []byte) error {
 	return this.components.TX().SendMessage(data)
 }
 
-func (this *VirtualNetworkInterface) API(serviceName string, serviceArea int32) common.API {
+func (this *VirtualNetworkInterface) API(serviceName string, serviceArea uint16) common.API {
 	return newAPI(serviceName, serviceArea, false, false)
 }
 

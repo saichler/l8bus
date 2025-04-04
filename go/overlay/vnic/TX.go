@@ -2,11 +2,9 @@ package vnic
 
 import (
 	"errors"
-	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/shared/go/share/queues"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/nets"
-	"github.com/saichler/types/go/types"
 	"strconv"
 	"time"
 )
@@ -89,9 +87,9 @@ func (this *TX) SendMessage(data []byte) error {
 }
 
 // Unicast is wrapping a protobuf with a secure message and send it to the vnet
-func (this *TX) Unicast(destination, serviceName string, serviceArea int32, action types.Action, any common.IElements,
-	p types.Priority, isRequest, isReply bool, msgNum int32, tr *types.Transaction) error {
-	if len(destination) != protocol.UNICAST_ADDRESS_SIZE {
+func (this *TX) Unicast(destination, serviceName string, serviceArea uint16, action common.Action, any common.IElements,
+	p common.Priority, isRequest, isReply bool, msgNum uint32, tr common.ITransaction) error {
+	if len(destination) != 36 {
 		return errors.New("Invalid destination address " + destination + " size " + strconv.Itoa(len(destination)))
 	}
 	return this.Multicast(destination, serviceName, serviceArea, action, any, p,
@@ -99,8 +97,8 @@ func (this *TX) Unicast(destination, serviceName string, serviceArea int32, acti
 }
 
 // Multicast is wrapping a protobuf with a secure message and send it to the vnet topic
-func (this *TX) Multicast(destination, serviceName string, serviceArea int32, action types.Action, any common.IElements,
-	p types.Priority, isRequest, isReply bool, msgNum int32, tr *types.Transaction) error {
+func (this *TX) Multicast(destination, serviceName string, serviceArea uint16, action common.Action, any common.IElements,
+	p common.Priority, isRequest, isReply bool, msgNum uint32, tr common.ITransaction) error {
 	// Create message payload
 	data, err := this.vnic.protocol.CreateMessageFor(destination, serviceName, serviceArea, p, action,
 		this.vnic.resources.SysConfig().LocalUuid, this.vnic.resources.SysConfig().RemoteUuid, any, isRequest, isReply, msgNum, tr)

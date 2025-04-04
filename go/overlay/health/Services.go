@@ -15,7 +15,7 @@ type Services struct {
 
 type ServiceAreas struct {
 	name  string
-	areas map[int32]*ServiceArea
+	areas map[uint16]*ServiceArea
 }
 
 type ServiceArea struct {
@@ -43,7 +43,7 @@ func (this *Services) ZUuid(auuid string) string {
 	return this.aSide2zSide[auuid]
 }
 
-func (this *Services) UUIDs(serviceName string, serviceArea int32, noVnet bool) map[string]bool {
+func (this *Services) UUIDs(serviceName string, serviceArea uint16, noVnet bool) map[string]bool {
 	result := make(map[string]bool)
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
@@ -71,7 +71,7 @@ func (this *Services) UUIDs(serviceName string, serviceArea int32, noVnet bool) 
 	return result
 }
 
-func (this *Services) Leader(serviceName string, serviceArea int32) string {
+func (this *Services) Leader(serviceName string, serviceArea uint16) string {
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
 	serviceAreas, ok := this.services[serviceName]
@@ -85,7 +85,7 @@ func (this *Services) Leader(serviceName string, serviceArea int32) string {
 	return area.leader
 }
 
-func (this *Services) ReplicasFor(serviceName string, serviceArea int32, numOfReplicas int) map[string]int32 {
+func (this *Services) ReplicasFor(serviceName string, serviceArea uint16, numOfReplicas int) map[string]int32 {
 	scores := this.ScoresFor(serviceName, serviceArea)
 	if numOfReplicas > len(scores) {
 		return scores
@@ -108,7 +108,7 @@ func (this *Services) ReplicasFor(serviceName string, serviceArea int32, numOfRe
 	return result
 }
 
-func (this *Services) ScoresFor(serviceName string, serviceArea int32) map[string]int32 {
+func (this *Services) ScoresFor(serviceName string, serviceArea uint16) map[string]int32 {
 	result := make(map[string]int32)
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
@@ -157,9 +157,10 @@ func (this *Services) updateServices(healthPoint *types.HealthPoint, areasToCalc
 		if !ok {
 			this.services[serviceName] = &ServiceAreas{}
 			this.services[serviceName].name = serviceName
-			this.services[serviceName].areas = make(map[int32]*ServiceArea)
+			this.services[serviceName].areas = make(map[uint16]*ServiceArea)
 		}
-		for serviceArea, score := range serviceAreas.Areas {
+		for svArea, score := range serviceAreas.Areas {
+			serviceArea := uint16(svArea)
 			_, ok = this.services[serviceName].areas[serviceArea]
 			if !ok {
 				this.services[serviceName].areas[serviceArea] = &ServiceArea{}
@@ -220,7 +221,8 @@ func (this *Services) AllServices() *types.Services {
 	for name, serviceNames := range this.services {
 		result.ServiceToAreas[name] = &types.ServiceAreas{}
 		result.ServiceToAreas[name].Areas = make(map[int32]*types.ServiceAreaInfo)
-		for serviceArea, _ := range serviceNames.areas {
+		for svArea, _ := range serviceNames.areas {
+			serviceArea := int32(svArea)
 			result.ServiceToAreas[name].Areas[serviceArea] = &types.ServiceAreaInfo{}
 		}
 	}

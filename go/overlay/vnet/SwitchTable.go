@@ -25,10 +25,10 @@ func newSwitchTable(switchService *VNet) *SwitchTable {
 	return switchTable
 }
 
-func (this *SwitchTable) uniCastToAll(serviceName string, serviceArea int32, action types.Action, pb proto.Message) {
+func (this *SwitchTable) uniCastToAll(serviceName string, serviceArea uint16, action common.Action, pb proto.Message) {
 	conns := this.conns.all()
 	mobjects := object.New(nil, pb)
-	data, err := this.switchService.protocol.CreateMessageFor("", serviceName, serviceArea, types.Priority_P1, action,
+	data, err := this.switchService.protocol.CreateMessageFor("", serviceName, serviceArea, common.P1, action,
 		this.switchService.resources.SysConfig().LocalUuid,
 		this.switchService.resources.SysConfig().LocalUuid, mobjects, false, false, this.switchService.protocol.NextMessageNumber(), nil)
 	if err != nil {
@@ -66,7 +66,7 @@ func (this *SwitchTable) addVNic(vnic common.IVirtualNetworkInterface) {
 		time.Sleep(time.Millisecond * 100)
 		allHealthPoints := hc.All()
 		for _, hpe := range allHealthPoints {
-			vnic.Multicast(health.ServiceName, 0, types.Action_POST, hpe)
+			vnic.Multicast(health.ServiceName, 0, common.POST, hpe)
 		}
 	}
 }
@@ -106,7 +106,7 @@ func (this *SwitchTable) newHealthPoint(config *types.SysConfig) *types.HealthPo
 	return hp
 }
 
-func (this *SwitchTable) ServiceUuids(serviceName string, serviceArea int32, sourceSwitch string) map[string]bool {
+func (this *SwitchTable) ServiceUuids(serviceName string, serviceArea uint16, sourceSwitch string) map[string]bool {
 	h := health.Health(this.switchService.resources)
 	uuidsMap := h.Uuids(serviceName, serviceArea, false)
 	if uuidsMap != nil && sourceSwitch != this.switchService.resources.SysConfig().LocalUuid {

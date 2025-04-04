@@ -146,15 +146,10 @@ func (this *VNet) Failed(data []byte, vnic common.IVirtualNetworkInterface, fail
 		this.resources.Logger().Error(err)
 		return
 	}
-	msg.FailMsg = failMsg
-	src := msg.Source
-	msg.Source = msg.Destination
-	msg.Destination = src
-	data, err = this.protocol.DataFromMessage(msg)
-	if err != nil {
-		this.resources.Logger().Error(err)
-		return
-	}
+
+	msg = msg.(*protocol.Message).FailClone(failMsg)
+	data = msg.Serialize()
+
 	err = vnic.SendMessage(data)
 	if err != nil {
 		this.resources.Logger().Error(err)
@@ -256,13 +251,13 @@ func (this *VNet) switchDataReceived(data []byte, vnic common.IVirtualNetworkInt
 	}
 	// Otherwise call the handler per the action & the type
 	this.resources.Logger().Trace("Switch Service is: ", this.resources.SysConfig().LocalUuid)
-	if msg.Action == types.Action_Notify {
+	if msg.Action() == common.Notify {
 		resp := this.resources.ServicePoints().Notify(pb, vnic, msg, false)
 		if resp != nil && resp.Error() != nil {
 			this.resources.Logger().Error(resp.Error())
 		}
 	} else {
-		resp := this.resources.ServicePoints().Handle(pb, msg.Action, vnic, msg, false)
+		resp := this.resources.ServicePoints().Handle(pb, msg.Action(), vnic, msg, false)
 		if resp != nil && resp.Error() != nil {
 			this.resources.Logger().Error(resp.Error())
 		}
@@ -275,5 +270,5 @@ func (this *VNet) Resources() common.IResources {
 }
 
 func (this *VNet) PropertyChangeNotification(set *types.NotificationSet) {
-	this.switchTable.uniCastToAll(set.ServiceName, set.ServiceArea, types.Action_Notify, set)
+	this.switchTable.uniCastToAll(set.ServiceName, uint16(set.ServiceArea), common.Notify, set)
 }

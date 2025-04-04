@@ -56,7 +56,7 @@ func (this *HealthCenter) HealthPoint(uuid string) *types.HealthPoint {
 	return hp
 }
 
-func (this *HealthCenter) DestinationFor(serviceName string, serviceArea int32, source string, all, leader bool) string {
+func (this *HealthCenter) DestinationFor(serviceName string, serviceArea uint16, source string, all, leader bool) string {
 	if all {
 		return ""
 	}
@@ -92,20 +92,20 @@ func (this *HealthCenter) All() map[string]*types.HealthPoint {
 	return result
 }
 
-func (this *HealthCenter) Leader(multicast string, vlanId int32) string {
-	return this.services.Leader(multicast, vlanId)
+func (this *HealthCenter) Leader(multicast string, serviceArea uint16) string {
+	return this.services.Leader(multicast, serviceArea)
 }
 
 func (this *HealthCenter) AllServices() *types.Services {
 	return this.services.AllServices()
 }
 
-func (this *HealthCenter) Uuids(serviceName string, serviceArea int32, noVnet bool) map[string]bool {
+func (this *HealthCenter) Uuids(serviceName string, serviceArea uint16, noVnet bool) map[string]bool {
 	return this.services.UUIDs(serviceName, serviceArea, noVnet)
 }
 
-func (this *HealthCenter) ReplicasFor(topicId string, vlanId int32, numOfReplicas int) map[string]int32 {
-	return this.services.ReplicasFor(topicId, vlanId, numOfReplicas)
+func (this *HealthCenter) ReplicasFor(serviceName string, serviceArea uint16, numOfReplicas int) map[string]int32 {
+	return this.services.ReplicasFor(serviceName, serviceArea, numOfReplicas)
 }
 
 func (this *HealthCenter) AddScore(target, serviceName string, serviceArea int32, vnic common.IVirtualNetworkInterface) {
@@ -131,7 +131,7 @@ func (this *HealthCenter) AddScore(target, serviceName string, serviceArea int32
 	if e != nil {
 		panic(e)
 	}
-	e = vnic.Unicast(vnic.Resources().SysConfig().RemoteUuid, ServiceName, 0, types.Action_Notify, n)
+	e = vnic.Unicast(vnic.Resources().SysConfig().RemoteUuid, ServiceName, 0, common.Notify, n)
 	if e != nil {
 		panic(e)
 	}
