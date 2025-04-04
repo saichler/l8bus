@@ -34,6 +34,10 @@ func (this *Message) Action() common.Action {
 	return this.action
 }
 
+func (this *Message) SetAction(action common.Action) {
+	this.action = action
+}
+
 func (this *Message) Timeout() uint16 {
 	return this.timeout
 }
