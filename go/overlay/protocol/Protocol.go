@@ -91,7 +91,7 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 	msg.action = action
 	msg.request = isRequest
 	msg.reply = isReply
-	msg.tr = tr.(*Transaction)
+	msg.tr, _ = tr.(*Transaction)
 	return msg.Serialize(), nil
 }
 
