@@ -62,6 +62,10 @@ func (this *Message) Tr() common.ITransaction {
 	return this.tr
 }
 
+func (this *Message) SetTr(transaction common.ITransaction) {
+	this.tr = transaction.(*Transaction)
+}
+
 func (this *Transaction) Id() string {
 	return string(this.id[0:])
 }
