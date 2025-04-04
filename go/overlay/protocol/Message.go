@@ -190,8 +190,8 @@ func Deserialize(data []byte) *Message {
 	POS_DATA := POS_Fail_Message + 2 + int(size)
 	msg.failMessage = string(data[POS_Fail_Message+2 : POS_DATA])
 
-	size = nets.Bytes2UInt16(data[POS_DATA : POS_DATA+2])
-	POS_Tr := POS_DATA + 4 + int(size)
+	size32 := nets.Bytes2UInt32(data[POS_DATA : POS_DATA+4])
+	POS_Tr := POS_DATA + 4 + int(size32)
 	msg.data = string(data[POS_DATA+4 : POS_Tr])
 	if data[POS_Tr] == 0 {
 		return msg
