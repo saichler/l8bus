@@ -18,8 +18,8 @@ func New(resources common.IResources) *Protocol {
 }
 
 func (this *Protocol) MessageOf(data []byte) (common.IMessage, error) {
-	msg := Deserialize(data)
-	return msg, nil
+	msg, _ := MSer.Unmarshal(data, nil)
+	return msg.(common.IMessage), nil
 }
 
 func (this *Protocol) ElementsOf(msg common.IMessage) (common.IElements, error) {
@@ -92,7 +92,7 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 	msg.request = isRequest
 	msg.reply = isReply
 	msg.tr, _ = tr.(*Transaction)
-	return msg.Serialize(), nil
+	return MSer.Marshal(msg, nil)
 }
 
 func (this *Protocol) CreateMessageForm(msg common.IMessage, o common.IElements) ([]byte, error) {
@@ -111,5 +111,5 @@ func (this *Protocol) CreateMessageForm(msg common.IMessage, o common.IElements)
 	}
 	//create the wrapping message for the destination
 	msg.SetData(encData)
-	return msg.Serialize(), nil
+	return MSer.Marshal(msg, nil)
 }

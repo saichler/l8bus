@@ -51,65 +51,6 @@ const (
 	POS_Service_Name = POS_Service_Area + 2
 )
 
-func (this *Message) Serialize() []byte {
-	POS_Sequence := POS_Service_Name + 2 + len(this.serviceName)
-	POS_Priority := POS_Sequence + 4
-	POS_Action := POS_Priority + 1
-	POS_Timeout := POS_Action + 1
-	POS_Request_Reply := POS_Timeout + 2
-	POS_Fail_Message := POS_Request_Reply + 1
-	POS_DATA := POS_Fail_Message + 2 + len(this.failMessage)
-	POS_Tr := POS_DATA + 4 + len(this.data)
-
-	POS_Tr_Id := POS_Tr + 1
-	POS_Tr_State := POS_Tr_Id + 36
-	POS_Tr_Start_Time := POS_Tr_State + 1
-	POS_Tr_Err_Message := POS_Tr_Start_Time + 8
-	POS_END := POS_Tr_Id
-	if this.tr != nil {
-		POS_END = POS_Tr_Err_Message + 2 + len(this.tr.errMsg)
-	}
-
-	var data []byte
-	if IsNil(this.tr) {
-		data = make([]byte, POS_Tr+1)
-	} else {
-		data = make([]byte, POS_END)
-	}
-
-	copy(data[POS_Source:POS_Vnet], this.source[0:36])
-	copy(data[POS_Vnet:POS_Destination], this.vnet[0:36])
-	destSize := len(this.destination)
-	data[POS_Destination] = byte(destSize)
-	if destSize > 0 {
-		copy(data[POS_Destination+1:POS_Service_Area], this.destination[0:36])
-	}
-	copy(data[POS_Service_Area:POS_Service_Name], nets.UInt162Bytes(this.serviceArea))
-	copy(data[POS_Service_Name:POS_Service_Name+2], nets.UInt162Bytes(uint16(len(this.serviceName))))
-	copy(data[POS_Service_Name+2:POS_Sequence], this.serviceName)
-	copy(data[POS_Sequence:POS_Priority], nets.UInt322Bytes(this.sequence))
-	data[POS_Priority] = byte(this.priority)
-	data[POS_Action] = byte(this.action)
-	copy(data[POS_Timeout:POS_Request_Reply], nets.UInt162Bytes(this.timeout))
-	data[POS_Request_Reply] = nets.ByteOf(this.request, this.reply)
-	copy(data[POS_Fail_Message:POS_Fail_Message+2], nets.UInt162Bytes(uint16(len(this.failMessage))))
-	copy(data[POS_Fail_Message+2:POS_DATA], this.failMessage)
-	copy(data[POS_DATA:POS_DATA+4], nets.UInt322Bytes(uint32(len(this.data))))
-	copy(data[POS_DATA+4:POS_Tr], this.data)
-	if IsNil(this.tr) {
-		data[POS_Tr] = 0
-		return data
-	}
-	data[POS_Tr] = 1
-	copy(data[POS_Tr_Id:POS_Tr_State], this.tr.id[0:36])
-	data[POS_Tr_State] = byte(this.tr.state)
-	copy(data[POS_Tr_Start_Time:POS_Tr_Err_Message], nets.Long2Bytes(this.tr.startTime))
-	copy(data[POS_Tr_Err_Message:POS_Tr_Err_Message+2], nets.UInt162Bytes(uint16(len(this.tr.errMsg))))
-	copy(data[POS_Tr_Err_Message+2:POS_END], this.tr.errMsg)
-
-	return data
-}
-
 func (this *Message) Clone() *Message {
 	clone := &Message{}
 	clone.source = this.source
@@ -173,58 +114,6 @@ func HeaderOf(data []byte) (string, string, string, string, uint16, common.Prior
 		string(data[POS_Service_Name+2 : POS_Sequence]),
 		nets.Bytes2UInt16(data[POS_Service_Area:POS_Service_Name]),
 		common.Priority(data[POS_Priority])
-}
-
-func Deserialize(data []byte) *Message {
-	msg := &Message{}
-	copy(msg.source[0:36], data[POS_Source:POS_Vnet])
-	copy(msg.vnet[0:36], data[POS_Vnet:POS_Destination])
-	destSize := data[POS_Destination]
-	if destSize > 0 {
-		msg.destination = string(data[POS_Destination+1 : POS_Service_Area])
-	}
-	msg.serviceArea = nets.Bytes2UInt16(data[POS_Service_Area:POS_Service_Name])
-	size := nets.Bytes2UInt16(data[POS_Service_Name : POS_Service_Name+2])
-	POS_Sequence := POS_Service_Name + 2 + int(size)
-	POS_Priority := POS_Sequence + 4
-	POS_Action := POS_Priority + 1
-	POS_Timeout := POS_Action + 1
-	POS_Request_Reply := POS_Timeout + 2
-	msg.serviceName = string(data[POS_Service_Name+2 : POS_Sequence])
-
-	msg.sequence = nets.Bytes2UInt32(data[POS_Sequence:POS_Priority])
-	msg.priority = common.Priority(data[POS_Priority])
-	msg.action = common.Action(data[POS_Action])
-	msg.timeout = nets.Bytes2UInt16(data[POS_Timeout:POS_Request_Reply])
-	msg.request, msg.reply = nets.BoolOf(data[POS_Request_Reply])
-
-	POS_Fail_Message := POS_Request_Reply + 1
-	size = nets.Bytes2UInt16(data[POS_Fail_Message : POS_Fail_Message+2])
-	POS_DATA := POS_Fail_Message + 2 + int(size)
-	msg.failMessage = string(data[POS_Fail_Message+2 : POS_DATA])
-
-	size32 := nets.Bytes2UInt32(data[POS_DATA : POS_DATA+4])
-	POS_Tr := POS_DATA + 4 + int(size32)
-	msg.data = string(data[POS_DATA+4 : POS_Tr])
-	if data[POS_Tr] == 0 {
-		return msg
-	}
-
-	POS_Tr_Id := POS_Tr + 1
-	POS_Tr_State := POS_Tr_Id + 36
-	POS_Tr_Start_Time := POS_Tr_State + 1
-	POS_Tr_Err_Message := POS_Tr_Start_Time + 8
-	POS_END := POS_Tr_Id
-
-	msg.tr = &Transaction{}
-	copy(msg.tr.id[0:36], data[POS_Tr_Id:POS_Tr_State])
-	msg.tr.state = common.TransactionState(data[POS_Tr_State])
-	msg.tr.startTime = nets.Bytes2Long(data[POS_Tr_Start_Time:POS_Tr_Err_Message])
-	size = nets.Bytes2UInt16(data[POS_Tr_Err_Message : POS_Tr_Err_Message+2])
-	POS_END = POS_Tr_Err_Message + 2 + int(size)
-	msg.tr.errMsg = string(data[POS_Tr_Err_Message+2 : POS_END])
-
-	return msg
 }
 
 func IsNil(any interface{}) bool {

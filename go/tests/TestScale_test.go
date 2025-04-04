@@ -8,7 +8,6 @@ import (
 	"github.com/saichler/shared/go/share/strings"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/testtypes"
-	"github.com/saichler/types/go/types"
 	"testing"
 	"time"
 )
@@ -28,7 +27,7 @@ func scaleTest(size, exp int, timeout int64, t *testing.T) bool {
 		pb := &testtypes.TestProto{}
 		pb.MyString = strings.New("Str-", i).String()
 		pb.MyInt32 = int32(i)
-		err := eg2.Unicast(eg3.Resources().SysConfig().LocalUuid, ServiceName, 0, types.Action_POST, pb)
+		err := eg2.Unicast(eg3.Resources().SysConfig().LocalUuid, ServiceName, 0, common.POST, pb)
 		if err != nil {
 			Log.Fail(t, err)
 			return false

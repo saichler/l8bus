@@ -148,7 +148,7 @@ func (this *VNet) Failed(data []byte, vnic common.IVirtualNetworkInterface, fail
 	}
 
 	msg = msg.(*protocol.Message).FailClone(failMsg)
-	data = msg.Serialize()
+	data, _ = protocol.MSer.Marshal(msg, nil)
 
 	err = vnic.SendMessage(data)
 	if err != nil {
