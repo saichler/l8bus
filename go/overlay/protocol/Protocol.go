@@ -82,7 +82,7 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 	msg := &Message{}
 	copy(msg.source[0:36], source)
 	copy(msg.vnet[0:36], vnet)
-	copy(msg.destination[0:36], destination)
+	msg.destination = destination
 	msg.serviceName = serviceName
 	msg.serviceArea = serviceArea
 	msg.sequence = msgNum

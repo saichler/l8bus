@@ -10,7 +10,7 @@ import (
 type MessageHeader struct {
 	source      [36]byte
 	vnet        [36]byte
-	destination [36]byte
+	destination string
 	serviceArea uint16
 	serviceName string
 }
@@ -47,7 +47,7 @@ const (
 	POS_Source       = 0
 	POS_Vnet         = 36
 	POS_Destination  = POS_Vnet + 36
-	POS_Service_Area = POS_Destination + 36
+	POS_Service_Area = POS_Destination + 37
 	POS_Service_Name = POS_Service_Area + 2
 )
 
@@ -71,7 +71,7 @@ func (this *Message) Serialize() []byte {
 	}
 
 	var data []byte
-	if isNil(this.tr) {
+	if IsNil(this.tr) {
 		data = make([]byte, POS_Tr+1)
 	} else {
 		data = make([]byte, POS_END)
@@ -79,7 +79,11 @@ func (this *Message) Serialize() []byte {
 
 	copy(data[POS_Source:POS_Vnet], this.source[0:36])
 	copy(data[POS_Vnet:POS_Destination], this.vnet[0:36])
-	copy(data[POS_Destination:POS_Service_Area], this.destination[0:36])
+	destSize := len(this.destination)
+	data[POS_Destination] = byte(destSize)
+	if destSize > 0 {
+		copy(data[POS_Destination+1:POS_Service_Area], this.destination[0:36])
+	}
 	copy(data[POS_Service_Area:POS_Service_Name], nets.UInt162Bytes(this.serviceArea))
 	copy(data[POS_Service_Name:POS_Service_Name+2], nets.UInt162Bytes(uint16(len(this.serviceName))))
 	copy(data[POS_Service_Name+2:POS_Sequence], this.serviceName)
@@ -92,7 +96,7 @@ func (this *Message) Serialize() []byte {
 	copy(data[POS_Fail_Message+2:POS_DATA], this.failMessage)
 	copy(data[POS_DATA:POS_DATA+4], nets.UInt322Bytes(uint32(len(this.data))))
 	copy(data[POS_DATA+4:POS_Tr], this.data)
-	if isNil(this.tr) {
+	if IsNil(this.tr) {
 		data[POS_Tr] = 0
 		return data
 	}
@@ -121,7 +125,7 @@ func (this *Message) Clone() *Message {
 	clone.data = this.data
 	clone.failMessage = this.failMessage
 	clone.timeout = this.timeout
-	if !isNil(this.tr) {
+	if !IsNil(this.tr) {
 		clone.tr = &Transaction{
 			id:        this.tr.id,
 			state:     this.tr.state,
@@ -135,7 +139,7 @@ func (this *Message) Clone() *Message {
 func (this *Message) ReplyClone(resources common.IResources) common.IMessage {
 	reply := this.Clone()
 	reply.action = common.Reply
-	reply.destination = this.source
+	reply.destination = string(this.source[0:36])
 	copy(reply.source[0:36], resources.SysConfig().LocalUuid)
 	copy(reply.vnet[0:36], resources.SysConfig().RemoteUuid)
 	reply.request = false
@@ -146,8 +150,8 @@ func (this *Message) ReplyClone(resources common.IResources) common.IMessage {
 func (this *Message) FailClone(failMessage string) common.IMessage {
 	fail := this.Clone()
 	fail.failMessage = failMessage
-	fail.source = this.destination
-	fail.destination = this.source
+	copy(fail.source[0:36], this.destination)
+	fail.destination = string(this.source[0:36])
 	return fail
 }
 
@@ -157,9 +161,15 @@ func HeaderOf(data []byte) (string, string, string, string, uint16, common.Prior
 	POS_Sequence := POS_Service_Name + 2 + int(size)
 	POS_Priority := POS_Sequence + 4
 
+	destSize := data[POS_Destination]
+	destination := ""
+	if destSize != 0 {
+		destination = string(data[POS_Destination+1 : POS_Service_Area])
+	}
+
 	return string(data[POS_Source:POS_Vnet]),
 		string(data[POS_Vnet:POS_Destination]),
-		string(data[POS_Destination:POS_Service_Area]),
+		destination,
 		string(data[POS_Service_Name+2 : POS_Sequence]),
 		nets.Bytes2UInt16(data[POS_Service_Area:POS_Service_Name]),
 		common.Priority(data[POS_Priority])
@@ -169,7 +179,10 @@ func Deserialize(data []byte) *Message {
 	msg := &Message{}
 	copy(msg.source[0:36], data[POS_Source:POS_Vnet])
 	copy(msg.vnet[0:36], data[POS_Vnet:POS_Destination])
-	copy(msg.destination[0:36], data[POS_Destination:POS_Service_Area])
+	destSize := data[POS_Destination]
+	if destSize > 0 {
+		msg.destination = string(data[POS_Destination+1 : POS_Service_Area])
+	}
 	msg.serviceArea = nets.Bytes2UInt16(data[POS_Service_Area:POS_Service_Name])
 	size := nets.Bytes2UInt16(data[POS_Service_Name : POS_Service_Name+2])
 	POS_Sequence := POS_Service_Name + 2 + int(size)
@@ -214,7 +227,7 @@ func Deserialize(data []byte) *Message {
 	return msg
 }
 
-func isNil(any interface{}) bool {
+func IsNil(any interface{}) bool {
 	if any == nil {
 		return true
 	}

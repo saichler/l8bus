@@ -1,6 +1,8 @@
 package protocol
 
-import "github.com/saichler/types/go/common"
+import (
+	"github.com/saichler/types/go/common"
+)
 
 func (this *Message) Source() string {
 	return string(this.source[0:])
@@ -11,7 +13,7 @@ func (this *Message) Vnet() string {
 }
 
 func (this *Message) Destination() string {
-	return string(this.destination[0:])
+	return this.destination
 }
 
 func (this *Message) ServiceName() string {
