@@ -108,7 +108,7 @@ func (this *HealthCenter) ReplicasFor(serviceName string, serviceArea uint16, nu
 	return this.services.ReplicasFor(serviceName, serviceArea, numOfReplicas)
 }
 
-func (this *HealthCenter) AddScore(target, serviceName string, serviceArea int32, vnic common.IVirtualNetworkInterface) {
+func (this *HealthCenter) AddScore(target, serviceName string, serviceArea uint16, vnic common.IVirtualNetworkInterface) {
 	hp := this.healthPoints.Get(target).(*types.HealthPoint)
 	if hp == nil {
 		panic("HealthPoint is nil!")
@@ -123,7 +123,7 @@ func (this *HealthCenter) AddScore(target, serviceName string, serviceArea int32
 	if !ok {
 		panic("Area is nil!")
 	}
-	area.Areas[serviceArea].Score++
+	area.Areas[int32(serviceArea)].Score++
 	n, e := this.healthPoints.Update(hp.AUuid, hp)
 	if n == nil && e == nil {
 		panic("Something went wrong with helth notification!")
