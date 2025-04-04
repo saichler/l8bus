@@ -3,6 +3,7 @@ package protocol
 import (
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/nets"
+	"time"
 )
 
 type MessageHeader struct {
@@ -18,6 +19,14 @@ type Transaction struct {
 	state     common.TransactionState
 	errMsg    string
 	startTime int64
+}
+
+func NewTransaction() common.ITransaction {
+	tr := &Transaction{}
+	copy(tr.id[0:36], common.NewUuid())
+	tr.state = common.Create
+	tr.startTime = time.Now().Unix()
+	return tr
 }
 
 type Message struct {
