@@ -3,6 +3,7 @@ package protocol
 import (
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/nets"
+	"reflect"
 	"time"
 )
 
@@ -70,7 +71,7 @@ func (this *Message) Serialize() []byte {
 	}
 
 	var data []byte
-	if this.tr == nil {
+	if isNil(this.tr) {
 		data = make([]byte, POS_Tr+1)
 	} else {
 		data = make([]byte, POS_END)
@@ -91,7 +92,7 @@ func (this *Message) Serialize() []byte {
 	copy(data[POS_Fail_Message+2:POS_DATA], this.failMessage)
 	copy(data[POS_DATA:POS_DATA+4], nets.UInt322Bytes(uint32(len(this.data))))
 	copy(data[POS_DATA+4:POS_Tr], this.data)
-	if this.tr == nil {
+	if isNil(this.tr) {
 		data[POS_Tr] = 0
 		return data
 	}
@@ -120,7 +121,7 @@ func (this *Message) Clone() *Message {
 	clone.data = this.data
 	clone.failMessage = this.failMessage
 	clone.timeout = this.timeout
-	if this.tr != nil {
+	if !isNil(this.tr) {
 		clone.tr = &Transaction{
 			id:        this.tr.id,
 			state:     this.tr.state,
@@ -211,4 +212,11 @@ func Deserialize(data []byte) *Message {
 	msg.tr.errMsg = string(data[POS_Tr_Err_Message+2 : POS_END])
 
 	return msg
+}
+
+func isNil(any interface{}) bool {
+	if any == nil {
+		return true
+	}
+	return reflect.ValueOf(any).IsNil()
 }
