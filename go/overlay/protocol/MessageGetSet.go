@@ -74,8 +74,16 @@ func (this *Transaction) State() common.TransactionState {
 	return this.state
 }
 
+func (this *Transaction) SetState(st common.TransactionState) {
+	this.state = st
+}
+
 func (this *Transaction) ErrorMessage() string {
 	return this.errMsg
+}
+
+func (this *Transaction) SetErrorMessage(err string) {
+	this.errMsg = err
 }
 
 func (this *Transaction) StartTime() int64 {
