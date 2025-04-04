@@ -5,6 +5,7 @@ import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
+	"github.com/saichler/serializer/go/serialize/object"
 	resources2 "github.com/saichler/shared/go/share/resources"
 	"github.com/saichler/shared/go/share/strings"
 	"github.com/saichler/types/go/common"
@@ -148,7 +149,7 @@ func (this *VNet) Failed(data []byte, vnic common.IVirtualNetworkInterface, fail
 	}
 
 	msg = msg.(*protocol.Message).FailClone(failMsg)
-	data, _ = protocol.MSer.Marshal(msg, nil)
+	data, _ = object.MessageSerializer.Marshal(msg, nil)
 
 	err = vnic.SendMessage(data)
 	if err != nil {

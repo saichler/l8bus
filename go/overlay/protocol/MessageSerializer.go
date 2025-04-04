@@ -5,8 +5,7 @@ import (
 	"github.com/saichler/types/go/nets"
 )
 
-var MSer = &MessageSerializer{}
-var TSer = &TransactionSerializer{}
+var tser = &TransactionSerializer{}
 
 type MessageSerializer struct {
 }
@@ -26,7 +25,7 @@ func (this *MessageSerializer) Marshal(any interface{}, r common.IRegistry) ([]b
 	POS_DATA := POS_Fail_Message + 2 + len(message.failMessage)
 	POS_Tr := POS_DATA + 4 + len(message.data)
 
-	trData, _ := TSer.Marshal(message.Tr(), nil)
+	trData, _ := tser.Marshal(message.Tr(), nil)
 
 	data := make([]byte, POS_Tr+len(trData))
 
@@ -90,7 +89,7 @@ func (this *MessageSerializer) Unmarshal(data []byte, r common.IRegistry) (inter
 		return msg, nil
 	}
 
-	tr, _ := TSer.Unmarshal(data[POS_Tr:], nil)
+	tr, _ := tser.Unmarshal(data[POS_Tr:], nil)
 	msg.tr = tr.(*Transaction)
 
 	return msg, nil
