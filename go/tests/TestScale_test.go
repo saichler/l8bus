@@ -1,5 +1,3 @@
-//go:build scale
-
 package tests
 
 import (

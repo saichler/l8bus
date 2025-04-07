@@ -121,7 +121,12 @@ func (rx *RX) notifyRawDataListener() {
 					continue
 				}
 				// Otherwise call the handler per the action & the type
-				rx.handleMessage(msg, pb)
+				// If Reauest == blocking, hence run in a go routing.
+				if msg.Request() {
+					go rx.handleMessage(msg, pb)
+				} else {
+					rx.handleMessage(msg, pb)
+				}
 			}
 		}
 	}
@@ -130,19 +135,6 @@ func (rx *RX) notifyRawDataListener() {
 }
 
 func (rx *RX) handleMessage(msg common.IMessage, pb common.IElements) {
-	handler, ok := rx.vnic.resources.ServicePoints().ServicePointHandler(
-		msg.ServiceName(), msg.ServiceArea())
-	if !ok {
-		rx.vnic.resources.Logger().Error("RX: No service point was found for ",
-			msg.ServiceName, ":", msg.ServiceArea)
-		return
-	}
-	// If the handler is transactional, it means it is blocking
-	// so we don't want to handle it via the workers
-	if handler.Transactional() {
-		go rx.handleMessage(msg, pb)
-		return
-	}
 	if msg.Action() == common.Reply {
 		request := rx.vnic.requests.getRequest(msg.Sequence(), rx.vnic.resources.SysConfig().LocalUuid)
 		request.response = pb
