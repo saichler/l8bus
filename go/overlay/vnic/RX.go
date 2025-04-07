@@ -23,9 +23,7 @@ func newRX(vnic *VirtualNetworkInterface) *RX {
 
 func (rx *RX) start() {
 	go rx.readFromSocket()
-	for i := 0; i < 10; i++ {
-		go rx.notifyRawDataListener()
-	}
+	go rx.notifyRawDataListener()
 }
 
 func (rx *RX) shutdown() {
