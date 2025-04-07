@@ -20,7 +20,7 @@ func newRX(vnic *VirtualNetworkInterface) *RX {
 	rx := &RX{}
 	rx.vnic = vnic
 	rx.rx = queues.NewByteSliceQueue("RX", int(vnic.resources.SysConfig().RxQueueSize))
-	rx.pool = workers.NewWorkers(50)
+	rx.pool = workers.NewWorkers(500)
 	return rx
 }
 
@@ -135,12 +135,28 @@ type HandleWorker struct {
 	rx  *RX
 }
 
+type RawHandleWorker struct {
+	data []byte
+	rx   *RX
+}
+
 func (rx *RX) runHandleMessage(msg common.IMessage, pb common.IElements) {
 	//rx.handleMessage(msg, pb)
 
 	hw := &HandleWorker{msg: msg, rx: rx, pb: pb}
 	rx.pool.Run(hw)
 
+}
+
+func (rx *RX) runRawHandleMessage(data []byte) {
+	//rx.vnic.resources.DataListener().HandleData(data, rx.vnic)
+
+	hw := &RawHandleWorker{rx: rx, data: data}
+	rx.pool.Run(hw)
+}
+
+func (this *RawHandleWorker) Run() {
+	this.rx.vnic.resources.DataListener().HandleData(this.data, this.rx.vnic)
 }
 
 func (this *HandleWorker) Run() {

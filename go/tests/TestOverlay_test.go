@@ -6,7 +6,6 @@ import (
 	. "github.com/saichler/l8test/go/infra/t_topology"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/types/go/common"
-	"github.com/saichler/types/go/testtypes"
 	"github.com/saichler/types/go/types"
 	"testing"
 )
@@ -53,7 +52,7 @@ func TestTopologyHealth(t *testing.T) {
 func TestSendMultiCast(t *testing.T) {
 	defer reset("TestSendMultiCast")
 	Log.Info("*** Sending Multicast Message")
-	pb := &testtypes.TestProto{}
+	pb := CreateTestModelInstance(3)
 	eg2_1 := topo.VnicByVnetNum(2, 1)
 	err := eg2_1.Multicast(ServiceName, 0, common.POST, pb)
 	if err != nil {
@@ -85,7 +84,7 @@ func TestSendMultiCast(t *testing.T) {
 
 func TestUniCast(t *testing.T) {
 	defer reset("TestUniCast")
-	pb := &testtypes.TestProto{}
+	pb := CreateTestModelInstance(3)
 	eg1_2 := topo.VnicByVnetNum(1, 2)
 	eg3_3 := topo.VnicByVnetNum(3, 3)
 	err := eg1_2.Unicast(eg3_3.Resources().SysConfig().LocalUuid, ServiceName, 0, common.POST, pb)
@@ -103,7 +102,7 @@ func TestUniCast(t *testing.T) {
 
 func TestReconnect(t *testing.T) {
 	defer reset("TestReconnect")
-	pb := &testtypes.TestProto{}
+	pb := CreateTestModelInstance(3)
 	eg2_1 := topo.VnicByVnetNum(2, 1)
 	eg1_3 := topo.VnicByVnetNum(1, 3)
 	err := eg2_1.Unicast(eg1_3.Resources().SysConfig().LocalUuid, ServiceName, 0, common.POST, pb)
@@ -142,7 +141,7 @@ func TestReconnect(t *testing.T) {
 
 func TestDestinationUnreachable(t *testing.T) {
 	defer reset("TestDestinationUnreachable")
-	pb := &testtypes.TestProto{}
+	pb := CreateTestModelInstance(3)
 	eg3_2 := topo.VnicByVnetNum(3, 2)
 	eg1_1 := topo.VnicByVnetNum(1, 1)
 	defer func() {

@@ -5,7 +5,6 @@ import (
 	. "github.com/saichler/l8test/go/infra/t_servicepoints"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/types/go/common"
-	"github.com/saichler/types/go/testtypes"
 	"testing"
 	"time"
 )
@@ -22,7 +21,7 @@ func TestKeepAlive(t *testing.T) {
 		}
 	}()
 
-	pb := &testtypes.TestProto{}
+	pb := CreateTestModelInstance(3)
 	eg2_1 := topo.VnicByVnetNum(2, 1)
 	eg1_2 := topo.VnicByVnetNum(1, 2)
 	err := eg2_1.Multicast(ServiceName, 0, common.POST, pb)
