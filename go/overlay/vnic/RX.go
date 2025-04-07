@@ -3,7 +3,6 @@ package vnic
 import (
 	"github.com/saichler/serializer/go/serialize/object"
 	"github.com/saichler/shared/go/share/queues"
-	"github.com/saichler/shared/go/share/workers"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/nets"
 )
@@ -12,21 +11,21 @@ type RX struct {
 	vnic         *VirtualNetworkInterface
 	shuttingDown bool
 	// The incoming data queue
-	rx   *queues.ByteSliceQueue
-	pool *workers.Workers
+	rx *queues.ByteSliceQueue
 }
 
 func newRX(vnic *VirtualNetworkInterface) *RX {
 	rx := &RX{}
 	rx.vnic = vnic
 	rx.rx = queues.NewByteSliceQueue("RX", int(vnic.resources.SysConfig().RxQueueSize))
-	rx.pool = workers.NewWorkers(500)
 	return rx
 }
 
 func (rx *RX) start() {
 	go rx.readFromSocket()
-	go rx.notifyRawDataListener()
+	for i := 0; i < 10; i++ {
+		go rx.notifyRawDataListener()
+	}
 }
 
 func (rx *RX) shutdown() {
@@ -87,6 +86,7 @@ func (rx *RX) notifyRawDataListener() {
 			rx.vnic.stats.RxDataCont += int64(len(data))
 			// if there is a dataListener, this is a switch
 			if rx.vnic.resources.DataListener() != nil {
+				//rx.runRawHandleMessage(data)
 				rx.vnic.resources.DataListener().HandleData(data, rx.vnic)
 			} else {
 				msg, err := rx.vnic.protocol.MessageOf(data)
@@ -121,7 +121,7 @@ func (rx *RX) notifyRawDataListener() {
 					continue
 				}
 				// Otherwise call the handler per the action & the type
-				rx.runHandleMessage(msg, pb)
+				rx.handleMessage(msg, pb)
 			}
 		}
 	}
@@ -129,54 +129,20 @@ func (rx *RX) notifyRawDataListener() {
 	rx.vnic.Shutdown()
 }
 
-type HandleWorker struct {
-	msg common.IMessage
-	pb  common.IElements
-	rx  *RX
-}
-
-type RawHandleWorker struct {
-	data []byte
-	rx   *RX
-}
-
-func (rx *RX) runHandleMessage(msg common.IMessage, pb common.IElements) {
-	//rx.handleMessage(msg, pb)
-
-	hw := &HandleWorker{msg: msg, rx: rx, pb: pb}
-	rx.pool.Run(hw)
-
-}
-
-func (rx *RX) runRawHandleMessage(data []byte) {
-	//rx.vnic.resources.DataListener().HandleData(data, rx.vnic)
-
-	hw := &RawHandleWorker{rx: rx, data: data}
-	rx.pool.Run(hw)
-}
-
-func (this *RawHandleWorker) Run() {
-	this.rx.vnic.resources.DataListener().HandleData(this.data, this.rx.vnic)
-}
-
-func (this *HandleWorker) Run() {
-	handler, ok := this.rx.vnic.resources.ServicePoints().ServicePointHandler(
-		this.msg.ServiceName(), this.msg.ServiceArea())
+func (rx *RX) handleMessage(msg common.IMessage, pb common.IElements) {
+	handler, ok := rx.vnic.resources.ServicePoints().ServicePointHandler(
+		msg.ServiceName(), msg.ServiceArea())
 	if !ok {
-		this.rx.vnic.resources.Logger().Error("RX: No service point was found for ",
-			this.msg.ServiceName, ":", this.msg.ServiceArea)
+		rx.vnic.resources.Logger().Error("RX: No service point was found for ",
+			msg.ServiceName, ":", msg.ServiceArea)
 		return
 	}
 	// If the handler is transactional, it means it is blocking
 	// so we don't want to handle it via the workers
 	if handler.Transactional() {
-		go this.rx.handleMessage(this.msg, this.pb)
+		go rx.handleMessage(msg, pb)
 		return
 	}
-	this.rx.handleMessage(this.msg, this.pb)
-}
-
-func (rx *RX) handleMessage(msg common.IMessage, pb common.IElements) {
 	if msg.Action() == common.Reply {
 		request := rx.vnic.requests.getRequest(msg.Sequence(), rx.vnic.resources.SysConfig().LocalUuid)
 		request.response = pb
