@@ -187,6 +187,10 @@ func mergeServices(hp *types.HealthPoint, services *types.Services) {
 			hp.Services.ServiceToAreas[serviceName] = serviceAreas
 			continue
 		}
+		if hp.Services.ServiceToAreas[serviceName].Areas == nil {
+			hp.Services.ServiceToAreas[serviceName].Areas = serviceAreas.Areas
+			continue
+		}
 		for svArea, score := range serviceAreas.Areas {
 			serviceArea := svArea
 			hp.Services.ServiceToAreas[serviceName].Areas[serviceArea] = score
