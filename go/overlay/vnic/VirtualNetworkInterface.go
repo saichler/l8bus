@@ -166,3 +166,10 @@ func (this *VirtualNetworkInterface) reconnect() {
 		this.resources.Logger().Info("***** Reconnected to ", this.resources.SysConfig().RemoteAlias, " *****")
 	}
 }
+
+func (this *VirtualNetworkInterface) UpdateServices() error {
+	hc := health.Health(this.resources)
+	hp := hc.HealthPoint(this.resources.SysConfig().LocalUuid)
+	hp.Services = this.resources.SysConfig().Services
+	return this.Unicast(this.resources.SysConfig().RemoteUuid, health.ServiceName, 0, common.PATCH, hp)
+}
