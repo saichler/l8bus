@@ -170,6 +170,26 @@ func (this *VirtualNetworkInterface) reconnect() {
 func (this *VirtualNetworkInterface) UpdateServices() error {
 	hc := health.Health(this.resources)
 	hp := hc.HealthPoint(this.resources.SysConfig().LocalUuid)
-	hp.Services = this.resources.SysConfig().Services
+	mergeServices(hp, this.resources.SysConfig().Services)
 	return this.Unicast(this.resources.SysConfig().RemoteUuid, health.ServiceName, 0, common.PATCH, hp)
+}
+
+func mergeServices(hp *types.HealthPoint, services *types.Services) {
+	if hp.Services == nil {
+		hp.Services = services
+		return
+
+	}
+
+	for serviceName, serviceAreas := range services.ServiceToAreas {
+		_, ok := hp.Services.ServiceToAreas[serviceName]
+		if !ok {
+			hp.Services.ServiceToAreas[serviceName] = serviceAreas
+			continue
+		}
+		for svArea, score := range serviceAreas.Areas {
+			serviceArea := svArea
+			hp.Services.ServiceToAreas[serviceName].Areas[serviceArea] = score
+		}
+	}
 }
