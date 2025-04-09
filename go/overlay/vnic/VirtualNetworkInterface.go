@@ -171,7 +171,7 @@ func (this *VirtualNetworkInterface) UpdateServices() error {
 	hc := health.Health(this.resources)
 	hp := hc.HealthPoint(this.resources.SysConfig().LocalUuid)
 	mergeServices(hp, this.resources.SysConfig().Services)
-	return this.Unicast(this.resources.SysConfig().RemoteUuid, health.ServiceName, 0, common.PATCH, hp)
+	return this.Unicast(this.resources.SysConfig().RemoteUuid, health.ServiceName, 0, common.PUT, hp)
 }
 
 func mergeServices(hp *types.HealthPoint, services *types.Services) {
