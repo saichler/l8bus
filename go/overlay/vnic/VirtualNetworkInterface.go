@@ -169,9 +169,12 @@ func (this *VirtualNetworkInterface) reconnect() {
 
 func (this *VirtualNetworkInterface) UpdateServices() error {
 	hc := health.Health(this.resources)
-	hp := hc.HealthPoint(this.resources.SysConfig().LocalUuid)
+	curr := hc.HealthPoint(this.resources.SysConfig().LocalUuid)
+	hp := &types.HealthPoint{}
+	hp.AUuid = curr.AUuid
+	hp.Services = curr.Services
 	mergeServices(hp, this.resources.SysConfig().Services)
-	return this.Multicast(health.ServiceName, 0, common.PUT, hp)
+	return this.Unicast(this.resources.SysConfig().RemoteUuid, health.ServiceName, 0, common.PATCH, hp)
 }
 
 func mergeServices(hp *types.HealthPoint, services *types.Services) {
