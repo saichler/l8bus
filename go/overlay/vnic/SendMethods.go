@@ -19,8 +19,19 @@ func (this *VirtualNetworkInterface) Request(destination, serviceName string, se
 	request := this.requests.newRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid)
 	request.cond.L.Lock()
 	defer request.cond.L.Unlock()
-	mobjects := object.New(nil, any)
-	e := this.components.TX().Unicast(destination, serviceName, serviceArea, action, mobjects, 0,
+	var elements common.IElements
+	var err error
+	query, ok := any.(string)
+	if ok {
+		elements, err = object.NewQuery(query, this.resources)
+		if err != nil {
+			return object.NewError(err.Error())
+		}
+	} else {
+		elements = object.New(nil, any)
+	}
+
+	e := this.components.TX().Unicast(destination, serviceName, serviceArea, action, elements, 0,
 		true, false, request.msgNum, nil)
 	if e != nil {
 		return object.NewError(e.Error())
