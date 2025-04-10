@@ -13,17 +13,18 @@ type HealthServicePoint struct {
 	typ          *reflect.Type
 }
 
-func RegisterHealth(resources common.IResources, listener cache.ICacheListener) {
+func AcivateHealth(resources common.IResources, listener cache.ICacheListener) error {
 	health := &HealthServicePoint{}
 	health.healthCenter = newHealthCenter(resources, listener)
 	err := resources.ServicePoints().RegisterServicePoint(health)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	err = resources.ServicePoints().Activate(ServiceName, 0, nil)
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
 func (this *HealthServicePoint) Post(pb common.IElements, resourcs common.IResources) common.IElements {
