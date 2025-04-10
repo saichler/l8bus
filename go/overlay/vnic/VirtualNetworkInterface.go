@@ -101,7 +101,7 @@ func (this *VirtualNetworkInterface) connect() error {
 	}
 	// Verify that the switch accepts this connection
 	if this.resources.SysConfig().LocalUuid == "" {
-		panic("")
+		panic("Couldn't connect")
 	}
 	err = this.resources.Security().ValidateConnection(conn, this.resources.SysConfig())
 	if err != nil {
@@ -109,6 +109,7 @@ func (this *VirtualNetworkInterface) connect() error {
 	}
 	this.conn = conn
 	this.resources.SysConfig().Address = conn.LocalAddr().String()
+	this.resources.Logger().Info("Connected!")
 	return nil
 }
 
