@@ -20,7 +20,7 @@ func RegisterHealth(resources common.IResources, listener cache.ICacheListener) 
 	if err != nil {
 		panic(err)
 	}
-	err = resources.ServicePoints().Activate(ServiceName, 0)
+	err = resources.ServicePoints().Activate(ServiceName, 0, nil)
 	if err != nil {
 		panic(err)
 	}
