@@ -72,7 +72,10 @@ func (this *VirtualNetworkInterface) Start() {
 }
 
 func (this *VirtualNetworkInterface) connectToSwitch() {
-	this.connect()
+	err := this.connect()
+	if err != nil {
+		panic(err)
+	}
 	this.components.start()
 }
 
@@ -86,6 +89,7 @@ func (this *VirtualNetworkInterface) connect() error {
 		subnet := protocol.IpSegment.ExternalSubnet()
 		destination = subnet + ".1"
 	}
+	this.resources.Logger().Info("Trying to connect to vnet at IP - ", destination)
 	// Try to dial to the switch
 	conn, err := this.resources.Security().CanDial(destination, this.resources.SysConfig().VnetPort)
 	if err != nil {
