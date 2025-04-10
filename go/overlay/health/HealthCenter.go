@@ -18,7 +18,7 @@ type HealthCenter struct {
 	resources    common.IResources
 }
 
-func newHealthCenter(resources common.IResources, listener cache.ICacheListener) *HealthCenter {
+func newHealthCenter(resources common.IResources, listener common.IServicePointCacheListener) *HealthCenter {
 	hc := &HealthCenter{}
 	rnode, _ := resources.Introspector().Inspect(&types.HealthPoint{})
 	introspecting.AddPrimaryKeyDecorator(rnode, "AUuid")

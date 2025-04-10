@@ -2,7 +2,6 @@ package health
 
 import (
 	"github.com/saichler/serializer/go/serialize/object"
-	"github.com/saichler/servicepoints/go/points/cache"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
 	"reflect"
@@ -13,14 +12,11 @@ type HealthServicePoint struct {
 	typ          *reflect.Type
 }
 
-func AcivateHealth(resources common.IResources, listener cache.ICacheListener) error {
+func Activate(resources common.IResources, listener common.IServicePointCacheListener) error {
 	health := &HealthServicePoint{}
 	health.healthCenter = newHealthCenter(resources, listener)
-	err := resources.ServicePoints().RegisterServicePoint(health)
-	if err != nil {
-		return err
-	}
-	err = resources.ServicePoints().Activate(ServiceName, 0, nil)
+	resources.ServicePoints().RegisterServicePoint(health)
+	err := resources.ServicePoints().Activate(ServiceName, 0, health, nil)
 	if err != nil {
 		return err
 	}

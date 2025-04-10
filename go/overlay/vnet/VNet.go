@@ -263,7 +263,6 @@ func (this *VNet) switchDataReceived(data []byte, vnic common.IVirtualNetworkInt
 			this.resources.Logger().Error(resp.Error())
 		}
 	}
-
 }
 
 func (this *VNet) Resources() common.IResources {

@@ -176,7 +176,7 @@ func (this *VirtualNetworkInterface) reconnect() {
 	}
 }
 
-func (this *VirtualNetworkInterface) UpdateServices() error {
+func (this *VirtualNetworkInterface) NotifyServiceAdded() error {
 	hc := health.Health(this.resources)
 	curr := hc.HealthPoint(this.resources.SysConfig().LocalUuid)
 	hp := &types.HealthPoint{}
