@@ -56,7 +56,7 @@ func NewVirtualNetworkInterface(resources common.IResources, conn net.Conn) *Vir
 
 	if conn == nil {
 		// Register the health service
-		health.AcivateHealth(vnic.resources, nil)
+		health.Activate(vnic.resources, nil)
 	}
 
 	return vnic
