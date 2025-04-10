@@ -8,7 +8,6 @@ import (
 )
 
 var IpSegment = newIpAddressSegment()
-var UsingContainers = true
 var MachineIP = "127.0.0.1"
 
 // IPSegment Let the switching know if the incoming ip belongs to this machine/vm or is it external machine/vm.

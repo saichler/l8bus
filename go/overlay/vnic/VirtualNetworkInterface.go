@@ -83,15 +83,15 @@ func (this *VirtualNetworkInterface) connectToSwitch() {
 func (this *VirtualNetworkInterface) connect() error {
 	// Dial the destination and validate the secret and key
 	destination := protocol.MachineIP
-	if protocol.UsingContainers {
+	if common.NetworkMode_K8s() {
 		destination = os.Getenv("NODE_IP")
-		/*
-			// inside a containet the switch ip will be the external subnet + ".1"
-			// for example if the address of the container is 172.1.1.112, the switch will be accessible
-			// via 172.1.1.1
-			subnet := protocol.IpSegment.ExternalSubnet()
-			destination = subnet + ".1"
-		*/
+	} else if common.NetworkMode_DOCKER() {
+		// inside a containet the switch ip will be the external subnet + ".1"
+		// for example if the address of the container is 172.1.1.112, the switch will be accessible
+		// via 172.1.1.1
+		subnet := protocol.IpSegment.ExternalSubnet()
+		destination = subnet + ".1"
+
 	}
 	this.resources.Logger().Info("Trying to connect to vnet at IP - ", destination)
 	// Try to dial to the switch
