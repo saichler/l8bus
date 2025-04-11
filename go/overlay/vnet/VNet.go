@@ -23,6 +23,7 @@ type VNet struct {
 	ready       bool
 	switchTable *SwitchTable
 	protocol    *protocol.Protocol
+	udp         *net.UDPConn
 }
 
 func NewVNet(resources common.IResources) *VNet {
@@ -45,11 +46,11 @@ func NewVNet(resources common.IResources) *VNet {
 func (this *VNet) Start() error {
 	var err error
 	go this.start(&err)
-
 	for !this.ready && err == nil {
 		time.Sleep(time.Millisecond * 50)
 	}
 	time.Sleep(time.Millisecond * 50)
+	this.Discover()
 	return err
 }
 

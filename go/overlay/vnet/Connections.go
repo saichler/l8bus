@@ -7,11 +7,12 @@ import (
 )
 
 type Connections struct {
-	internal map[string]common.IVirtualNetworkInterface
-	external map[string]common.IVirtualNetworkInterface
-	routes   map[string]string
-	mtx      *sync.RWMutex
-	logger   common.ILogger
+	internal          map[string]common.IVirtualNetworkInterface
+	external          map[string]common.IVirtualNetworkInterface
+	routes            map[string]string
+	mtx               *sync.RWMutex
+	logger            common.ILogger
+	externalConnected map[string]string
 }
 
 func newConnections(logger common.ILogger) *Connections {
@@ -19,6 +20,7 @@ func newConnections(logger common.ILogger) *Connections {
 	conns.internal = make(map[string]common.IVirtualNetworkInterface)
 	conns.external = make(map[string]common.IVirtualNetworkInterface)
 	conns.routes = make(map[string]string)
+	conns.externalConnected = make(map[string]string)
 	conns.mtx = &sync.RWMutex{}
 	conns.logger = logger
 	return conns
@@ -46,7 +48,16 @@ func (this *Connections) addExternal(uuid string, vnic common.IVirtualNetworkInt
 		this.logger.Info("External vnic ", uuid, " already exists, shutting down")
 		exist.Shutdown()
 	}
+
 	this.external[uuid] = vnic
+	this.externalConnected[vnic.Resources().SysConfig().Address] = uuid
+}
+
+func (this *Connections) isConnected(ip string) bool {
+	this.mtx.RLock()
+	defer this.mtx.RUnlock()
+	_, ok := this.externalConnected[ip]
+	return ok
 }
 
 func (this *Connections) getConnection(vnicUuid string, isHope0 bool, resources common.IResources) (string, common.IVirtualNetworkInterface) {
