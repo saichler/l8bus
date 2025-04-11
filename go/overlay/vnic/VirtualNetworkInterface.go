@@ -209,3 +209,7 @@ func mergeServices(hp *types.HealthPoint, services *types.Services) {
 		}
 	}
 }
+
+func (this *VirtualNetworkInterface) PropertyChangeNotification(set *types.NotificationSet) {
+	this.Multicast(set.ServiceName, uint16(set.ServiceArea), common.Notify, set)
+}
