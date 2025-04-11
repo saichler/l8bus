@@ -57,6 +57,7 @@ func (this *Connections) isConnected(ip string) bool {
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
 	_, ok := this.externalConnected[ip]
+	this.logger.Info("checked ", ip, " result ", ok)
 	return ok
 }
 

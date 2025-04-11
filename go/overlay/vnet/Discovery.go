@@ -32,7 +32,7 @@ func (this *VNet) discoveryRx() {
 	for this.running {
 		n, addr, err := this.udp.ReadFromUDP(packet)
 		ip := addr.IP.String()
-		this.resources.Logger().Debug("Recevied discovery broadcast from ", ip)
+		this.resources.Logger().Debug("Recevied discovery broadcast from ", ip, " size ", n)
 		if !this.running {
 			break
 		}
