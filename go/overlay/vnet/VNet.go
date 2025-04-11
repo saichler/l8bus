@@ -227,8 +227,6 @@ func (this *VNet) ShutdownVNic(vnic common.IVirtualNetworkInterface) {
 	if hp.Status != types.HealthState_Down {
 		hp.Status = types.HealthState_Down
 		h.Update(hp)
-		//this.resources.Logger().Trace(this.resources.SysConfig().LocalAlias, " Updated health state: ", hp.Alias, " to ", hp.Status)
-		//this.switchTable.sendToAll(health.TOPIC, types.Action_PUT, hp)
 	}
 	this.resources.Logger().Info("Shutdown complete ", this.resources.SysConfig().LocalAlias)
 }
@@ -271,9 +269,5 @@ func (this *VNet) Resources() common.IResources {
 }
 
 func (this *VNet) PropertyChangeNotification(set *types.NotificationSet) {
-	this.resources.Logger().Trace("Notification ", set.Type.String())
-	for _, n := range set.NotificationList {
-		this.resources.Logger().Trace(n.PropertyId)
-	}
 	this.switchTable.uniCastToAll(set.ServiceName, uint16(set.ServiceArea), common.Notify, set)
 }
