@@ -28,15 +28,17 @@ func newSwitchTable(switchService *VNet) *SwitchTable {
 func (this *SwitchTable) uniCastToAll(serviceName string, serviceArea uint16, action common.Action, pb proto.Message) {
 	conns := this.conns.all()
 	mobjects := object.New(nil, pb)
+	nextId := this.switchService.protocol.NextMessageNumber()
 	data, err := this.switchService.protocol.CreateMessageFor("", serviceName, serviceArea, common.P1, action,
 		this.switchService.resources.SysConfig().LocalUuid,
-		this.switchService.resources.SysConfig().LocalUuid, mobjects, false, false, this.switchService.protocol.NextMessageNumber(), nil)
+		this.switchService.resources.SysConfig().LocalUuid, mobjects, false, false, nextId, nil)
 	if err != nil {
 		this.switchService.resources.Logger().Error("Failed to create message to send to all: ", err)
 		return
 	}
 	for _, vnic := range conns {
-		this.switchService.resources.Logger().Trace(this.desc, "sending message to ", vnic.Resources().SysConfig().RemoteUuid)
+		this.switchService.resources.Logger().Trace(this.desc, "sending message ", nextId, " to ",
+			vnic.Resources().SysConfig().RemoteUuid)
 		vnic.SendMessage(data)
 	}
 }
