@@ -138,7 +138,7 @@ func (this *HealthCenter) AddScore(target, serviceName string, serviceArea uint1
 }
 
 func Health(r common.IResources) *HealthCenter {
-	sp, ok := r.ServicePoints().ActiveServicePointHandler(ServiceName, 0)
+	sp, ok := r.ServicePoints().ServicePointHandler(ServiceName, 0)
 	if !ok {
 		return nil
 	}

@@ -12,11 +12,10 @@ type HealthServicePoint struct {
 	typ          *reflect.Type
 }
 
-func Activate(resources common.IResources, listener common.IServicePointCacheListener) error {
+func RegisterHealthServicePoint(resources common.IResources, listener common.IServicePointCacheListener) error {
 	health := &HealthServicePoint{}
 	health.healthCenter = newHealthCenter(resources, listener)
-	resources.ServicePoints().RegisterServicePoint(health)
-	err := resources.ServicePoints().Activate(ServiceName, 0, health, nil)
+	err := resources.ServicePoints().RegisterServicePoint(health, 0, nil)
 	if err != nil {
 		return err
 	}
