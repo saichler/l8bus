@@ -39,6 +39,7 @@ func (this *KeepAlive) run() {
 }
 
 func (this *KeepAlive) sendState() {
+	return
 	stats := &types.HealthPointStats{}
 	stats.TxMsgCount = this.vnic.stats.TxMsgCount
 	stats.TxDataCount = this.vnic.stats.TxDataCount
