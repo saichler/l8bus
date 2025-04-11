@@ -30,6 +30,7 @@ func (this *VNet) discoveryRx() {
 
 	for this.running {
 		n, addr, err := this.udp.ReadFromUDP(packet)
+		this.resources.Logger().Debug("Recevied discovery broadcast")
 		if !this.running {
 			break
 		}
@@ -53,14 +54,19 @@ func (this *VNet) discoveryRx() {
 }
 
 func (this *VNet) Broadcast() {
+	this.resources.Logger().Debug("Sending discovery broadcast")
 	addr, err := net.ResolveUDPAddr("udp", "255.255.255.255:"+strconv.Itoa(int(this.resources.SysConfig().VnetPort-2)))
 	if err != nil {
 		this.resources.Logger().Error("Failed to resolve broadcast:", err.Error())
 		return
 	}
 	this.udp.WriteToUDP([]byte{1, 2, 3}, addr)
+	time.Sleep(time.Second * 10)
+	this.resources.Logger().Debug("Sending discovery broadcast")
+	this.udp.WriteToUDP([]byte{1, 2, 3}, addr)
 	for this.running {
 		time.Sleep(time.Minute)
+		this.resources.Logger().Debug("Sending discovery broadcast")
 		this.udp.WriteToUDP([]byte{1, 2, 3}, addr)
 	}
 }
