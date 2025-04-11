@@ -271,5 +271,9 @@ func (this *VNet) Resources() common.IResources {
 }
 
 func (this *VNet) PropertyChangeNotification(set *types.NotificationSet) {
+	this.resources.Logger().Trace("Notification ", set.Type.String())
+	for _, n := range set.NotificationList {
+		this.resources.Logger().Trace(n.PropertyId)
+	}
 	this.switchTable.uniCastToAll(set.ServiceName, uint16(set.ServiceArea), common.Notify, set)
 }
