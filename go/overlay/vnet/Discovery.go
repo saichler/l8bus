@@ -31,7 +31,8 @@ func (this *VNet) discoveryRx() {
 
 	for this.running {
 		n, addr, err := this.udp.ReadFromUDP(packet)
-		this.resources.Logger().Debug("Recevied discovery broadcast")
+		ip := addr.IP.String()
+		this.resources.Logger().Debug("Recevied discovery broadcast from ", ip)
 		if !this.running {
 			break
 		}
@@ -40,7 +41,6 @@ func (this *VNet) discoveryRx() {
 			break
 		}
 		if n == 3 {
-			ip := addr.IP.String()
 			if ip != protocol.MachineIP && ip != "127.0.0.1" {
 				if strings.Compare(ip, protocol.MachineIP) == -1 && !this.switchTable.conns.isConnected(ip) {
 					this.resources.Logger().Info("Trying to connect to peer at ", ip)
