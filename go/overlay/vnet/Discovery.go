@@ -9,6 +9,10 @@ import (
 )
 
 func (this *VNet) Discover() {
+	if protocol.MachineIP == "127.0.0.1" {
+		this.resources.Logger().Info("Discovery is disabled, machine IP is ", protocol.MachineIP)
+		return
+	}
 	addr, err := net.ResolveUDPAddr("udp", ":"+strconv.Itoa(int(this.resources.SysConfig().VnetPort-2)))
 	if err != nil {
 		this.resources.Logger().Error("Discovery: ", err.Error())

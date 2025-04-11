@@ -38,7 +38,8 @@ func (ias *IPSegment) initSegment() {
 		} else if name[0:3] == "eth" ||
 			name[0:3] == "ens" ||
 			name[0:3] == "en0" ||
-			name[0:3] == "wlp" {
+			name[0:3] == "wlp" ||
+			name[0:3] == "enp" {
 			ias.subnet2Local[Subnet(ip)] = false
 			if MachineIP == "127.0.0.1" {
 				MachineIP = ip
