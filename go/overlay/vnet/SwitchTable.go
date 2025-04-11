@@ -99,12 +99,15 @@ func (this *SwitchTable) newHealthPoint(config *types.SysConfig) *types.HealthPo
 	hp := &types.HealthPoint{}
 	hp.Alias = config.RemoteAlias
 	hp.AUuid = config.RemoteUuid
-	hp.ZUuid = config.LocalUuid
 	hp.Status = types.HealthState_Up
 	hp.Services = config.Services
-	hp.StartTime = time.Now().UnixMilli()
 	isLocal := protocol.IpSegment.IsLocal(config.Address)
 	hp.IsVnet = config.ForceExternal || !isLocal
+
+	if !hp.IsVnet {
+		hp.StartTime = time.Now().UnixMilli()
+		hp.ZUuid = config.LocalUuid
+	}
 	return hp
 }
 
