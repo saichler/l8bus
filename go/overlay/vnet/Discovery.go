@@ -25,6 +25,7 @@ func (this *VNet) Discover() {
 }
 
 func (this *VNet) discoveryRx() {
+	this.resources.Logger().Debug("Listening for discovery broadcast")
 	packet := []byte{0, 0, 0}
 	defer this.udp.Close()
 
