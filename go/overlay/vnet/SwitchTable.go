@@ -113,7 +113,7 @@ func (this *SwitchTable) newHealthPoint(config *types.SysConfig) *types.HealthPo
 
 func (this *SwitchTable) ServiceUuids(serviceName string, serviceArea uint16, sourceSwitch string) map[string]bool {
 	h := health.Health(this.switchService.resources)
-	uuidsMap := h.Uuids(serviceName, serviceArea, false)
+	uuidsMap := h.Uuids(serviceName, serviceArea)
 	if uuidsMap != nil && sourceSwitch != this.switchService.resources.SysConfig().LocalUuid {
 		// When the message source is not within this switch,
 		// we should not publish to adjacent as the overlay is o one hope

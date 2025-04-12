@@ -1,7 +1,6 @@
 package vnet
 
 import (
-	"github.com/saichler/layer8/go/overlay/health"
 	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
 	resources2 "github.com/saichler/shared/go/share/resources"
 	"github.com/saichler/types/go/common"
@@ -16,13 +15,12 @@ func (this *VNet) ConnectNetworks(host string, destPort uint32) error {
 		return err
 	}
 
-	hc := health.Health(this.resources)
 	config := &types.SysConfig{MaxDataSize: resources2.DEFAULT_MAX_DATA_SIZE,
 		RxQueueSize:   resources2.DEFAULT_QUEUE_SIZE,
 		TxQueueSize:   resources2.DEFAULT_QUEUE_SIZE,
 		VnetPort:      destPort,
 		LocalUuid:     this.resources.SysConfig().LocalUuid,
-		Services:      hc.AllServices(),
+		Services:      this.resources.SysConfig().Services,
 		ForceExternal: true,
 		LocalAlias:    this.resources.SysConfig().LocalAlias,
 	}

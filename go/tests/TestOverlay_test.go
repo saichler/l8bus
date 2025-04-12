@@ -43,8 +43,8 @@ func TestTopologyHealth(t *testing.T) {
 	}
 
 	uuids = hc.Uuids(health.ServiceName, 0)
-	if len(uuids) != 12 {
-		Log.Fail(t, "Expected uuids to be 12, but it is ", len(uuids))
+	if len(uuids) != 14 {
+		Log.Fail(t, "Expected uuids to be 14, but it is ", len(uuids))
 	}
 }
 
