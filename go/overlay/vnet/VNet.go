@@ -39,7 +39,10 @@ func NewVNet(resources common.IResources) *VNet {
 	net.running = true
 	net.resources.SysConfig().LocalUuid = common.NewUuid()
 	net.switchTable = newSwitchTable(net)
-	health.RegisterHealthServicePoint(net.resources, net)
+
+	net.resources.ServicePoints().AddServicePointType(&health.HealthServicePoint{})
+	net.resources.ServicePoints().Activate(health.ServicePointName, health.ServiceName, 0, net.resources, net)
+
 	return net
 }
 

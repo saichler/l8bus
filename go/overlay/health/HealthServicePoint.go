@@ -1,24 +1,25 @@
 package health
 
 import (
-	"github.com/saichler/serializer/go/serialize/object"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
-	"reflect"
+)
+
+const (
+	ServiceName      = "Health"
+	ServicePointName = "HealthServicePoint"
 )
 
 type HealthServicePoint struct {
 	healthCenter *HealthCenter
-	typ          *reflect.Type
 }
 
-func RegisterHealthServicePoint(resources common.IResources, listener common.IServicePointCacheListener) error {
-	health := &HealthServicePoint{}
-	health.healthCenter = newHealthCenter(resources, listener)
-	err := resources.ServicePoints().RegisterServicePoint(health, 0, nil)
+func (this *HealthServicePoint) Activate(serviceName string, serviceArea uint16, resources common.IResources, listener common.IServicePointCacheListener) error {
+	_, err := resources.Registry().Register(&types.HealthPoint{})
 	if err != nil {
 		return err
 	}
+	this.healthCenter = newHealthCenter(resources, listener)
 	return nil
 }
 
@@ -49,12 +50,7 @@ func (this *HealthServicePoint) Get(pb common.IElements, resourcs common.IResour
 func (this *HealthServicePoint) Failed(pb common.IElements, resourcs common.IResources, msg common.IMessage) common.IElements {
 	return nil
 }
-func (this *HealthServicePoint) EndPoint() string {
-	return Endpoint
-}
-func (this *HealthServicePoint) ServiceName() string {
-	return ServiceName
-}
+
 func (this *HealthServicePoint) Transactional() bool {
 	return false
 }
@@ -65,8 +61,4 @@ func (this *HealthServicePoint) ReplicationCount() int {
 
 func (this *HealthServicePoint) ReplicationScore() int {
 	return 0
-}
-
-func (this *HealthServicePoint) ServiceModel() common.IElements {
-	return object.New(nil, &types.HealthPoint{})
 }

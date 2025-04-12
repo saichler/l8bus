@@ -7,11 +7,6 @@ import (
 	"github.com/saichler/types/go/types"
 )
 
-const (
-	ServiceName = "Health"
-	Endpoint    = "health"
-)
-
 type HealthCenter struct {
 	healthPoints *cache.Cache
 	services     *Services
