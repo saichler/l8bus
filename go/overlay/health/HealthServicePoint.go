@@ -15,7 +15,7 @@ type HealthServicePoint struct {
 }
 
 func (this *HealthServicePoint) Activate(serviceName string, serviceArea uint16,
-	resources common.IResources, listener common.IServicePointCacheListener, args ...string) error {
+	resources common.IResources, listener common.IServicePointCacheListener, args ...interface{}) error {
 	_, err := resources.Registry().Register(&types.HealthPoint{})
 	if err != nil {
 		return err
