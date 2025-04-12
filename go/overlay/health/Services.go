@@ -9,7 +9,6 @@ import (
 type Services struct {
 	services    map[string]*ServiceAreas
 	aSide2zSide map[string]string
-	vnetUuid    map[string]bool
 	mtx         *sync.RWMutex
 }
 
@@ -33,7 +32,6 @@ func newServices() *Services {
 	services.services = make(map[string]*ServiceAreas)
 	services.aSide2zSide = make(map[string]string)
 	services.mtx = new(sync.RWMutex)
-	services.vnetUuid = make(map[string]bool)
 	return services
 }
 
@@ -43,7 +41,7 @@ func (this *Services) ZUuid(auuid string) string {
 	return this.aSide2zSide[auuid]
 }
 
-func (this *Services) UUIDs(serviceName string, serviceArea uint16, noVnet bool) map[string]bool {
+func (this *Services) UUIDs(serviceName string, serviceArea uint16) map[string]bool {
 	result := make(map[string]bool)
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
@@ -56,12 +54,6 @@ func (this *Services) UUIDs(serviceName string, serviceArea uint16, noVnet bool)
 		return result
 	}
 	for uuid, _ := range area.members {
-		if noVnet {
-			_, ok = this.vnetUuid[uuid]
-			if ok {
-				continue
-			}
-		}
 		if uuid == area.leader {
 			result[uuid] = true
 		} else {
@@ -121,10 +113,6 @@ func (this *Services) ScoresFor(serviceName string, serviceArea uint16) map[stri
 		return result
 	}
 	for target, member := range area.members {
-		_, ok = this.vnetUuid[target]
-		if ok {
-			continue
-		}
 		result[target] = member.s
 	}
 	return result
@@ -148,9 +136,6 @@ func (this *Services) checkHealthPointDown(healthPoint *types.HealthPoint, areas
 func (this *Services) updateServices(healthPoint *types.HealthPoint, areasToCalcLeader *[]*ServiceArea) {
 	if healthPoint.Services == nil {
 		return
-	}
-	if healthPoint.IsVnet {
-		this.vnetUuid[healthPoint.AUuid] = true
 	}
 	for serviceName, serviceAreas := range healthPoint.Services.ServiceToAreas {
 		_, ok := this.services[serviceName]
@@ -205,12 +190,6 @@ func calcLeader(serviceArea *ServiceArea) {
 			serviceArea.leader = uuid
 		}
 	}
-}
-
-func (this *Services) setVnetUuid(uuid string) {
-	this.mtx.Lock()
-	defer this.mtx.Unlock()
-	this.vnetUuid[uuid] = true
 }
 
 func (this *Services) AllServices() *types.Services {

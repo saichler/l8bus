@@ -63,7 +63,7 @@ func (this *HealthCenter) DestinationFor(serviceName string, serviceArea uint16,
 	if leader {
 		return this.services.Leader(serviceName, serviceArea)
 	}
-	uuids := this.services.UUIDs(serviceName, serviceArea, false)
+	uuids := this.services.UUIDs(serviceName, serviceArea)
 	_, ok := uuids[source]
 	if ok {
 		return source
@@ -100,8 +100,8 @@ func (this *HealthCenter) AllServices() *types.Services {
 	return this.services.AllServices()
 }
 
-func (this *HealthCenter) Uuids(serviceName string, serviceArea uint16, noVnet bool) map[string]bool {
-	return this.services.UUIDs(serviceName, serviceArea, noVnet)
+func (this *HealthCenter) Uuids(serviceName string, serviceArea uint16) map[string]bool {
+	return this.services.UUIDs(serviceName, serviceArea)
 }
 
 func (this *HealthCenter) ReplicasFor(serviceName string, serviceArea uint16, numOfReplicas int) map[string]int32 {

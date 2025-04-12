@@ -37,15 +37,14 @@ func TestTopologyHealth(t *testing.T) {
 	}
 
 	hc := health.Health(eg1_1.Resources())
-	uuids := hc.Uuids(ServiceName, 0, true)
+	uuids := hc.Uuids(ServiceName, 0)
 	if len(uuids) != 9 {
 		Log.Fail(t, "Expected uuids to be 9, but it is ", len(uuids))
 	}
 
-	uuids = hc.Uuids(ServiceName, 0, false)
-	if len(uuids) != 11 {
-		Log.Fail(t, "Expected uuids to be 11, but it is ", len(uuids))
-		return
+	uuids = hc.Uuids(health.ServiceName, 0)
+	if len(uuids) != 12 {
+		Log.Fail(t, "Expected uuids to be 12, but it is ", len(uuids))
 	}
 }
 
