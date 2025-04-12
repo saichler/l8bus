@@ -8,7 +8,6 @@ import (
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
 	"testing"
-	"time"
 )
 
 func TestMain(m *testing.M) {
@@ -47,8 +46,6 @@ func TestTopologyHealth(t *testing.T) {
 	if len(uuids) != 14 {
 		Log.Fail(t, "Expected uuids to be 14, but it is ", len(uuids))
 	}
-
-	time.Sleep(time.Minute)
 }
 
 func TestSendMultiCast(t *testing.T) {
