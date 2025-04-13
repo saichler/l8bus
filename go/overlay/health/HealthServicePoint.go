@@ -24,6 +24,10 @@ func (this *HealthServicePoint) Activate(serviceName string, serviceArea uint16,
 	return nil
 }
 
+func (this *HealthServicePoint) DeActivate() error {
+	return nil
+}
+
 func (this *HealthServicePoint) Post(pb common.IElements, resourcs common.IResources) common.IElements {
 	hp := pb.Element().(*types.HealthPoint)
 	this.healthCenter.Add(hp)
