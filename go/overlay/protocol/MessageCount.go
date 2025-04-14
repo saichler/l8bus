@@ -1,7 +1,7 @@
 package protocol
 
 import (
-	"github.com/saichler/types/go/common"
+	"github.com/saichler/shared/go/share/logger"
 	"github.com/saichler/types/go/types"
 	"sync/atomic"
 )
@@ -9,6 +9,7 @@ import (
 var CountMessages = false
 var messagesCreated atomic.Uint64
 var propertyChangeCalled atomic.Uint64
+var ExplicitLog = logger.NewLoggerDirectImpl(logger.NewFileLogMethod("/tmp/messages.log"))
 
 func AddMessageCreated() {
 	if CountMessages {
@@ -16,10 +17,10 @@ func AddMessageCreated() {
 	}
 }
 
-func AddPropertyChangeCalled(vnic common.IVirtualNetworkInterface, set *types.NotificationSet) {
+func AddPropertyChangeCalled(set *types.NotificationSet) {
 	if CountMessages {
 		propertyChangeCalled.Add(1)
-		vnic.Resources().Logger().Trace("*** Property Change: ", set.ServiceArea, " ", set.Type.String(), ":")
+		ExplicitLog.Trace("*** Property Change: ", set.ServiceArea, " ", set.Type.String(), ":")
 	}
 }
 
