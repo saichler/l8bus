@@ -2,6 +2,7 @@ package vnic
 
 import (
 	"github.com/saichler/layer8/go/overlay/health"
+	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
 )
@@ -28,7 +29,8 @@ func (this *VirtualNetworkInterface) NotifyServiceRemoved(serviceName string, se
 }
 
 func (this *VirtualNetworkInterface) PropertyChangeNotification(set *types.NotificationSet) {
-	//this.Multicast(set.ServiceName, uint16(set.ServiceArea), common.Notify, set)
+	protocol.AddPropertyChangeCalled()
+	this.Multicast(set.ServiceName, uint16(set.ServiceArea), common.Notify, set)
 }
 
 func mergeServices(hp *types.HealthPoint, services *types.Services) {

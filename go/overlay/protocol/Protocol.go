@@ -63,15 +63,12 @@ func DataFor(elems common.IElements, security common.ISecurityProvider) (string,
 	return encData, err
 }
 
-var CountMessages = false
-var MsgCreate atomic.Uint64
-
 func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceArea uint16,
 	priority common.Priority, action common.Action, source, vnet string, o common.IElements,
 	isRequest, isReply bool, msgNum uint32, tr common.ITransaction) ([]byte, error) {
-	if CountMessages {
-		MsgCreate.Add(1)
-	}
+
+	AddMessageCreated()
+
 	var data []byte
 	var err error
 
