@@ -1,6 +1,10 @@
 package protocol
 
-import "sync/atomic"
+import (
+	"github.com/saichler/types/go/common"
+	"github.com/saichler/types/go/types"
+	"sync/atomic"
+)
 
 var CountMessages = false
 var messagesCreated atomic.Uint64
@@ -12,9 +16,10 @@ func AddMessageCreated() {
 	}
 }
 
-func AddPropertyChangeCalled() {
+func AddPropertyChangeCalled(vnic common.IVirtualNetworkInterface, set *types.NotificationSet) {
 	if CountMessages {
 		propertyChangeCalled.Add(1)
+		vnic.Resources().Logger().Trace("*** Property Change: ", set.ServiceArea, " ", set.Type.String(), ":")
 	}
 }
 
