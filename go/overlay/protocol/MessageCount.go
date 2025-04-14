@@ -20,7 +20,7 @@ func AddMessageCreated() {
 func AddPropertyChangeCalled(set *types.NotificationSet) {
 	if CountMessages {
 		propertyChangeCalled.Add(1)
-		ExplicitLog.Trace("*** Property Change: ", set.ServiceArea, " ", set.Type.String(), ":")
+		ExplicitLog.Trace("*** Property Change: ", set.ServiceName, " ", set.Type.String(), ":")
 	}
 }
 
