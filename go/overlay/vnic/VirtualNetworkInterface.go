@@ -176,3 +176,7 @@ func (this *VirtualNetworkInterface) reconnect() {
 		this.resources.Logger().Info("***** Reconnected to ", this.resources.SysConfig().RemoteAlias, " *****")
 	}
 }
+
+func (this *VirtualNetworkInterface) Stats() *types.HealthPointStats {
+	return this.stats
+}
