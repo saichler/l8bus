@@ -58,6 +58,7 @@ func (this *VNet) Start() error {
 }
 
 func (this *VNet) start(err *error) {
+	this.resources.Logger().Info("*** VNET Start Ver 1.0")
 	if this.resources.SysConfig().VnetPort == 0 {
 		er := errors.New("Switch Port does not have a port defined")
 		err = &er
