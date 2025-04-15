@@ -273,5 +273,6 @@ func (this *VNet) Resources() common.IResources {
 }
 
 func (this *VNet) PropertyChangeNotification(set *types.NotificationSet) {
+	protocol.AddPropertyChangeCalled(set)
 	this.switchTable.uniCastToAll(set.ServiceName, uint16(set.ServiceArea), common.Notify, set)
 }
