@@ -9,7 +9,7 @@ import (
 var CountMessages = false
 var messagesCreated atomic.Uint64
 var propertyChangeCalled atomic.Uint64
-var ExplicitLog = logger.NewLoggerDirectImpl(logger.NewFileLogMethod("/tmp/messages.log"))
+var ExplicitLog = logger.NewLoggerDirectImpl(logger.NewFileLogMethod("/tmp/Explicit.log"))
 
 func AddMessageCreated() {
 	if CountMessages {
