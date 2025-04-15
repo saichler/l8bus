@@ -1,6 +1,7 @@
 package protocol
 
 import (
+	"bytes"
 	"github.com/saichler/shared/go/share/logger"
 	"github.com/saichler/types/go/types"
 	"sync/atomic"
@@ -20,7 +21,18 @@ func AddMessageCreated() {
 func AddPropertyChangeCalled(set *types.NotificationSet) {
 	if CountMessages {
 		propertyChangeCalled.Add(1)
-		ExplicitLog.Trace("*** Property Change: ", set.ServiceName, " ", set.Type.String(), ":")
+		props := ""
+		if set.Type == types.NotificationType_Update {
+			buff := bytes.Buffer{}
+			buff.WriteString(" - ")
+			for _, chg := range set.NotificationList {
+				buff.WriteString(chg.PropertyId)
+				buff.WriteString(" ")
+			}
+			props = buff.String()
+		}
+		ExplicitLog.Trace("*** Property Change: ", set.ServiceName, " ", set.Type.String(), ":", props)
+
 	}
 }
 
