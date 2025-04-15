@@ -6,7 +6,6 @@ import (
 	"github.com/saichler/serializer/go/serialize/object"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
-	"google.golang.org/protobuf/proto"
 	"time"
 )
 
@@ -25,9 +24,8 @@ func newSwitchTable(switchService *VNet) *SwitchTable {
 	return switchTable
 }
 
-func (this *SwitchTable) uniCastToAll(serviceName string, serviceArea uint16, action common.Action, pb proto.Message) {
-	conns := this.conns.all()
-	mobjects := object.New(nil, pb)
+func (this *SwitchTable) unicastHealthNotification(serviceName string, serviceArea uint16, action common.Action, set *types.NotificationSet, isLocal bool) {
+	mobjects := object.New(nil, set)
 	nextId := this.switchService.protocol.NextMessageNumber()
 	data, err := this.switchService.protocol.CreateMessageFor("", serviceName, serviceArea, common.P1, action,
 		this.switchService.resources.SysConfig().LocalUuid,
@@ -35,6 +33,12 @@ func (this *SwitchTable) uniCastToAll(serviceName string, serviceArea uint16, ac
 	if err != nil {
 		this.switchService.resources.Logger().Error("Failed to create message to send to all: ", err)
 		return
+	}
+	var conns map[string]common.IVirtualNetworkInterface
+	if isLocal {
+		conns = this.conns.all()
+	} else {
+		conns = this.conns.allInternals()
 	}
 	for _, vnic := range conns {
 		this.switchService.resources.Logger().Trace(this.desc, "sending message ", nextId, " to ",

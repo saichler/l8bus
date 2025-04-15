@@ -273,6 +273,14 @@ func (this *VNet) Resources() common.IResources {
 }
 
 func (this *VNet) PropertyChangeNotification(set *types.NotificationSet) {
+	//only health service will call this callback so check if the notification is from a local source
+	//if it is from local source, then just notify local vnics
 	protocol.AddPropertyChangeCalled(set)
-	this.switchTable.uniCastToAll(set.ServiceName, uint16(set.ServiceArea), common.Notify, set)
+	hc := health.Health(this.resources)
+	hp := hc.HealthPoint(set.ModelKey)
+	isLocal := false
+	if hp.ZUuid == this.resources.SysConfig().LocalUuid {
+		isLocal = true
+	}
+	this.switchTable.unicastHealthNotification(health.ServiceName, 0, common.Notify, set, isLocal)
 }

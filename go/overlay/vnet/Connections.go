@@ -127,22 +127,22 @@ func (this *Connections) isInterval(uuid string) bool {
 	return ok
 }
 
-func (this *Connections) allInternals() []common.IVirtualNetworkInterface {
+func (this *Connections) allInternals() map[string]common.IVirtualNetworkInterface {
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
-	result := make([]common.IVirtualNetworkInterface, 0)
-	for _, vnic := range this.internal {
-		result = append(result, vnic)
+	result := make(map[string]common.IVirtualNetworkInterface)
+	for uuid, vnic := range this.internal {
+		result[uuid] = vnic
 	}
 	return result
 }
 
-func (this *Connections) allExternals() []string {
+func (this *Connections) allExternals() map[string]common.IVirtualNetworkInterface {
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
-	result := make([]string, 0)
-	for uuid, _ := range this.external {
-		result = append(result, uuid)
+	result := make(map[string]common.IVirtualNetworkInterface)
+	for uuid, vnic := range this.external {
+		result[uuid] = vnic
 	}
 	return result
 }
