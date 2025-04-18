@@ -139,6 +139,7 @@ func (this *RX) handleMessage(msg common.IMessage, pb common.IElements) {
 	} else if msg.Action() == common.Notify {
 		resp := this.vnic.resources.ServicePoints().Notify(pb, this.vnic, msg, false)
 		if resp != nil && resp.Error() != nil {
+			panic(this.vnic.resources.SysConfig().LocalAlias + " " + resp.Error().Error())
 			this.vnic.resources.Logger().Error(resp.Error())
 		}
 	} else {
