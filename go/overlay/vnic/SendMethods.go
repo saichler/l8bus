@@ -59,6 +59,9 @@ func (this *VirtualNetworkInterface) Multicast(serviceName string, serviceArea u
 func (this *VirtualNetworkInterface) Single(serviceName string, serviceArea uint16, action common.Action, any interface{}) error {
 	hc := health.Health(this.resources)
 	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.SysConfig().LocalUuid, false, false)
+	if destination == "" {
+		panic("Blank Destination")
+	}
 	return this.Unicast(destination, serviceName, serviceArea, action, any)
 }
 
