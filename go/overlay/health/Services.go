@@ -151,6 +151,10 @@ func (this *Services) updateServices(healthPoint *types.HealthPoint, areasToCalc
 				this.services[serviceName].areas[serviceArea] = &ServiceArea{}
 				this.services[serviceName].areas[serviceArea].members = make(map[string]*Member)
 			}
+			if healthPoint.Status != types.HealthState_Up {
+				delete(this.services[serviceName].areas[serviceArea].members, healthPoint.AUuid)
+				continue
+			}
 			if this.services[serviceName].areas[serviceArea].members[healthPoint.AUuid] == nil {
 				this.services[serviceName].areas[serviceArea].members[healthPoint.AUuid] = &Member{}
 			}
