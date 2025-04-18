@@ -35,7 +35,8 @@ func (this *HealthCenter) Update(healthPoint *types.HealthPoint) {
 		this.resources.Logger().Error("Error updating health point ", err)
 		return
 	}
-	this.services.Update(healthPoint)
+	updatedHealthPoint := this.HealthPoint(healthPoint.AUuid)
+	this.services.Update(updatedHealthPoint)
 }
 
 func (this *HealthCenter) ZSide(uuid string) string {
