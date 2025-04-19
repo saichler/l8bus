@@ -10,9 +10,6 @@ import (
 func (this *VirtualNetworkInterface) NotifyServiceAdded() error {
 	hc := health.Health(this.resources)
 	curr := hc.HealthPoint(this.resources.SysConfig().LocalUuid)
-	if curr == nil {
-
-	}
 	hp := &types.HealthPoint{}
 	hp.AUuid = curr.AUuid
 	hp.Services = curr.Services

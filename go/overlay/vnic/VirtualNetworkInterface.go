@@ -187,4 +187,10 @@ func (this *VirtualNetworkInterface) WaitForConnection() {
 	for !this.connected {
 		time.Sleep(time.Millisecond * 100)
 	}
+	hc := health.Health(this.resources)
+	hp := hc.HealthPoint(this.resources.SysConfig().LocalUuid)
+	for hp == nil {
+		time.Sleep(time.Millisecond * 100)
+		hp = hc.HealthPoint(this.resources.SysConfig().LocalUuid)
+	}
 }
