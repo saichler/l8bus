@@ -35,7 +35,8 @@ type VirtualNetworkInterface struct {
 
 	requests *Requests
 
-	stats *types.HealthPointStats
+	stats     *types.HealthPointStats
+	connected bool
 }
 
 func NewVirtualNetworkInterface(resources common.IResources, conn net.Conn) *VirtualNetworkInterface {
@@ -79,6 +80,7 @@ func (this *VirtualNetworkInterface) connectToSwitch() {
 		panic(err)
 	}
 	this.components.start()
+	this.connected = true
 }
 
 func (this *VirtualNetworkInterface) connect() error {
@@ -179,4 +181,10 @@ func (this *VirtualNetworkInterface) reconnect() {
 
 func (this *VirtualNetworkInterface) Stats() *types.HealthPointStats {
 	return this.stats
+}
+
+func (this *VirtualNetworkInterface) WaitForConnection() {
+	for !this.connected {
+		time.Sleep(time.Millisecond * 100)
+	}
 }
