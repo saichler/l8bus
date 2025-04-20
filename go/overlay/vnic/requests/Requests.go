@@ -15,12 +15,13 @@ type Requests struct {
 }
 
 type Request struct {
-	cond      *sync.Cond
-	msgSource string
-	msgNum    uint32
-	timeout   int64
-	response  common.IElements
-	log       common.ILogger
+	cond           *sync.Cond
+	msgSource      string
+	msgNum         uint32
+	timeout        int64
+	timeoutReached bool
+	response       common.IElements
+	log            common.ILogger
 }
 
 func NewRequests() *Requests {
@@ -72,6 +73,9 @@ func (this *Request) MsgNum() uint32 {
 }
 
 func (this *Request) Response() common.IElements {
+	if this.timeoutReached {
+		return object.NewError("Timeout Reached!")
+	}
 	return this.response
 }
 
@@ -89,7 +93,7 @@ func (this *Request) timeoutCheck() {
 	this.log.Info("After timeout for request")
 	if this.response == nil {
 		this.log.Info("Timeout reached for request")
-		this.response = object.NewError("Request timedout")
+		this.timeoutReached = true
 		this.cond.Broadcast()
 	}
 }
