@@ -124,6 +124,7 @@ func (this *VirtualNetworkInterface) receiveConnection() {
 }
 
 func (this *VirtualNetworkInterface) Shutdown() {
+	this.resources.Logger().Info("Shutdown was called")
 	this.running = false
 	if this.conn != nil {
 		this.conn.Close()

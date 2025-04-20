@@ -141,6 +141,7 @@ func (this *VNet) notifyNewVNic(vnic common.IVirtualNetworkInterface) {
 }
 
 func (this *VNet) Shutdown() {
+	this.resources.Logger().Info("Shutdown called!")
 	this.running = false
 	this.socket.Close()
 	this.switchTable.shutdown()
@@ -235,7 +236,7 @@ func (this *VNet) ShutdownVNic(vnic common.IVirtualNetworkInterface) {
 		hp.Status = types.HealthState_Down
 		h.Update(hp)
 	}
-	this.resources.Logger().Info("Shutdown complete ", this.resources.SysConfig().LocalAlias)
+	this.resources.Logger().Info("Shutdown complete ", vnic.Resources().SysConfig().LocalAlias)
 }
 
 func (this *VNet) switchDataReceived(data []byte, vnic common.IVirtualNetworkInterface) {
