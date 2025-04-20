@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
+	requests2 "github.com/saichler/layer8/go/overlay/vnic/requests"
 	"github.com/saichler/shared/go/share/strings"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
@@ -33,7 +34,7 @@ type VirtualNetworkInterface struct {
 	// Last reconnect attempt
 	last_reconnect_attempt int64
 
-	requests *Requests
+	requests *requests2.Requests
 
 	stats     *types.HealthPointStats
 	connected bool
@@ -49,7 +50,7 @@ func NewVirtualNetworkInterface(resources common.IResources, conn net.Conn) *Vir
 	vnic.components.addComponent(newRX(vnic))
 	vnic.components.addComponent(newTX(vnic))
 	vnic.components.addComponent(newKeepAlive(vnic))
-	vnic.requests = newRequests()
+	vnic.requests = requests2.NewRequests()
 	vnic.stats = &types.HealthPointStats{}
 	if vnic.resources.SysConfig().LocalUuid == "" {
 		vnic.resources.SysConfig().LocalUuid = common.NewUuid()

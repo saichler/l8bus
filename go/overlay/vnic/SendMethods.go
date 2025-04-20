@@ -18,9 +18,11 @@ func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, se
 
 func (this *VirtualNetworkInterface) Request(destination, serviceName string, serviceArea uint16,
 	action common.Action, any interface{}) common.IElements {
-	request := this.requests.newRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid)
-	request.cond.L.Lock()
-	defer request.cond.L.Unlock()
+	request := this.requests.NewRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid, 5)
+
+	request.Lock()
+	defer request.Unlock()
+
 	var elements common.IElements
 	var err error
 	query, ok := any.(string)
@@ -34,12 +36,12 @@ func (this *VirtualNetworkInterface) Request(destination, serviceName string, se
 	}
 
 	e := this.components.TX().Unicast(destination, serviceName, serviceArea, action, elements, 0,
-		true, false, request.msgNum, nil)
+		true, false, request.MsgNum(), nil)
 	if e != nil {
 		return object.NewError(e.Error())
 	}
-	request.cond.Wait()
-	return request.response
+	request.Wait()
+	return request.Response()
 }
 
 func (this *VirtualNetworkInterface) Reply(msg common.IMessage, response common.IElements) error {
@@ -97,15 +99,15 @@ func (this *VirtualNetworkInterface) Forward(msg common.IMessage, destination st
 		return object.NewError(err.Error())
 	}
 
-	request := this.requests.newRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid)
-	request.cond.L.Lock()
-	defer request.cond.L.Unlock()
+	request := this.requests.NewRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid, 5)
+	request.Lock()
+	defer request.Unlock()
 
 	e := this.components.TX().Unicast(destination, msg.ServiceName(), msg.ServiceArea(), msg.Action(),
-		pb, 0, true, false, request.msgNum, msg.Tr())
+		pb, 0, true, false, request.MsgNum(), msg.Tr())
 	if e != nil {
 		return object.NewError(e.Error())
 	}
-	request.cond.Wait()
-	return request.response
+	request.Wait()
+	return request.Response()
 }

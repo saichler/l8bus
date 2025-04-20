@@ -102,9 +102,8 @@ func (this *RX) notifyRawDataListener() {
 						}
 					} else if msg.Reply() {
 						resp := object.NewError(err.Error())
-						request := this.vnic.requests.getRequest(msg.Sequence(), this.vnic.resources.SysConfig().LocalUuid)
-						request.response = resp
-						request.cond.Broadcast()
+						request := this.vnic.requests.GetRequest(msg.Sequence(), this.vnic.resources.SysConfig().LocalUuid)
+						request.SetResponse(resp)
 					}
 					continue
 				}
@@ -112,9 +111,8 @@ func (this *RX) notifyRawDataListener() {
 				//This is a reply message, should not find a handler
 				//and just notify
 				if msg.Reply() {
-					request := this.vnic.requests.getRequest(msg.Sequence(), this.vnic.resources.SysConfig().LocalUuid)
-					request.response = pb
-					request.cond.Broadcast()
+					request := this.vnic.requests.GetRequest(msg.Sequence(), this.vnic.resources.SysConfig().LocalUuid)
+					request.SetResponse(pb)
 					continue
 				}
 				// Otherwise call the handler per the action & the type
@@ -133,9 +131,8 @@ func (this *RX) notifyRawDataListener() {
 
 func (this *RX) handleMessage(msg common.IMessage, pb common.IElements) {
 	if msg.Action() == common.Reply {
-		request := this.vnic.requests.getRequest(msg.Sequence(), this.vnic.resources.SysConfig().LocalUuid)
-		request.response = pb
-		request.cond.Broadcast()
+		request := this.vnic.requests.GetRequest(msg.Sequence(), this.vnic.resources.SysConfig().LocalUuid)
+		request.SetResponse(pb)
 	} else if msg.Action() == common.Notify {
 		resp := this.vnic.resources.ServicePoints().Notify(pb, this.vnic, msg, false)
 		if resp != nil && resp.Error() != nil {
