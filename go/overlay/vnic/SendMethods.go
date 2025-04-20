@@ -18,7 +18,7 @@ func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, se
 
 func (this *VirtualNetworkInterface) Request(destination, serviceName string, serviceArea uint16,
 	action common.Action, any interface{}) common.IElements {
-	request := this.requests.NewRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid, 5)
+	request := this.requests.NewRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid, 5, this.resources.Logger())
 
 	request.Lock()
 	defer request.Unlock()
@@ -99,7 +99,7 @@ func (this *VirtualNetworkInterface) Forward(msg common.IMessage, destination st
 		return object.NewError(err.Error())
 	}
 
-	request := this.requests.NewRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid, 5)
+	request := this.requests.NewRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid, 5, this.resources.Logger())
 	request.Lock()
 	defer request.Unlock()
 

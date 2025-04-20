@@ -20,6 +20,7 @@ type Request struct {
 	msgNum    uint32
 	timeout   int64
 	response  common.IElements
+	log       common.ILogger
 }
 
 func NewRequests() *Requests {
@@ -29,12 +30,13 @@ func NewRequests() *Requests {
 	return this
 }
 
-func (this *Requests) NewRequest(msgNum uint32, msgSource string, timeout int64) *Request {
+func (this *Requests) NewRequest(msgNum uint32, msgSource string, timeout int64, log common.ILogger) *Request {
 	request := &Request{}
 	request.msgNum = msgNum
 	request.msgSource = msgSource
 	request.timeout = timeout
 	request.cond = sync.NewCond(&sync.Mutex{})
+	request.log = log
 
 	key := requestKey(msgSource, msgNum)
 
@@ -79,10 +81,14 @@ func (this *Request) Wait() {
 }
 
 func (this *Request) timeoutCheck() {
+	this.log.Info("Added timeout for request")
 	time.Sleep(time.Second * time.Duration(this.timeout))
+	this.log.Info("Checking timeout for request")
 	this.Lock()
 	defer this.Unlock()
+	this.log.Info("After timeout for request")
 	if this.response == nil {
+		this.log.Info("Timeout reached for request")
 		this.response = object.NewError("Request timedout")
 		this.cond.Broadcast()
 	}
