@@ -3,6 +3,7 @@ package health
 import (
 	"github.com/saichler/types/go/types"
 	"sort"
+	"strings"
 	"sync"
 )
 
@@ -192,6 +193,10 @@ func calcLeader(serviceArea *ServiceArea) {
 		if minTime == -1 || member.t < minTime {
 			minTime = member.t
 			serviceArea.leader = uuid
+		} else if member.t == minTime {
+			if strings.Compare(uuid, serviceArea.leader) == -1 {
+				serviceArea.leader = uuid
+			}
 		}
 	}
 }

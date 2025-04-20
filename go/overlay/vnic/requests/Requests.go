@@ -85,14 +85,10 @@ func (this *Request) Wait() {
 }
 
 func (this *Request) timeoutCheck() {
-	this.log.Info("Added timeout for request")
 	time.Sleep(time.Second * time.Duration(this.timeout))
-	this.log.Info("Checking timeout for request")
 	this.Lock()
 	defer this.Unlock()
-	this.log.Info("After timeout for request")
 	if this.response == nil {
-		this.log.Info("Timeout reached for request")
 		this.timeoutReached = true
 		this.cond.Broadcast()
 	}
