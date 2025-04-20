@@ -23,7 +23,7 @@ type VNet struct {
 	ready       bool
 	switchTable *SwitchTable
 	protocol    *protocol.Protocol
-	udp         *net.UDPConn
+	discovery   *Discovery
 }
 
 func NewVNet(resources common.IResources) *VNet {
@@ -42,6 +42,7 @@ func NewVNet(resources common.IResources) *VNet {
 
 	net.resources.ServicePoints().AddServicePointType(&health.HealthServicePoint{})
 	net.resources.ServicePoints().Activate(health.ServicePointName, health.ServiceName, 0, net.resources, net)
+	net.discovery = NewDiscovery(net)
 
 	return net
 }
@@ -53,7 +54,7 @@ func (this *VNet) Start() error {
 		time.Sleep(time.Millisecond * 50)
 	}
 	time.Sleep(time.Millisecond * 50)
-	this.Discover()
+	this.discovery.Discover()
 	return err
 }
 
