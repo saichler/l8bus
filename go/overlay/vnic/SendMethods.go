@@ -75,6 +75,13 @@ func (this *VirtualNetworkInterface) Single(serviceName string, serviceArea uint
 func (this *VirtualNetworkInterface) SingleRequest(serviceName string, serviceArea uint16, action common.Action, any interface{}) common.IElements {
 	hc := health.Health(this.resources)
 	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.SysConfig().LocalUuid, false, false)
+	if destination == "" {
+		return object.NewError("Cannot find a destinstion for " + serviceName + " area " +
+			strconv.Itoa(int(serviceArea)))
+	}
+
+	hp := hc.HealthPoint(destination)
+	this.Resources().Logger().Info("Sending Single Request to ", destination, " alias ", hp.Alias)
 	return this.Request(destination, serviceName, serviceArea, action, any)
 }
 
