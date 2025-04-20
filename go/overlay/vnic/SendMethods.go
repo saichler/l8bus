@@ -1,10 +1,12 @@
 package vnic
 
 import (
+	"errors"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/serializer/go/serialize/object"
 	"github.com/saichler/types/go/common"
+	"strconv"
 )
 
 func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, serviceArea uint16,
@@ -59,6 +61,14 @@ func (this *VirtualNetworkInterface) Multicast(serviceName string, serviceArea u
 func (this *VirtualNetworkInterface) Single(serviceName string, serviceArea uint16, action common.Action, any interface{}) (string, error) {
 	hc := health.Health(this.resources)
 	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.SysConfig().LocalUuid, false, false)
+	if destination == "" {
+		return destination, errors.New("Cannot find a destinstion for " + serviceName + " area " +
+			strconv.Itoa(int(serviceArea)))
+	}
+
+	hp := hc.HealthPoint(destination)
+	this.Resources().Logger().Info("Sending Single to ", destination, " alias ", hp.Alias)
+
 	return destination, this.Unicast(destination, serviceName, serviceArea, action, any)
 }
 
