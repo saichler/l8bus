@@ -51,6 +51,9 @@ func (this *VirtualNetworkInterface) Reply(msg common.IMessage, response common.
 		this.resources.Logger().Error(e)
 		return e
 	}
+	hc := health.Health(this.resources)
+	hp := hc.HealthPoint(msg.Source())
+	this.resources.Logger().Debug("Replying to ", msg.Source(), " ", hp.Alias)
 	return this.SendMessage(data)
 }
 
