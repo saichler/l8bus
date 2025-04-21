@@ -2,13 +2,13 @@ package health
 
 import (
 	"github.com/saichler/reflect/go/reflect/introspecting"
-	"github.com/saichler/servicepoints/go/points/cache"
+	"github.com/saichler/servicepoints/go/points/dcache"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
 )
 
 type HealthCenter struct {
-	healthPoints *cache.Cache
+	healthPoints common.IDistributedCache
 	services     *Services
 	resources    common.IResources
 }
@@ -17,20 +17,20 @@ func newHealthCenter(resources common.IResources, listener common.IServicePointC
 	hc := &HealthCenter{}
 	rnode, _ := resources.Introspector().Inspect(&types.HealthPoint{})
 	introspecting.AddPrimaryKeyDecorator(rnode, "AUuid")
-	hc.healthPoints = cache.NewModelCache(ServiceName, 0, "HealthPoint",
+	hc.healthPoints = dcache.NewDistributedCache(ServiceName, 0, "HealthPoint",
 		resources.SysConfig().LocalUuid, listener, resources.Introspector())
 	hc.services = newServices()
 	hc.resources = resources
 	return hc
 }
 
-func (this *HealthCenter) Add(healthPoint *types.HealthPoint) {
-	this.healthPoints.Put(healthPoint.AUuid, healthPoint)
+func (this *HealthCenter) Add(healthPoint *types.HealthPoint, isNotification bool) {
+	this.healthPoints.Put(healthPoint.AUuid, healthPoint, isNotification)
 	this.services.Update(healthPoint)
 }
 
-func (this *HealthCenter) Update(healthPoint *types.HealthPoint) {
-	_, err := this.healthPoints.Update(healthPoint.AUuid, healthPoint)
+func (this *HealthCenter) Update(healthPoint *types.HealthPoint, isNotification bool) {
+	_, err := this.healthPoints.Update(healthPoint.AUuid, healthPoint, isNotification)
 	if err != nil {
 		this.resources.Logger().Error("Error updating health point ", err)
 		return

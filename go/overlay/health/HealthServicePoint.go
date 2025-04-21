@@ -30,17 +30,17 @@ func (this *HealthServicePoint) DeActivate() error {
 
 func (this *HealthServicePoint) Post(pb common.IElements, resourcs common.IResources) common.IElements {
 	hp := pb.Element().(*types.HealthPoint)
-	this.healthCenter.Add(hp)
+	this.healthCenter.Add(hp, pb.IsNotification())
 	return nil
 }
 func (this *HealthServicePoint) Put(pb common.IElements, resourcs common.IResources) common.IElements {
 	hp := pb.Element().(*types.HealthPoint)
-	this.healthCenter.Add(hp)
+	this.healthCenter.Add(hp, pb.IsNotification())
 	return nil
 }
 func (this *HealthServicePoint) Patch(pb common.IElements, resourcs common.IResources) common.IElements {
 	hp := pb.Element().(*types.HealthPoint)
-	this.healthCenter.Update(hp)
+	this.healthCenter.Update(hp, pb.IsNotification())
 	return nil
 }
 func (this *HealthServicePoint) Delete(pb common.IElements, resourcs common.IResources) common.IElements {
