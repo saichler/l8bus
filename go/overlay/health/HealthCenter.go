@@ -133,6 +133,15 @@ func (this *HealthCenter) AddScore(target, serviceName string, serviceArea uint1
 	}
 }
 
+func (this *HealthCenter) Top() *types.Top {
+	all := this.All()
+	top := &types.Top{HealthPoints: make(map[string]*types.HealthPoint)}
+	for k, v := range all {
+		top.HealthPoints[k] = v
+	}
+	return top
+}
+
 func Health(r common.IResources) *HealthCenter {
 	sp, ok := r.ServicePoints().ServicePointHandler(ServiceName, 0)
 	if !ok {

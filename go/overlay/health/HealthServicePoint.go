@@ -1,6 +1,7 @@
 package health
 
 import (
+	"github.com/saichler/serializer/go/serialize/object"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
 )
@@ -50,7 +51,7 @@ func (this *HealthServicePoint) GetCopy(pb common.IElements, resourcs common.IRe
 	return nil
 }
 func (this *HealthServicePoint) Get(pb common.IElements, resourcs common.IResources) common.IElements {
-	return nil
+	return object.New(nil, this.healthCenter.Top())
 }
 func (this *HealthServicePoint) Failed(pb common.IElements, resourcs common.IResources, msg common.IMessage) common.IElements {
 	return nil
