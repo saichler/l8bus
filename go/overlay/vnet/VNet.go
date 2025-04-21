@@ -234,7 +234,7 @@ func (this *VNet) ShutdownVNic(vnic common.IVirtualNetworkInterface) {
 	hp := h.HealthPoint(uuid)
 	if hp.Status != types.HealthState_Down {
 		hp.Status = types.HealthState_Down
-		h.Update(hp, false)
+		h.Update(hp)
 	}
 	this.resources.Logger().Info("Shutdown complete ", vnic.Resources().SysConfig().LocalAlias)
 }

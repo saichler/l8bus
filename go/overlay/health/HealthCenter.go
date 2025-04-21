@@ -24,13 +24,13 @@ func newHealthCenter(resources common.IResources, listener common.IServicePointC
 	return hc
 }
 
-func (this *HealthCenter) Add(healthPoint *types.HealthPoint, isNotification bool) {
-	this.healthPoints.Put(healthPoint.AUuid, healthPoint, isNotification)
+func (this *HealthCenter) Add(healthPoint *types.HealthPoint) {
+	this.healthPoints.Put(healthPoint.AUuid, healthPoint)
 	this.services.Update(healthPoint)
 }
 
-func (this *HealthCenter) Update(healthPoint *types.HealthPoint, isNotification bool) {
-	_, err := this.healthPoints.Update(healthPoint.AUuid, healthPoint, isNotification)
+func (this *HealthCenter) Update(healthPoint *types.HealthPoint) {
+	_, err := this.healthPoints.Update(healthPoint.AUuid, healthPoint)
 	if err != nil {
 		this.resources.Logger().Error("Error updating health point ", err)
 		return

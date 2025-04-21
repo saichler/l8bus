@@ -80,7 +80,7 @@ func (this *SwitchTable) addVNic(vnic common.IVirtualNetworkInterface) {
 	} else {
 		this.mergeServices(hp, config)
 	}
-	hc.Add(hp, false)
+	hc.Add(hp)
 	go this.notifyNewVNic()
 }
 
