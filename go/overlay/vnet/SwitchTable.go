@@ -6,6 +6,7 @@ import (
 	"github.com/saichler/serializer/go/serialize/object"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
+	"sync"
 	"time"
 )
 
@@ -14,6 +15,10 @@ type SwitchTable struct {
 	switchService *VNet
 	routes        map[string]string
 	desc          string
+
+	lastNTime     int64
+	lastNMtx      *sync.Mutex
+	pendingNotify bool
 }
 
 func newSwitchTable(switchService *VNet) *SwitchTable {
@@ -21,6 +26,8 @@ func newSwitchTable(switchService *VNet) *SwitchTable {
 	switchTable.conns = newConnections(switchService.resources.Logger())
 	switchTable.switchService = switchService
 	switchTable.desc = "SwitchTable (" + switchService.resources.SysConfig().LocalUuid + ") - "
+	switchTable.lastNMtx = &sync.Mutex{}
+	switchTable.lastNTime = time.Now().UnixMilli()
 	return switchTable
 }
 
@@ -81,11 +88,24 @@ func (this *SwitchTable) addVNic(vnic common.IVirtualNetworkInterface) {
 		this.mergeServices(hp, config)
 	}
 	hc.Add(hp, false)
+	this.lastNTime = time.Now().UnixMilli()
 	go this.notifyNewVNic()
 }
 
 func (this *SwitchTable) notifyNewVNic() {
-	time.Sleep(time.Second)
+	this.lastNMtx.Lock()
+	if this.pendingNotify {
+		defer this.lastNMtx.Unlock()
+		return
+	}
+	this.pendingNotify = true
+	this.lastNMtx.Unlock()
+
+	for time.Now().UnixMilli()-this.lastNTime < 300 {
+		time.Sleep(time.Millisecond * 100)
+	}
+
+	this.pendingNotify = false
 	hc := health.Health(this.switchService.resources)
 	allHealthPoints := hc.All()
 	vnetUuid := this.switchService.resources.SysConfig().LocalUuid
