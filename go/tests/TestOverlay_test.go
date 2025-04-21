@@ -8,6 +8,7 @@ import (
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
 	"testing"
+	"time"
 )
 
 func TestMain(m *testing.M) {
@@ -17,7 +18,20 @@ func TestMain(m *testing.M) {
 }
 
 func TestTopologyHealth(t *testing.T) {
-	defer reset("TestPrintTopology")
+	defer reset("TestTopologyHealth")
+	time.Sleep(time.Second * 2)
+	for vnetNum := 1; vnetNum <= 3; vnetNum++ {
+		for vnicNum := 1; vnicNum <= 4; vnicNum++ {
+			nic := topo.VnicByVnetNum(vnetNum, vnicNum)
+			hc := health.Health(nic.Resources())
+			hp := hc.All()
+			if len(hp) != 15 {
+				Log.Fail(t, "Expected ", nic.Resources().SysConfig().LocalAlias,
+					" to have 15 heath points, but it has ", len(hp))
+				return
+			}
+		}
+	}
 	eg1_1 := topo.VnicByVnetNum(1, 1)
 	eg2_1 := topo.VnicByVnetNum(2, 1)
 	eg3_1 := topo.VnicByVnetNum(3, 1)

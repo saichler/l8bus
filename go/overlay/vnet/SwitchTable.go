@@ -47,6 +47,20 @@ func (this *SwitchTable) unicastHealthNotification(serviceName string, serviceAr
 	}
 }
 
+func (this *SwitchTable) unicastAll(isLocal, isForceExternal bool, nextId uint32, data []byte) {
+	var conns map[string]common.IVirtualNetworkInterface
+	if isLocal && !isForceExternal {
+		conns = this.conns.all()
+	} else {
+		conns = this.conns.allInternals()
+	}
+	for _, vnic := range conns {
+		this.switchService.resources.Logger().Trace(this.desc, "Unicast message ", nextId, " to ",
+			vnic.Resources().SysConfig().RemoteUuid)
+		vnic.SendMessage(data)
+	}
+}
+
 func (this *SwitchTable) addVNic(vnic common.IVirtualNetworkInterface) {
 	config := vnic.Resources().SysConfig()
 	//check if this port is local to the machine, e.g. not belong to public subnet
@@ -67,12 +81,24 @@ func (this *SwitchTable) addVNic(vnic common.IVirtualNetworkInterface) {
 		this.mergeServices(hp, config)
 	}
 	hc.Add(hp)
+	go this.notifyNewVNic()
+}
 
-	if !(isLocal && !config.ForceExternal) {
-		time.Sleep(time.Millisecond * 100)
-		allHealthPoints := hc.All()
-		for _, hpe := range allHealthPoints {
-			vnic.Multicast(health.ServiceName, 0, common.POST, hpe)
+func (this *SwitchTable) notifyNewVNic() {
+	time.Sleep(time.Second)
+	hc := health.Health(this.switchService.resources)
+	allHealthPoints := hc.All()
+	vnetUuid := this.switchService.resources.SysConfig().LocalUuid
+	conns := this.conns.all()
+	for _, hpe := range allHealthPoints {
+		nextId := this.switchService.protocol.NextMessageNumber()
+		data, _ := this.switchService.protocol.CreateMessageFor("", health.ServiceName, 0, common.P1,
+			common.PATCH, vnetUuid, vnetUuid, object.New(nil, hpe), false, false,
+			nextId, nil)
+		for _, vnic := range conns {
+			this.switchService.resources.Logger().Trace(this.desc, "Unicast message ", nextId, " to ",
+				vnic.Resources().SysConfig().RemoteUuid)
+			vnic.SendMessage(data)
 		}
 	}
 }
