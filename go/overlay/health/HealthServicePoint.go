@@ -57,14 +57,6 @@ func (this *HealthServicePoint) Failed(pb common.IElements, resourcs common.IRes
 	return nil
 }
 
-func (this *HealthServicePoint) Transactional() bool {
-	return false
-}
-
-func (this *HealthServicePoint) ReplicationCount() int {
-	return 0
-}
-
-func (this *HealthServicePoint) ReplicationScore() int {
-	return 0
+func (this *HealthServicePoint) TransactionMethod() common.ITransactionMethod {
+	return nil
 }

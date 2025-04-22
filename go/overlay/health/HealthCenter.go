@@ -100,39 +100,6 @@ func (this *HealthCenter) Uuids(serviceName string, serviceArea uint16) map[stri
 	return this.services.UUIDs(serviceName, serviceArea)
 }
 
-func (this *HealthCenter) ReplicasFor(serviceName string, serviceArea uint16, numOfReplicas int) map[string]int32 {
-	return this.services.ReplicasFor(serviceName, serviceArea, numOfReplicas)
-}
-
-func (this *HealthCenter) AddScore(target, serviceName string, serviceArea uint16, vnic common.IVirtualNetworkInterface) {
-	hp := this.healthPoints.Get(target).(*types.HealthPoint)
-	if hp == nil {
-		panic("HealthPoint is nil!")
-	}
-	if hp.Services == nil {
-		panic("Services is nil!")
-	}
-	if hp.Services.ServiceToAreas == nil {
-		panic("ServiceToAreas is nil!")
-	}
-	area, ok := hp.Services.ServiceToAreas[serviceName]
-	if !ok {
-		panic("Area is nil!")
-	}
-	area.Areas[int32(serviceArea)].Score++
-	n, e := this.healthPoints.Update(hp.AUuid, hp)
-	if n == nil && e == nil {
-		panic("Something went wrong with helth notification!")
-	}
-	if e != nil {
-		panic(e)
-	}
-	e = vnic.Unicast(vnic.Resources().SysConfig().RemoteUuid, ServiceName, 0, common.Notify, n)
-	if e != nil {
-		panic(e)
-	}
-}
-
 func (this *HealthCenter) Top() *types.Top {
 	all := this.All()
 	top := &types.Top{HealthPoints: make(map[string]*types.HealthPoint)}
