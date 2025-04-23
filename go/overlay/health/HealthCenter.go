@@ -18,7 +18,7 @@ func newHealthCenter(resources common.IResources, listener common.IServicePointC
 	rnode, _ := resources.Introspector().Inspect(&types.HealthPoint{})
 	introspecting.AddPrimaryKeyDecorator(rnode, "AUuid")
 	hc.healthPoints = dcache.NewDistributedCache(ServiceName, 0, "HealthPoint",
-		resources.SysConfig().LocalUuid, listener, resources.Introspector())
+		resources.SysConfig().LocalUuid, listener, resources)
 	hc.services = newServices()
 	hc.resources = resources
 	return hc
