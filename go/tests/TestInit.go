@@ -26,7 +26,7 @@ func reset(name string) {
 }
 
 func setupTopology() {
-	topo = NewTestTopology(4, 20000, 30000, 40000)
+	topo = NewTestTopology(4, []int{20000, 30000, 40000}, Trace_Level)
 }
 
 func shutdownTopology() {

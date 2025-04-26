@@ -13,7 +13,7 @@ import (
 )
 
 func testMessageSerialization(t *testing.T) {
-	res, _ := t_resources.CreateResources(25000, 5)
+	res, _ := t_resources.CreateResources(25000, 5, common.Trace_Level)
 	size := 1000000
 	start := time.Now().Unix()
 	p := protocol.New(res)

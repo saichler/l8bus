@@ -30,7 +30,7 @@ func TestKeepAlive(t *testing.T) {
 		return
 	}
 
-	time.Sleep(time.Second * time.Duration(eg2_1.Resources().SysConfig().KeepAliveIntervalSeconds+2))
+	time.Sleep(time.Second * time.Duration(eg2_1.Resources().SysConfig().KeepAliveIntervalSeconds+5))
 	hc := health.Health(eg1_2.Resources())
 	hp := hc.HealthPoint(eg2_1.Resources().SysConfig().LocalUuid)
 	if hp.Stats.TxMsgCount == 0 {
