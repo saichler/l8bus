@@ -112,13 +112,21 @@ func (this *SwitchTable) notifyNewVNic() {
 	conns := this.conns.all()
 	for _, hpe := range allHealthPoints {
 		nextId := this.switchService.protocol.NextMessageNumber()
-		data, _ := this.switchService.protocol.CreateMessageFor("", health.ServiceName, 0, common.P1,
+		healthData, _ := this.switchService.protocol.CreateMessageFor("", health.ServiceName, 0, common.P1,
 			common.PATCH, vnetUuid, vnetUuid, object.New(nil, hpe), false, false,
+			nextId, nil)
+		nextId = this.switchService.protocol.NextMessageNumber()
+		syncData, _ := this.switchService.protocol.CreateMessageFor("", health.ServiceName, 0, common.P1,
+			common.Sync, vnetUuid, vnetUuid, object.New(nil, hpe), false, false,
 			nextId, nil)
 		for _, vnic := range conns {
 			this.switchService.resources.Logger().Trace(this.desc, "Unicast message ", nextId, " to ",
 				vnic.Resources().SysConfig().RemoteUuid)
-			vnic.SendMessage(data)
+			vnic.SendMessage(healthData)
+			go func() {
+				time.Sleep(time.Second)
+				vnic.SendMessage(syncData)
+			}()
 		}
 	}
 }
