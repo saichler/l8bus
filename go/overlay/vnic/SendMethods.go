@@ -25,16 +25,20 @@ func (this *VirtualNetworkInterface) Request(destination, serviceName string, se
 
 	var elements common.IElements
 	var err error
-	query, ok := any.(string)
+	elems, ok := any.(common.IElements)
 	if ok {
-		elements, err = object.NewQuery(query, this.resources)
-		if err != nil {
-			return object.NewError(err.Error())
-		}
+		elements = elems
 	} else {
-		elements = object.New(nil, any)
+		query, ok := any.(string)
+		if ok {
+			elements, err = object.NewQuery(query, this.resources)
+			if err != nil {
+				return object.NewError(err.Error())
+			}
+		} else {
+			elements = object.New(nil, any)
+		}
 	}
-
 	e := this.components.TX().Unicast(destination, serviceName, serviceArea, action, elements, 0,
 		true, false, request.MsgNum(), nil)
 	if e != nil {
