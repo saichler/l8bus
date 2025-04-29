@@ -280,7 +280,7 @@ func (this *VNet) Resources() common.IResources {
 func (this *VNet) PropertyChangeNotification(set *types.NotificationSet) {
 	//only health service will call this callback so check if the notification is from a local source
 	//if it is from local source, then just notify local vnics
-	protocol.AddPropertyChangeCalled(set)
+	protocol.AddPropertyChangeCalled(set, this.resources.SysConfig().LocalAlias)
 	hc := health.Health(this.resources)
 	hp := hc.HealthPoint(set.ModelKey)
 	isLocal := false
