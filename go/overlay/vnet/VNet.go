@@ -24,6 +24,7 @@ type VNet struct {
 	switchTable *SwitchTable
 	protocol    *protocol.Protocol
 	discovery   *Discovery
+	ns          *NotificationSender
 }
 
 func NewVNet(resources common.IResources) *VNet {
@@ -43,6 +44,7 @@ func NewVNet(resources common.IResources) *VNet {
 	net.resources.ServicePoints().AddServicePointType(&health.HealthServicePoint{})
 	net.resources.ServicePoints().Activate(health.ServicePointName, health.ServiceName, 0, net.resources, net)
 	net.discovery = NewDiscovery(net)
+	net.ns = newNotificationSender(net)
 
 	hc := health.Health(net.resources)
 	hp := &types.HealthPoint{}

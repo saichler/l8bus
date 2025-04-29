@@ -8,7 +8,6 @@ import (
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
 	"testing"
-	"time"
 )
 
 func TestMain(m *testing.M) {
@@ -18,7 +17,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestTopologyHealth(t *testing.T) {
-	time.Sleep(time.Second * 2)
 	defer reset("TestTopologyHealth")
 	for vnetNum := 1; vnetNum <= 3; vnetNum++ {
 		for vnicNum := 1; vnicNum <= 4; vnicNum++ {
