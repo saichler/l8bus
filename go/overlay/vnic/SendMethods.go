@@ -6,13 +6,18 @@ import (
 	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/serializer/go/serialize/object"
 	"github.com/saichler/types/go/common"
+	"github.com/saichler/types/go/types"
+	"reflect"
 	"strconv"
 )
 
 func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, serviceArea uint16,
 	action common.Action, any interface{}) error {
-	mobjects := object.New(nil, any)
-	return this.components.TX().Unicast(destination, serviceName, serviceArea, action, mobjects, 0,
+	elems, err := createElements(any, this.resources)
+	if err != nil {
+		return err
+	}
+	return this.components.TX().Unicast(destination, serviceName, serviceArea, action, elems, 0,
 		false, false, this.protocol.NextMessageNumber(), nil)
 }
 
@@ -23,22 +28,11 @@ func (this *VirtualNetworkInterface) Request(destination, serviceName string, se
 	request.Lock()
 	defer request.Unlock()
 
-	var elements common.IElements
-	var err error
-	elems, ok := any.(common.IElements)
-	if ok {
-		elements = elems
-	} else {
-		query, ok := any.(string)
-		if ok {
-			elements, err = object.NewQuery(query, this.resources)
-			if err != nil {
-				return object.NewError(err.Error())
-			}
-		} else {
-			elements = object.New(nil, any)
-		}
+	elements, err := createElements(any, this.resources)
+	if err != nil {
+		return object.NewError(err.Error())
 	}
+
 	e := this.components.TX().Unicast(destination, serviceName, serviceArea, action, elements, 0,
 		true, false, request.MsgNum(), nil)
 	if e != nil {
@@ -62,8 +56,11 @@ func (this *VirtualNetworkInterface) Reply(msg common.IMessage, response common.
 }
 
 func (this *VirtualNetworkInterface) Multicast(serviceName string, serviceArea uint16, action common.Action, any interface{}) error {
-	mobjects := object.New(nil, any)
-	return this.components.TX().Multicast("", serviceName, serviceArea, action, mobjects, 0,
+	elems, err := createElements(any, this.resources)
+	if err != nil {
+		return err
+	}
+	return this.components.TX().Multicast("", serviceName, serviceArea, action, elems, 0,
 		false, false, this.protocol.NextMessageNumber(), nil)
 }
 
@@ -117,4 +114,27 @@ func (this *VirtualNetworkInterface) Forward(msg common.IMessage, destination st
 	}
 	request.Wait()
 	return request.Response()
+}
+
+func createElements(any interface{}, resources common.IResources) (common.IElements, error) {
+	pq, ok := any.(*types.Query)
+	if ok {
+		return object.NewQuery(pq.Text, resources)
+	}
+
+	gsql, ok := any.(string)
+	if ok {
+		return object.NewQuery(gsql, resources)
+	}
+
+	elems, ok := any.(common.IElements)
+	if ok {
+		return elems, nil
+	}
+
+	pb, ok := any.(protocol.Message)
+	if ok {
+		return object.New(nil, pb), nil
+	}
+	panic("Uknown input type " + reflect.ValueOf(any).String())
 }
