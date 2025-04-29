@@ -18,7 +18,7 @@ func AddMessageCreated() {
 	}
 }
 
-func AddPropertyChangeCalled(set *types.NotificationSet) {
+func AddPropertyChangeCalled(set *types.NotificationSet, alias string) {
 	if CountMessages {
 		propertyChangeCalled.Add(1)
 		props := ""
@@ -31,7 +31,7 @@ func AddPropertyChangeCalled(set *types.NotificationSet) {
 			}
 			props = buff.String()
 		}
-		ExplicitLog.Trace("*** Property Change: ", set.ServiceName, " ", set.Type.String(), ":", props)
+		ExplicitLog.Trace("*** Property Change: ", alias, " ", set.ServiceName, " ", set.Type.String(), ":", props)
 
 	}
 }
