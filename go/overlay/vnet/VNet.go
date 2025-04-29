@@ -44,6 +44,14 @@ func NewVNet(resources common.IResources) *VNet {
 	net.resources.ServicePoints().Activate(health.ServicePointName, health.ServiceName, 0, net.resources, net)
 	net.discovery = NewDiscovery(net)
 
+	hc := health.Health(net.resources)
+	hp := &types.HealthPoint{}
+	hp.Alias = net.resources.SysConfig().LocalAlias
+	hp.AUuid = net.resources.SysConfig().LocalUuid
+	hp.IsVnet = true
+	hp.Services = net.resources.SysConfig().Services
+	hc.Add(hp, false)
+
 	return net
 }
 

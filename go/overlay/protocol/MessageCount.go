@@ -32,7 +32,6 @@ func AddPropertyChangeCalled(set *types.NotificationSet, alias string) {
 			props = buff.String()
 		}
 		ExplicitLog.Trace("*** Property Change: ", alias, " ", set.ServiceName, " ", set.Type.String(), ":", props)
-
 	}
 }
 

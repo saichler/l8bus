@@ -101,34 +101,52 @@ func (this *SwitchTable) notifyNewVNic() {
 	this.pendingNotify = true
 	this.lastNMtx.Unlock()
 
-	for time.Now().UnixMilli()-this.lastNTime < 300 {
+	for time.Now().UnixMilli()-this.lastNTime < 2000 {
 		time.Sleep(time.Millisecond * 100)
 	}
 
-	this.pendingNotify = false
-	hc := health.Health(this.switchService.resources)
-	allHealthPoints := hc.All()
+	this.lastNMtx.Lock()
+	defer this.lastNMtx.Unlock()
+
+	defer func() { this.pendingNotify = false }()
+
 	vnetUuid := this.switchService.resources.SysConfig().LocalUuid
+	nextId := this.switchService.protocol.NextMessageNumber()
 	conns := this.conns.all()
-	for _, hpe := range allHealthPoints {
-		nextId := this.switchService.protocol.NextMessageNumber()
-		healthData, _ := this.switchService.protocol.CreateMessageFor("", health.ServiceName, 0, common.P1,
-			common.PATCH, vnetUuid, vnetUuid, object.New(nil, hpe), false, false,
-			nextId, nil)
-		nextId = this.switchService.protocol.NextMessageNumber()
-		syncData, _ := this.switchService.protocol.CreateMessageFor("", health.ServiceName, 0, common.P1,
-			common.Sync, vnetUuid, vnetUuid, object.New(nil, hpe), false, false,
-			nextId, nil)
-		for _, vnic := range conns {
-			this.switchService.resources.Logger().Trace(this.desc, "Unicast message ", nextId, " to ",
-				vnic.Resources().SysConfig().RemoteUuid)
-			vnic.SendMessage(healthData)
-			go func() {
-				time.Sleep(time.Second)
-				vnic.SendMessage(syncData)
-			}()
-		}
+
+	syncData, _ := this.switchService.protocol.CreateMessageFor("", health.ServiceName, 0, common.P1,
+		common.Sync, vnetUuid, vnetUuid, object.New(nil, nil), false, false,
+		nextId, nil)
+	for _, vnic := range conns {
+		go func() {
+			vnic.SendMessage(syncData)
+		}()
 	}
+
+	/*
+		hc := health.Health(this.switchService.resources)
+		allHealthPoints := hc.All()
+		vnetUuid := this.switchService.resources.SysConfig().LocalUuid
+		conns := this.conns.all()
+		for _, hpe := range allHealthPoints {
+			nextId := this.switchService.protocol.NextMessageNumber()
+			healthData, _ := this.switchService.protocol.CreateMessageFor("", health.ServiceName, 0, common.P1,
+				common.PATCH, vnetUuid, vnetUuid, object.New(nil, hpe), false, false,
+				nextId, nil)
+			nextId = this.switchService.protocol.NextMessageNumber()
+			syncData, _ := this.switchService.protocol.CreateMessageFor("", health.ServiceName, 0, common.P1,
+				common.Sync, vnetUuid, vnetUuid, object.New(nil, hpe), false, false,
+				nextId, nil)
+			for _, vnic := range conns {
+				this.switchService.resources.Logger().Trace(this.desc, "Unicast message ", nextId, " to ",
+					vnic.Resources().SysConfig().RemoteUuid)
+				vnic.SendMessage(healthData)
+				go func() {
+					time.Sleep(time.Second)
+					vnic.SendMessage(syncData)
+				}()
+			}
+		}*/
 }
 
 func (this *SwitchTable) mergeServices(hp *types.HealthPoint, config *types.SysConfig) {

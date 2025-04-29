@@ -8,6 +8,7 @@ import (
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
 	"testing"
+	"time"
 )
 
 func TestMain(m *testing.M) {
@@ -17,6 +18,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestTopologyHealth(t *testing.T) {
+	time.Sleep(time.Second * 2)
 	defer reset("TestTopologyHealth")
 	for vnetNum := 1; vnetNum <= 3; vnetNum++ {
 		for vnicNum := 1; vnicNum <= 4; vnicNum++ {
@@ -26,6 +28,9 @@ func TestTopologyHealth(t *testing.T) {
 			if len(hp) != 15 {
 				Log.Fail(t, "Expected ", nic.Resources().SysConfig().LocalAlias,
 					" to have 15 heath points, but it has ", len(hp))
+				for _, h := range hp {
+					Log.Info(h.Alias)
+				}
 				return
 			}
 		}
@@ -52,11 +57,18 @@ func TestTopologyHealth(t *testing.T) {
 	uuids := hc.Uuids(ServiceName, 0)
 	if len(uuids) != 9 {
 		Log.Fail(t, "Expected uuids to be 9, but it is ", len(uuids))
+		return
 	}
 
 	uuids = hc.Uuids(health.ServiceName, 0)
-	if len(uuids) != 14 {
-		Log.Fail(t, "Expected uuids to be 14, but it is ", len(uuids))
+	//This is 12, taking away the vnets uuids as their services are strip from the notifications.
+	if len(uuids) != 12 {
+		Log.Fail(t, "Expected uuids to be 12, but it is ", len(uuids))
+		for uuid, _ := range uuids {
+			p := hc.HealthPoint(uuid)
+			Log.Info(p.Alias)
+		}
+		return
 	}
 }
 
