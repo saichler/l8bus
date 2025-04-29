@@ -7,6 +7,7 @@ import (
 	"github.com/saichler/serializer/go/serialize/object"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
+	"google.golang.org/protobuf/proto"
 	"reflect"
 	"strconv"
 )
@@ -132,7 +133,7 @@ func createElements(any interface{}, resources common.IResources) (common.IEleme
 		return elems, nil
 	}
 
-	pb, ok := any.(protocol.Message)
+	pb, ok := any.(proto.Message)
 	if ok {
 		return object.New(nil, pb), nil
 	}
