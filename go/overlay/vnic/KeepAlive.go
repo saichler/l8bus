@@ -52,7 +52,7 @@ func (this *KeepAlive) sendState() {
 	hp.AUuid = this.vnic.resources.SysConfig().LocalUuid
 	hp.Status = types.HealthState_Up
 	hp.Stats = stats
-	this.vnic.resources.Logger().Debug("Sending Keep Alive for ", this.vnic.resources.SysConfig().LocalUuid, " ", this.vnic.resources.SysConfig().LocalAlias)
+	//this.vnic.resources.Logger().Debug("Sending Keep Alive for ", this.vnic.resources.SysConfig().LocalUuid, " ", this.vnic.resources.SysConfig().LocalAlias)
 	//We unicast to the vnet, it will multicast the change to all
 	this.vnic.Unicast(this.vnic.resources.SysConfig().RemoteUuid, health.ServiceName, 0, common.PATCH, hp)
 }
