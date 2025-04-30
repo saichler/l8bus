@@ -16,7 +16,20 @@ func TestMain(m *testing.M) {
 	tear()
 }
 
+func isVnic1Ready() bool {
+	nic := topo.VnicByVnetNum(1, 1)
+	hc := health.Health(nic.Resources())
+	hp := hc.All()
+	if len(hp) != 15 {
+		return false
+	}
+	return true
+}
+
 func TestTopologyHealth(t *testing.T) {
+	if !WaitForCondition(isVnic1Ready, 5, t, "Vnic1 is not ready") {
+		return
+	}
 	defer reset("TestTopologyHealth")
 	for vnetNum := 1; vnetNum <= 3; vnetNum++ {
 		for vnicNum := 1; vnicNum <= 4; vnicNum++ {
