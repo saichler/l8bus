@@ -42,8 +42,8 @@ func (this *NotificationSender) sendNotification() {
 		//or last one was sent more than a second ago
 		//mark to send a notification
 		if this.notificationRequestCount > 0 &&
-			(time.Now().UnixMilli()-this.lastNotificationRequest >= 2000 ||
-				time.Now().UnixMilli()-this.lastNotificationSentTime >= 4000) {
+			(time.Now().UnixMilli()-this.lastNotificationRequest >= 500 ||
+				time.Now().UnixMilli()-this.lastNotificationSentTime >= 1000) {
 			sendNotification = true
 			this.lastNotificationSentTime = time.Now().UnixMilli()
 			this.notificationRequestCount = 0

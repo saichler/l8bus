@@ -36,6 +36,7 @@ func (this *SwitchTable) unicastHealthNotification(serviceName string, serviceAr
 	}
 
 	conns := this.conns.all()
+
 	for _, vnic := range conns {
 		this.switchService.resources.Logger().Trace(this.desc, "sending message ", nextId, " to ",
 			vnic.Resources().SysConfig().RemoteUuid)
