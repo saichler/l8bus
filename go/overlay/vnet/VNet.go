@@ -52,8 +52,7 @@ func NewVNet(resources common.IResources) *VNet {
 	hp.AUuid = net.resources.SysConfig().LocalUuid
 	hp.IsVnet = true
 	hp.Services = net.resources.SysConfig().Services
-	hc.Add(hp, false)
-
+	hc.Add(hp, true)
 	return net
 }
 
@@ -122,7 +121,12 @@ func (this *VNet) connect(conn net.Conn) {
 		RxQueueSize: resources2.DEFAULT_QUEUE_SIZE,
 		TxQueueSize: resources2.DEFAULT_QUEUE_SIZE,
 		LocalAlias:  this.resources.SysConfig().LocalAlias,
-		LocalUuid:   this.resources.SysConfig().LocalUuid}
+		LocalUuid:   this.resources.SysConfig().LocalUuid,
+		Services: &types.Services{ServiceToAreas: map[string]*types.ServiceAreas{
+			health.ServiceName: &types.ServiceAreas{
+				Areas: map[int32]bool{0: true},
+			}}},
+	}
 
 	resources := resources2.NewResources(this.resources.Registry(),
 		this.resources.Security(),

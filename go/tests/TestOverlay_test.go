@@ -64,7 +64,7 @@ func TestTopologyHealth(t *testing.T) {
 		return
 	}
 
-	hc := health.Health(eg1_1.Resources())
+	hc := health.Health(eg3_1.Resources())
 	uuids := hc.Uuids(ServiceName, 0)
 	if len(uuids) != 9 {
 		Log.Fail(t, "Expected uuids to be 9, but it is ", len(uuids))
@@ -72,9 +72,8 @@ func TestTopologyHealth(t *testing.T) {
 	}
 
 	uuids = hc.Uuids(health.ServiceName, 0)
-	//This is 12, taking away the vnets uuids as their services are strip from the notifications.
-	if len(uuids) != 12 {
-		Log.Fail(t, "Expected uuids to be 12, but it is ", len(uuids))
+	if len(uuids) != 15 {
+		Log.Fail(t, "Expected uuids to be 15, but it is ", len(uuids))
 		for uuid, _ := range uuids {
 			p := hc.HealthPoint(uuid)
 			Log.Info(p.Alias)
