@@ -24,7 +24,7 @@ func newSwitchTable(switchService *VNet) *SwitchTable {
 	return switchTable
 }
 
-func (this *SwitchTable) unicastHealthNotification(serviceName string, serviceArea uint16, action common.Action, set *types.NotificationSet, isLocal bool) {
+func (this *SwitchTable) unicastHealthNotification(serviceName string, serviceArea uint16, action common.Action, set *types.NotificationSet) {
 	mobjects := object.New(nil, set)
 	nextId := this.switchService.protocol.NextMessageNumber()
 	data, err := this.switchService.protocol.CreateMessageFor("", serviceName, serviceArea, common.P1, action,
@@ -34,12 +34,8 @@ func (this *SwitchTable) unicastHealthNotification(serviceName string, serviceAr
 		this.switchService.resources.Logger().Error("Failed to create message to send to all: ", err)
 		return
 	}
-	var conns map[string]common.IVirtualNetworkInterface
-	if isLocal {
-		conns = this.conns.all()
-	} else {
-		conns = this.conns.allInternals()
-	}
+
+	conns := this.conns.all()
 	for _, vnic := range conns {
 		this.switchService.resources.Logger().Trace(this.desc, "sending message ", nextId, " to ",
 			vnic.Resources().SysConfig().RemoteUuid)
