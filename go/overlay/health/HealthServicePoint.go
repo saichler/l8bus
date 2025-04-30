@@ -37,6 +37,7 @@ func (this *HealthServicePoint) Post(pb common.IElements, resourcs common.IResou
 func (this *HealthServicePoint) Put(pb common.IElements, resourcs common.IResources) common.IElements {
 	hp := pb.Element().(*types.HealthPoint)
 	this.healthCenter.Add(hp, pb.Notification())
+	this.healthCenter.healthPoints.Sync()
 	return nil
 }
 func (this *HealthServicePoint) Patch(pb common.IElements, resourcs common.IResources) common.IElements {
