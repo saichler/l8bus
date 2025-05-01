@@ -3,18 +3,35 @@ package vnic
 import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
+	"github.com/saichler/serializer/go/serialize/object"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
+	"time"
 )
 
-func (this *VirtualNetworkInterface) NotifyServiceAdded() error {
+func (this *VirtualNetworkInterface) NotifyServiceAdded(serviceNames []string, serviceArea uint16) error {
 	hc := health.Health(this.resources)
 	curr := hc.HealthPoint(this.resources.SysConfig().LocalUuid)
 	hp := &types.HealthPoint{}
 	hp.AUuid = curr.AUuid
 	hp.Services = curr.Services
 	mergeServices(hp, this.resources.SysConfig().Services)
-	return this.Unicast(this.resources.SysConfig().RemoteUuid, health.ServiceName, 0, common.PATCH, hp)
+	//send notification for health service
+	err := this.Unicast(this.resources.SysConfig().RemoteUuid, health.ServiceName, 0, common.PATCH, hp)
+	for _, serviceName := range serviceNames {
+		{
+			go this.requestCacheSync(serviceName, serviceArea)
+		}
+	}
+	return err
+}
+
+func (this *VirtualNetworkInterface) requestCacheSync(serviceName string, serviceArea uint16) {
+	time.Sleep(time.Second)
+	err := this.Multicast(serviceName, serviceArea, common.Sync, object.New(nil, nil))
+	if err != nil {
+		this.resources.Logger().Error("Failed to send cache sync multicast:", err.Error())
+	}
 }
 
 func (this *VirtualNetworkInterface) NotifyServiceRemoved(serviceName string, serviceArea uint16) error {
