@@ -137,5 +137,21 @@ func createElements(any interface{}, resources common.IResources) (common.IEleme
 	if ok {
 		return object.New(nil, pb), nil
 	}
+
+	v := reflect.ValueOf(any)
+
+	if v.Kind() == reflect.Slice {
+		pbs := make([]proto.Message, v.Len())
+		for i := 0; i < v.Len(); i++ {
+			elm := v.Index(i)
+			pb, ok = elm.Interface().(proto.Message)
+			if ok {
+				pbs[i] = pb
+			} else {
+				panic("Uknown input type " + reflect.ValueOf(pb).String())
+			}
+		}
+		return object.New(nil, pbs), nil
+	}
 	panic("Uknown input type " + reflect.ValueOf(any).String())
 }
