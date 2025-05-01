@@ -22,11 +22,11 @@ func newNotificationSender(vnet *VNet) *NotificationSender {
 	ns := &NotificationSender{}
 	ns.cond = sync.NewCond(&sync.Mutex{})
 	ns.vnet = vnet
-	go ns.sendNotification()
+	go ns.processHealthServiceNotifications()
 	return ns
 }
 
-func (this *NotificationSender) requestNotification() {
+func (this *NotificationSender) requestHealthServiceNotification() {
 	this.cond.L.Lock()
 	defer this.cond.L.Unlock()
 	this.lastNotificationRequest = time.Now().UnixMilli()
@@ -34,7 +34,7 @@ func (this *NotificationSender) requestNotification() {
 	this.cond.Broadcast()
 }
 
-func (this *NotificationSender) sendNotification() {
+func (this *NotificationSender) processHealthServiceNotifications() {
 	for this.vnet.running {
 		this.cond.L.Lock()
 		sendNotification := false
@@ -42,8 +42,8 @@ func (this *NotificationSender) sendNotification() {
 		//or last one was sent more than a second ago
 		//mark to send a notification
 		if this.notificationRequestCount > 0 &&
-			(time.Now().UnixMilli()-this.lastNotificationRequest >= 500 ||
-				time.Now().UnixMilli()-this.lastNotificationSentTime >= 1000) {
+			(time.Now().UnixMilli()-this.lastNotificationRequest >= 1000 ||
+				time.Now().UnixMilli()-this.lastNotificationSentTime >= 2000) {
 			sendNotification = true
 			this.lastNotificationSentTime = time.Now().UnixMilli()
 			this.notificationRequestCount = 0
