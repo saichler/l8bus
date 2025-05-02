@@ -61,16 +61,10 @@ func (this *NotificationSender) processHealthServiceNotifications() {
 		if sendNotification {
 			vnetUuid := this.vnet.resources.SysConfig().LocalUuid
 			nextId := this.vnet.protocol.NextMessageNumber()
-			conns := this.vnet.switchTable.conns.all()
-
 			syncData, _ := this.vnet.protocol.CreateMessageFor("", health.ServiceName, 0, common.P1,
 				common.Sync, vnetUuid, vnetUuid, object.New(nil, nil), false, false,
 				nextId, nil)
-			for _, vnic := range conns {
-				go func() {
-					vnic.SendMessage(syncData)
-				}()
-			}
+			go this.vnet.HandleData(syncData, nil)
 		}
 		this.cond.L.Unlock()
 	}
@@ -80,5 +74,12 @@ func (this *VNet) PropertyChangeNotification(set *types.NotificationSet) {
 	//only health service will call this callback so check if the notification is from a local source
 	//if it is from local source, then just notify local vnics
 	protocol.AddPropertyChangeCalled(set, this.resources.SysConfig().LocalAlias)
-	this.switchTable.unicastHealthNotification(health.ServiceName, 0, common.Notify, set)
+
+	vnetUuid := this.resources.SysConfig().LocalUuid
+	nextId := this.protocol.NextMessageNumber()
+	syncData, _ := this.protocol.CreateMessageFor("", set.ServiceName, uint16(set.ServiceArea), common.P1,
+		common.Notify, vnetUuid, vnetUuid, object.New(nil, set), false, false,
+		nextId, nil)
+
+	go this.HandleData(syncData, nil)
 }

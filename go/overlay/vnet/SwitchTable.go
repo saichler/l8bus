@@ -3,7 +3,6 @@ package vnet
 import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
-	"github.com/saichler/serializer/go/serialize/object"
 	"github.com/saichler/types/go/common"
 	"github.com/saichler/types/go/types"
 	"time"
@@ -22,40 +21,6 @@ func newSwitchTable(switchService *VNet) *SwitchTable {
 	switchTable.switchService = switchService
 	switchTable.desc = "SwitchTable (" + switchService.resources.SysConfig().LocalUuid + ") - "
 	return switchTable
-}
-
-func (this *SwitchTable) unicastHealthNotification(serviceName string, serviceArea uint16, action common.Action, set *types.NotificationSet) {
-	mobjects := object.New(nil, set)
-	nextId := this.switchService.protocol.NextMessageNumber()
-	data, err := this.switchService.protocol.CreateMessageFor("", serviceName, serviceArea, common.P1, action,
-		this.switchService.resources.SysConfig().LocalUuid,
-		this.switchService.resources.SysConfig().LocalUuid, mobjects, false, false, nextId, nil)
-	if err != nil {
-		this.switchService.resources.Logger().Error("Failed to create message to send to all: ", err)
-		return
-	}
-
-	conns := this.conns.all()
-
-	for _, vnic := range conns {
-		this.switchService.resources.Logger().Trace(this.desc, "sending message ", nextId, " to ",
-			vnic.Resources().SysConfig().RemoteUuid)
-		vnic.SendMessage(data)
-	}
-}
-
-func (this *SwitchTable) unicastAll(isLocal, isForceExternal bool, nextId uint32, data []byte) {
-	var conns map[string]common.IVirtualNetworkInterface
-	if isLocal && !isForceExternal {
-		conns = this.conns.all()
-	} else {
-		conns = this.conns.allInternals()
-	}
-	for _, vnic := range conns {
-		this.switchService.resources.Logger().Trace(this.desc, "Unicast message ", nextId, " to ",
-			vnic.Resources().SysConfig().RemoteUuid)
-		vnic.SendMessage(data)
-	}
 }
 
 func (this *SwitchTable) addVNic(vnic common.IVirtualNetworkInterface) {

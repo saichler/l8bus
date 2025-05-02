@@ -212,7 +212,7 @@ func (this *VNet) HandleData(data []byte, vnic common.IVirtualNetworkInterface) 
 		uuidMap := this.switchTable.ServiceUuids(serviceName, serviceArea, sourceVnet)
 		if uuidMap != nil {
 			this.uniCastToPorts(uuidMap, data, sourceVnet)
-			if serviceName == health.ServiceName {
+			if serviceName == health.ServiceName && source != this.resources.SysConfig().LocalUuid {
 				this.switchDataReceived(data, vnic)
 			}
 			return
