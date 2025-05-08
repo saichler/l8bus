@@ -41,7 +41,7 @@ func NewVNet(resources ifs.IResources) *VNet {
 	net.resources.SysConfig().LocalUuid = ifs.NewUuid()
 	net.switchTable = newSwitchTable(net)
 
-	net.resources.Services().AddServicePointType(&health.HealthServicePoint{})
+	net.resources.Services().RegisterServiceHandlerType(&health.HealthServicePoint{})
 	net.resources.Services().Activate(health.ServicePointName, health.ServiceName, 0, net.resources, net)
 	net.discovery = NewDiscovery(net)
 	net.ns = newNotificationSender(net)
@@ -150,7 +150,7 @@ func (this *VNet) connect(conn net.Conn) {
 	this.notifyNewVNic(vnic)
 }
 
-func (this *VNet) notifyNewVNic(vnic ifs.IVirtualNetworkInterface) {
+func (this *VNet) notifyNewVNic(vnic ifs.IVNic) {
 	this.switchTable.addVNic(vnic)
 }
 
@@ -161,7 +161,7 @@ func (this *VNet) Shutdown() {
 	this.switchTable.shutdown()
 }
 
-func (this *VNet) Failed(data []byte, vnic ifs.IVirtualNetworkInterface, failMsg string) {
+func (this *VNet) Failed(data []byte, vnic ifs.IVNic, failMsg string) {
 	msg, err := this.protocol.MessageOf(data)
 	this.resources.Logger().Error("Failed Message ", msg.Action, ":", failMsg)
 	if err != nil {
@@ -178,7 +178,7 @@ func (this *VNet) Failed(data []byte, vnic ifs.IVirtualNetworkInterface, failMsg
 	}
 }
 
-func (this *VNet) HandleData(data []byte, vnic ifs.IVirtualNetworkInterface) {
+func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 	this.resources.Logger().Trace("********** Swith Service - HandleData **********")
 	source, sourceVnet, destination, serviceName, serviceArea, _ := protocol.HeaderOf(data)
 	this.resources.Logger().Trace("** Switch       : ", this.resources.SysConfig().LocalUuid)
@@ -242,7 +242,7 @@ func (this *VNet) publish(pb proto.Message) {
 
 }
 
-func (this *VNet) ShutdownVNic(vnic ifs.IVirtualNetworkInterface) {
+func (this *VNet) ShutdownVNic(vnic ifs.IVNic) {
 	h := health.Health(this.resources)
 	uuid := vnic.Resources().SysConfig().RemoteUuid
 	hp := h.HealthPoint(uuid)
@@ -253,7 +253,7 @@ func (this *VNet) ShutdownVNic(vnic ifs.IVirtualNetworkInterface) {
 	this.resources.Logger().Info("Shutdown complete ", vnic.Resources().SysConfig().LocalAlias)
 }
 
-func (this *VNet) switchDataReceived(data []byte, vnic ifs.IVirtualNetworkInterface) {
+func (this *VNet) switchDataReceived(data []byte, vnic ifs.IVNic) {
 	msg, err := this.protocol.MessageOf(data)
 	if err != nil {
 		this.resources.Logger().Error(err)

@@ -2,12 +2,12 @@ package vnic
 
 import (
 	"errors"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types"
+	"github.com/saichler/l8utils/go/utils/strings"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	requests2 "github.com/saichler/layer8/go/overlay/vnic/requests"
-	"github.com/saichler/l8utils/go/utils/strings"
-	"github.com/saichler/l8types/go/ifs"
-	"github.com/saichler/l8types/go/types"
 	"net"
 	"os"
 	"sync"
@@ -58,7 +58,7 @@ func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *Virtua
 
 	if conn == nil {
 		// Register the health service
-		vnic.resources.Services().AddServicePointType(&health.HealthServicePoint{})
+		vnic.resources.Services().RegisterServiceHandlerType(&health.HealthServicePoint{})
 		vnic.resources.Services().Activate(health.ServicePointName, health.ServiceName, 0, vnic.resources, nil)
 	}
 
@@ -148,7 +148,7 @@ func (this *VirtualNetworkInterface) SendMessage(data []byte) error {
 	return this.components.TX().SendMessage(data)
 }
 
-func (this *VirtualNetworkInterface) API(serviceName string, serviceArea uint16) ifs.API {
+func (this *VirtualNetworkInterface) ServiceAPI(serviceName string, serviceArea uint16) ifs.ServiceAPI {
 	return newAPI(serviceName, serviceArea, false, false)
 }
 

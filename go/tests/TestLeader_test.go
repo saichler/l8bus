@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func getLeader(uuid string) ifs.IVirtualNetworkInterface {
+func getLeader(uuid string) ifs.IVNic {
 	all := topo.AllVnics()
 	for _, nic := range all {
 		if nic.Resources().SysConfig().LocalUuid == uuid {

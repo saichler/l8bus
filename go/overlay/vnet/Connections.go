@@ -7,8 +7,8 @@ import (
 )
 
 type Connections struct {
-	internal          map[string]ifs.IVirtualNetworkInterface
-	external          map[string]ifs.IVirtualNetworkInterface
+	internal          map[string]ifs.IVNic
+	external          map[string]ifs.IVNic
 	routes            map[string]string
 	mtx               *sync.RWMutex
 	logger            ifs.ILogger
@@ -17,8 +17,8 @@ type Connections struct {
 
 func newConnections(logger ifs.ILogger) *Connections {
 	conns := &Connections{}
-	conns.internal = make(map[string]ifs.IVirtualNetworkInterface)
-	conns.external = make(map[string]ifs.IVirtualNetworkInterface)
+	conns.internal = make(map[string]ifs.IVNic)
+	conns.external = make(map[string]ifs.IVNic)
 	conns.routes = make(map[string]string)
 	conns.externalConnected = make(map[string]string)
 	conns.mtx = &sync.RWMutex{}
@@ -26,7 +26,7 @@ func newConnections(logger ifs.ILogger) *Connections {
 	return conns
 }
 
-func (this *Connections) addInternal(uuid string, vnic ifs.IVirtualNetworkInterface) {
+func (this *Connections) addInternal(uuid string, vnic ifs.IVNic) {
 	this.logger.Info("Adding internal with alias ", vnic.Resources().SysConfig().RemoteAlias)
 	this.mtx.Lock()
 	defer this.mtx.Unlock()
@@ -39,7 +39,7 @@ func (this *Connections) addInternal(uuid string, vnic ifs.IVirtualNetworkInterf
 	this.internal[uuid] = vnic
 }
 
-func (this *Connections) addExternal(uuid string, vnic ifs.IVirtualNetworkInterface) {
+func (this *Connections) addExternal(uuid string, vnic ifs.IVNic) {
 	this.logger.Info("Adding external with alias ", vnic.Resources().SysConfig().RemoteAlias)
 	this.mtx.Lock()
 	defer this.mtx.Unlock()
@@ -61,7 +61,7 @@ func (this *Connections) isConnected(ip string) bool {
 	return ok
 }
 
-func (this *Connections) getConnection(vnicUuid string, isHope0 bool, resources ifs.IResources) (string, ifs.IVirtualNetworkInterface) {
+func (this *Connections) getConnection(vnicUuid string, isHope0 bool, resources ifs.IResources) (string, ifs.IVNic) {
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
 	vnic, ok := this.internal[vnicUuid]
@@ -99,8 +99,8 @@ func (this *Connections) getConnection(vnicUuid string, isHope0 bool, resources 
 	return "", nil
 }
 
-func (this *Connections) all() map[string]ifs.IVirtualNetworkInterface {
-	all := make(map[string]ifs.IVirtualNetworkInterface)
+func (this *Connections) all() map[string]ifs.IVNic {
+	all := make(map[string]ifs.IVNic)
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
 	for uuid, vnic := range this.internal {
@@ -127,20 +127,20 @@ func (this *Connections) isInterval(uuid string) bool {
 	return ok
 }
 
-func (this *Connections) allInternals() map[string]ifs.IVirtualNetworkInterface {
+func (this *Connections) allInternals() map[string]ifs.IVNic {
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
-	result := make(map[string]ifs.IVirtualNetworkInterface)
+	result := make(map[string]ifs.IVNic)
 	for uuid, vnic := range this.internal {
 		result[uuid] = vnic
 	}
 	return result
 }
 
-func (this *Connections) allExternals() map[string]ifs.IVirtualNetworkInterface {
+func (this *Connections) allExternals() map[string]ifs.IVNic {
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
-	result := make(map[string]ifs.IVirtualNetworkInterface)
+	result := make(map[string]ifs.IVNic)
 	for uuid, vnic := range this.external {
 		result[uuid] = vnic
 	}

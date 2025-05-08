@@ -23,7 +23,7 @@ func newSwitchTable(switchService *VNet) *SwitchTable {
 	return switchTable
 }
 
-func (this *SwitchTable) addVNic(vnic ifs.IVirtualNetworkInterface) {
+func (this *SwitchTable) addVNic(vnic ifs.IVNic) {
 	config := vnic.Resources().SysConfig()
 	//check if this port is local to the machine, e.g. not belong to public subnet
 	isLocal := protocol.IpSegment.IsLocal(config.Address)

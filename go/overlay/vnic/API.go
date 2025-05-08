@@ -38,7 +38,7 @@ func (v VnicAPI) Get(s string) ifs.IElements {
 	panic("implement me")
 }
 
-func newAPI(serviceName string, serviceArea uint16, leader, all bool) ifs.API {
+func newAPI(serviceName string, serviceArea uint16, leader, all bool) ifs.ServiceAPI {
 	api := &VnicAPI{}
 	api.serviceName = serviceName
 	api.serviceArea = serviceArea
