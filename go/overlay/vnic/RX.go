@@ -134,14 +134,14 @@ func (this *RX) handleMessage(msg ifs.IMessage, pb ifs.IElements) {
 		request := this.vnic.requests.GetRequest(msg.Sequence(), this.vnic.resources.SysConfig().LocalUuid)
 		request.SetResponse(pb)
 	} else if msg.Action() == ifs.Notify {
-		resp := this.vnic.resources.ServicePoints().Notify(pb, this.vnic, msg, false)
+		resp := this.vnic.resources.Services().Notify(pb, this.vnic, msg, false)
 		if resp != nil && resp.Error() != nil {
 			//panic(this.vnic.resources.SysConfig().LocalAlias + " " + resp.Error().Error())
 			this.vnic.resources.Logger().Error(resp.Error())
 		}
 	} else {
 		//Add bool
-		resp := this.vnic.resources.ServicePoints().Handle(pb, msg.Action(), this.vnic, msg)
+		resp := this.vnic.resources.Services().Handle(pb, msg.Action(), this.vnic, msg)
 		if resp != nil && resp.Error() != nil {
 			//panic(this.vnic.resources.SysConfig().LocalAlias + " " + resp.Error().Error())
 			this.vnic.resources.Logger().Error(resp.Error())

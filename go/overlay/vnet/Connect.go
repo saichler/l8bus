@@ -27,7 +27,7 @@ func (this *VNet) ConnectNetworks(host string, destPort uint32) error {
 
 	resources := resources2.NewResources(this.resources.Registry(),
 		this.resources.Security(),
-		this.resources.ServicePoints(),
+		this.resources.Services(),
 		this.resources.Logger(),
 		this,
 		this.resources.Serializer(ifs.BINARY),

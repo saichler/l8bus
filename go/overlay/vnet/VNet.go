@@ -31,7 +31,7 @@ func NewVNet(resources ifs.IResources) *VNet {
 	net := &VNet{}
 	net.resources = resources2.NewResources(resources.Registry(),
 		resources.Security(),
-		resources.ServicePoints(),
+		resources.Services(),
 		resources.Logger(),
 		net,
 		resources.Serializer(ifs.BINARY), resources.SysConfig(),
@@ -41,8 +41,8 @@ func NewVNet(resources ifs.IResources) *VNet {
 	net.resources.SysConfig().LocalUuid = ifs.NewUuid()
 	net.switchTable = newSwitchTable(net)
 
-	net.resources.ServicePoints().AddServicePointType(&health.HealthServicePoint{})
-	net.resources.ServicePoints().Activate(health.ServicePointName, health.ServiceName, 0, net.resources, net)
+	net.resources.Services().AddServicePointType(&health.HealthServicePoint{})
+	net.resources.Services().Activate(health.ServicePointName, health.ServiceName, 0, net.resources, net)
 	net.discovery = NewDiscovery(net)
 	net.ns = newNotificationSender(net)
 
@@ -130,7 +130,7 @@ func (this *VNet) connect(conn net.Conn) {
 
 	resources := resources2.NewResources(this.resources.Registry(),
 		this.resources.Security(),
-		this.resources.ServicePoints(),
+		this.resources.Services(),
 		this.resources.Logger(),
 		this,
 		this.resources.Serializer(ifs.BINARY),
@@ -274,13 +274,13 @@ func (this *VNet) switchDataReceived(data []byte, vnic ifs.IVirtualNetworkInterf
 	// Otherwise call the handler per the action & the type
 	this.resources.Logger().Trace("Switch Service is: ", this.resources.SysConfig().LocalUuid)
 	if msg.Action() == ifs.Notify {
-		resp := this.resources.ServicePoints().Notify(pb, vnic, msg, false)
+		resp := this.resources.Services().Notify(pb, vnic, msg, false)
 		if resp != nil && resp.Error() != nil {
 			panic(pb)
 			this.resources.Logger().Error(resp.Error())
 		}
 	} else {
-		resp := this.resources.ServicePoints().Handle(pb, msg.Action(), vnic, msg)
+		resp := this.resources.Services().Handle(pb, msg.Action(), vnic, msg)
 		if resp != nil && resp.Error() != nil {
 			this.resources.Logger().Error(resp.Error())
 		}

@@ -13,7 +13,7 @@ type HealthCenter struct {
 	resources    ifs.IResources
 }
 
-func newHealthCenter(resources ifs.IResources, listener ifs.IServicePointCacheListener) *HealthCenter {
+func newHealthCenter(resources ifs.IResources, listener ifs.IServiceCacheListener) *HealthCenter {
 	hc := &HealthCenter{}
 	rnode, _ := resources.Introspector().Inspect(&types.HealthPoint{})
 	introspecting.AddPrimaryKeyDecorator(rnode, "AUuid")
@@ -110,7 +110,7 @@ func (this *HealthCenter) Top() *types.Top {
 }
 
 func Health(r ifs.IResources) *HealthCenter {
-	sp, ok := r.ServicePoints().ServicePointHandler(ServiceName, 0)
+	sp, ok := r.Services().ServicePointHandler(ServiceName, 0)
 	if !ok {
 		return nil
 	}
