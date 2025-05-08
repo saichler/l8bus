@@ -2,8 +2,8 @@ package protocol
 
 import (
 	"bytes"
-	"github.com/saichler/shared/go/share/logger"
-	"github.com/saichler/types/go/types"
+	"github.com/saichler/l8utils/go/utils/logger"
+	"github.com/saichler/l8types/go/types"
 	"sync/atomic"
 )
 

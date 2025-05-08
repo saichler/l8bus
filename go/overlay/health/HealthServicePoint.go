@@ -2,8 +2,8 @@ package health
 
 import (
 	"github.com/saichler/serializer/go/serialize/object"
-	"github.com/saichler/types/go/common"
-	"github.com/saichler/types/go/types"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types"
 )
 
 const (
@@ -16,7 +16,7 @@ type HealthServicePoint struct {
 }
 
 func (this *HealthServicePoint) Activate(serviceName string, serviceArea uint16,
-	resources common.IResources, listener common.IServicePointCacheListener, args ...interface{}) error {
+	resources ifs.IResources, listener ifs.IServicePointCacheListener, args ...interface{}) error {
 	_, err := resources.Registry().Register(&types.HealthPoint{})
 	if err != nil {
 		return err
@@ -29,35 +29,35 @@ func (this *HealthServicePoint) DeActivate() error {
 	return nil
 }
 
-func (this *HealthServicePoint) Post(pb common.IElements, resourcs common.IResources) common.IElements {
+func (this *HealthServicePoint) Post(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
 	hp := pb.Element().(*types.HealthPoint)
 	this.healthCenter.Add(hp, pb.Notification())
 	return nil
 }
-func (this *HealthServicePoint) Put(pb common.IElements, resourcs common.IResources) common.IElements {
+func (this *HealthServicePoint) Put(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
 	hp := pb.Element().(*types.HealthPoint)
 	this.healthCenter.Add(hp, pb.Notification())
 	this.healthCenter.healthPoints.Sync()
 	return nil
 }
-func (this *HealthServicePoint) Patch(pb common.IElements, resourcs common.IResources) common.IElements {
+func (this *HealthServicePoint) Patch(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
 	hp := pb.Element().(*types.HealthPoint)
 	this.healthCenter.Update(hp, pb.Notification())
 	return nil
 }
-func (this *HealthServicePoint) Delete(pb common.IElements, resourcs common.IResources) common.IElements {
+func (this *HealthServicePoint) Delete(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
 	return nil
 }
-func (this *HealthServicePoint) GetCopy(pb common.IElements, resourcs common.IResources) common.IElements {
+func (this *HealthServicePoint) GetCopy(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
 	return nil
 }
-func (this *HealthServicePoint) Get(pb common.IElements, resourcs common.IResources) common.IElements {
+func (this *HealthServicePoint) Get(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
 	return object.New(nil, this.healthCenter.Top())
 }
-func (this *HealthServicePoint) Failed(pb common.IElements, resourcs common.IResources, msg common.IMessage) common.IElements {
+func (this *HealthServicePoint) Failed(pb ifs.IElements, resourcs ifs.IResources, msg ifs.IMessage) ifs.IElements {
 	return nil
 }
 
-func (this *HealthServicePoint) TransactionMethod() common.ITransactionMethod {
+func (this *HealthServicePoint) TransactionMethod() ifs.ITransactionMethod {
 	return nil
 }

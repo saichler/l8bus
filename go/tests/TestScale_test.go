@@ -5,9 +5,9 @@ package tests
 import (
 	. "github.com/saichler/l8test/go/infra/t_resources"
 	. "github.com/saichler/l8test/go/infra/t_servicepoints"
-	"github.com/saichler/shared/go/share/strings"
-	"github.com/saichler/types/go/common"
-	"github.com/saichler/types/go/testtypes"
+	"github.com/saichler/l8utils/go/utils/strings"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/testtypes"
 	"testing"
 	"time"
 )
@@ -27,7 +27,7 @@ func scaleTest(size, exp int, timeout int64, t *testing.T) bool {
 		pb := &testtypes.TestProto{}
 		pb.MyString = strings.New("Str-", i).String()
 		pb.MyInt32 = int32(i)
-		err := eg2.Unicast(eg3.Resources().SysConfig().LocalUuid, ServiceName, 0, common.POST, pb)
+		err := eg2.Unicast(eg3.Resources().SysConfig().LocalUuid, ServiceName, 0, ifs.POST, pb)
 		if err != nil {
 			Log.Fail(t, err)
 			return false
@@ -53,7 +53,7 @@ func scaleTest(size, exp int, timeout int64, t *testing.T) bool {
 }
 
 func TestScale(t *testing.T) {
-	Log.SetLogLevel(common.Info_Level)
+	Log.SetLogLevel(ifs.Info_Level)
 	exp := 1000
 	ok := scaleTest(1000, exp, 4, t)
 	if !ok {

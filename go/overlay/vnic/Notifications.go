@@ -4,8 +4,8 @@ import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/serializer/go/serialize/object"
-	"github.com/saichler/types/go/common"
-	"github.com/saichler/types/go/types"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types"
 	"time"
 )
 
@@ -17,7 +17,7 @@ func (this *VirtualNetworkInterface) NotifyServiceAdded(serviceNames []string, s
 	hp.Services = curr.Services
 	mergeServices(hp, this.resources.SysConfig().Services)
 	//send notification for health service
-	err := this.Unicast(this.resources.SysConfig().RemoteUuid, health.ServiceName, 0, common.PATCH, hp)
+	err := this.Unicast(this.resources.SysConfig().RemoteUuid, health.ServiceName, 0, ifs.PATCH, hp)
 	for _, serviceName := range serviceNames {
 		{
 			go this.requestCacheSync(serviceName, serviceArea)
@@ -28,7 +28,7 @@ func (this *VirtualNetworkInterface) NotifyServiceAdded(serviceNames []string, s
 
 func (this *VirtualNetworkInterface) requestCacheSync(serviceName string, serviceArea uint16) {
 	time.Sleep(time.Second)
-	err := this.Multicast(serviceName, serviceArea, common.Sync, object.New(nil, nil))
+	err := this.Multicast(serviceName, serviceArea, ifs.Sync, object.New(nil, nil))
 	if err != nil {
 		this.resources.Logger().Error("Failed to send cache sync multicast:", err.Error())
 	}
@@ -41,13 +41,13 @@ func (this *VirtualNetworkInterface) NotifyServiceRemoved(serviceName string, se
 	hp.AUuid = curr.AUuid
 	hp.Services = curr.Services
 	mergeServices(hp, this.resources.SysConfig().Services)
-	common.RemoveService(hp.Services, serviceName, int32(serviceArea))
-	return this.Unicast(this.resources.SysConfig().RemoteUuid, health.ServiceName, 0, common.PATCH, hp)
+	ifs.RemoveService(hp.Services, serviceName, int32(serviceArea))
+	return this.Unicast(this.resources.SysConfig().RemoteUuid, health.ServiceName, 0, ifs.PATCH, hp)
 }
 
 func (this *VirtualNetworkInterface) PropertyChangeNotification(set *types.NotificationSet) {
 	protocol.AddPropertyChangeCalled(set, this.resources.SysConfig().LocalAlias)
-	this.Multicast(set.ServiceName, uint16(set.ServiceArea), common.Notify, set)
+	this.Multicast(set.ServiceName, uint16(set.ServiceArea), ifs.Notify, set)
 }
 
 func mergeServices(hp *types.HealthPoint, services *types.Services) {

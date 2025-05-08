@@ -1,7 +1,7 @@
 package health
 
 import (
-	"github.com/saichler/types/go/types"
+	"github.com/saichler/l8types/go/types"
 	"strings"
 	"sync"
 )

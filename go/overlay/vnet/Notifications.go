@@ -4,8 +4,8 @@ import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/serializer/go/serialize/object"
-	"github.com/saichler/types/go/common"
-	"github.com/saichler/types/go/types"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types"
 	"sync"
 	"time"
 )
@@ -61,8 +61,8 @@ func (this *NotificationSender) processHealthServiceNotifications() {
 		if sendNotification {
 			vnetUuid := this.vnet.resources.SysConfig().LocalUuid
 			nextId := this.vnet.protocol.NextMessageNumber()
-			syncData, _ := this.vnet.protocol.CreateMessageFor("", health.ServiceName, 0, common.P1,
-				common.Sync, vnetUuid, vnetUuid, object.New(nil, nil), false, false,
+			syncData, _ := this.vnet.protocol.CreateMessageFor("", health.ServiceName, 0, ifs.P1,
+				ifs.Sync, vnetUuid, vnetUuid, object.New(nil, nil), false, false,
 				nextId, nil)
 			go this.vnet.HandleData(syncData, nil)
 		}
@@ -77,8 +77,8 @@ func (this *VNet) PropertyChangeNotification(set *types.NotificationSet) {
 
 	vnetUuid := this.resources.SysConfig().LocalUuid
 	nextId := this.protocol.NextMessageNumber()
-	syncData, _ := this.protocol.CreateMessageFor("", set.ServiceName, uint16(set.ServiceArea), common.P1,
-		common.Notify, vnetUuid, vnetUuid, object.New(nil, set), false, false,
+	syncData, _ := this.protocol.CreateMessageFor("", set.ServiceName, uint16(set.ServiceArea), ifs.P1,
+		ifs.Notify, vnetUuid, vnetUuid, object.New(nil, set), false, false,
 		nextId, nil)
 
 	go this.HandleData(syncData, nil)

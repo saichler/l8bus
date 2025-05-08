@@ -5,15 +5,15 @@ import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/serializer/go/serialize/object"
-	"github.com/saichler/types/go/common"
-	"github.com/saichler/types/go/types"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types"
 	"google.golang.org/protobuf/proto"
 	"reflect"
 	"strconv"
 )
 
 func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, serviceArea uint16,
-	action common.Action, any interface{}) error {
+	action ifs.Action, any interface{}) error {
 	elems, err := createElements(any, this.resources)
 	if err != nil {
 		return err
@@ -23,7 +23,7 @@ func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, se
 }
 
 func (this *VirtualNetworkInterface) Request(destination, serviceName string, serviceArea uint16,
-	action common.Action, any interface{}) common.IElements {
+	action ifs.Action, any interface{}) ifs.IElements {
 	request := this.requests.NewRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid, 5, this.resources.Logger())
 
 	request.Lock()
@@ -43,7 +43,7 @@ func (this *VirtualNetworkInterface) Request(destination, serviceName string, se
 	return request.Response()
 }
 
-func (this *VirtualNetworkInterface) Reply(msg common.IMessage, response common.IElements) error {
+func (this *VirtualNetworkInterface) Reply(msg ifs.IMessage, response ifs.IElements) error {
 	reply := msg.(*protocol.Message).ReplyClone(this.resources)
 	data, e := this.protocol.CreateMessageForm(reply, response)
 	if e != nil {
@@ -56,7 +56,7 @@ func (this *VirtualNetworkInterface) Reply(msg common.IMessage, response common.
 	return this.SendMessage(data)
 }
 
-func (this *VirtualNetworkInterface) Multicast(serviceName string, serviceArea uint16, action common.Action, any interface{}) error {
+func (this *VirtualNetworkInterface) Multicast(serviceName string, serviceArea uint16, action ifs.Action, any interface{}) error {
 	elems, err := createElements(any, this.resources)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func (this *VirtualNetworkInterface) Multicast(serviceName string, serviceArea u
 		false, false, this.protocol.NextMessageNumber(), nil)
 }
 
-func (this *VirtualNetworkInterface) Single(serviceName string, serviceArea uint16, action common.Action, any interface{}) (string, error) {
+func (this *VirtualNetworkInterface) Single(serviceName string, serviceArea uint16, action ifs.Action, any interface{}) (string, error) {
 	hc := health.Health(this.resources)
 	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.SysConfig().LocalUuid, false, false)
 	if destination == "" {
@@ -79,7 +79,7 @@ func (this *VirtualNetworkInterface) Single(serviceName string, serviceArea uint
 	return destination, this.Unicast(destination, serviceName, serviceArea, action, any)
 }
 
-func (this *VirtualNetworkInterface) SingleRequest(serviceName string, serviceArea uint16, action common.Action, any interface{}) common.IElements {
+func (this *VirtualNetworkInterface) SingleRequest(serviceName string, serviceArea uint16, action ifs.Action, any interface{}) ifs.IElements {
 	hc := health.Health(this.resources)
 	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.SysConfig().LocalUuid, false, false)
 	if destination == "" {
@@ -92,13 +92,13 @@ func (this *VirtualNetworkInterface) SingleRequest(serviceName string, serviceAr
 	return this.Request(destination, serviceName, serviceArea, action, any)
 }
 
-func (this *VirtualNetworkInterface) Leader(serviceName string, serviceArea uint16, action common.Action, any interface{}) common.IElements {
+func (this *VirtualNetworkInterface) Leader(serviceName string, serviceArea uint16, action ifs.Action, any interface{}) ifs.IElements {
 	hc := health.Health(this.resources)
 	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.SysConfig().LocalUuid, false, true)
 	return this.Request(destination, serviceName, serviceArea, action, any)
 }
 
-func (this *VirtualNetworkInterface) Forward(msg common.IMessage, destination string) common.IElements {
+func (this *VirtualNetworkInterface) Forward(msg ifs.IMessage, destination string) ifs.IElements {
 	pb, err := this.protocol.ElementsOf(msg)
 	if err != nil {
 		return object.NewError(err.Error())
@@ -117,7 +117,7 @@ func (this *VirtualNetworkInterface) Forward(msg common.IMessage, destination st
 	return request.Response()
 }
 
-func createElements(any interface{}, resources common.IResources) (common.IElements, error) {
+func createElements(any interface{}, resources ifs.IResources) (ifs.IElements, error) {
 	pq, ok := any.(*types.Query)
 	if ok {
 		return object.NewQuery(pq.Text, resources)
@@ -128,7 +128,7 @@ func createElements(any interface{}, resources common.IResources) (common.IEleme
 		return object.NewQuery(gsql, resources)
 	}
 
-	elems, ok := any.(common.IElements)
+	elems, ok := any.(ifs.IElements)
 	if ok {
 		return elems, nil
 	}

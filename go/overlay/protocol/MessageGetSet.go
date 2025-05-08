@@ -1,7 +1,7 @@
 package protocol
 
 import (
-	"github.com/saichler/types/go/common"
+	"github.com/saichler/l8types/go/ifs"
 )
 
 func (this *Message) Source() string {
@@ -28,15 +28,15 @@ func (this *Message) Sequence() uint32 {
 	return this.sequence
 }
 
-func (this *Message) Priority() common.Priority {
+func (this *Message) Priority() ifs.Priority {
 	return this.priority
 }
 
-func (this *Message) Action() common.Action {
+func (this *Message) Action() ifs.Action {
 	return this.action
 }
 
-func (this *Message) SetAction(action common.Action) {
+func (this *Message) SetAction(action ifs.Action) {
 	this.action = action
 }
 
@@ -64,11 +64,11 @@ func (this *Message) SetData(data string) {
 	this.data = data
 }
 
-func (this *Message) Tr() common.ITransaction {
+func (this *Message) Tr() ifs.ITransaction {
 	return this.tr
 }
 
-func (this *Message) SetTr(transaction common.ITransaction) {
+func (this *Message) SetTr(transaction ifs.ITransaction) {
 	this.tr = transaction.(*Transaction)
 }
 
@@ -76,11 +76,11 @@ func (this *Transaction) Id() string {
 	return string(this.id[0:])
 }
 
-func (this *Transaction) State() common.TransactionState {
+func (this *Transaction) State() ifs.TransactionState {
 	return this.state
 }
 
-func (this *Transaction) SetState(st common.TransactionState) {
+func (this *Transaction) SetState(st ifs.TransactionState) {
 	this.state = st
 }
 

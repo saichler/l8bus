@@ -5,11 +5,11 @@ import (
 	. "github.com/saichler/l8test/go/infra/t_servicepoints"
 	. "github.com/saichler/l8test/go/infra/t_topology"
 	"github.com/saichler/layer8/go/overlay/health"
-	"github.com/saichler/types/go/common"
+	"github.com/saichler/l8types/go/ifs"
 	"testing"
 )
 
-func getLeader(uuid string) common.IVirtualNetworkInterface {
+func getLeader(uuid string) ifs.IVirtualNetworkInterface {
 	all := topo.AllVnics()
 	for _, nic := range all {
 		if nic.Resources().SysConfig().LocalUuid == uuid {

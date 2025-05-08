@@ -1,8 +1,8 @@
 package protocol
 
 import (
-	"github.com/saichler/types/go/common"
-	"github.com/saichler/types/go/nets"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/nets"
 	"time"
 )
 
@@ -16,15 +16,15 @@ type MessageHeader struct {
 
 type Transaction struct {
 	id        [36]byte
-	state     common.TransactionState
+	state     ifs.TransactionState
 	errMsg    string
 	startTime int64
 }
 
-func NewTransaction() common.ITransaction {
+func NewTransaction() ifs.ITransaction {
 	tr := &Transaction{}
-	copy(tr.id[0:36], common.NewUuid())
-	tr.state = common.Create
+	copy(tr.id[0:36], ifs.NewUuid())
+	tr.state = ifs.Create
 	tr.startTime = time.Now().Unix()
 	return tr
 }
@@ -32,8 +32,8 @@ func NewTransaction() common.ITransaction {
 type Message struct {
 	MessageHeader
 	sequence    uint32
-	priority    common.Priority
-	action      common.Action
+	priority    ifs.Priority
+	action      ifs.Action
 	timeout     uint16
 	request     bool
 	reply       bool
@@ -65,7 +65,7 @@ func (this *Message) Clone() *Message {
 	clone.data = this.data
 	clone.failMessage = this.failMessage
 	clone.timeout = this.timeout
-	if !common.IsNil(this.tr) {
+	if !ifs.IsNil(this.tr) {
 		clone.tr = &Transaction{
 			id:        this.tr.id,
 			state:     this.tr.state,
@@ -76,9 +76,9 @@ func (this *Message) Clone() *Message {
 	return clone
 }
 
-func (this *Message) ReplyClone(resources common.IResources) common.IMessage {
+func (this *Message) ReplyClone(resources ifs.IResources) ifs.IMessage {
 	reply := this.Clone()
-	reply.action = common.Reply
+	reply.action = ifs.Reply
 	reply.destination = string(this.source[0:36])
 	copy(reply.source[0:36], resources.SysConfig().LocalUuid)
 	copy(reply.vnet[0:36], resources.SysConfig().RemoteUuid)
@@ -87,7 +87,7 @@ func (this *Message) ReplyClone(resources common.IResources) common.IMessage {
 	return reply
 }
 
-func (this *Message) FailClone(failMessage string) common.IMessage {
+func (this *Message) FailClone(failMessage string) ifs.IMessage {
 	fail := this.Clone()
 	fail.failMessage = failMessage
 	copy(fail.source[0:36], this.destination)
@@ -95,7 +95,7 @@ func (this *Message) FailClone(failMessage string) common.IMessage {
 	return fail
 }
 
-func HeaderOf(data []byte) (string, string, string, string, uint16, common.Priority) {
+func HeaderOf(data []byte) (string, string, string, string, uint16, ifs.Priority) {
 
 	size := nets.Bytes2UInt16(data[POS_Service_Name : POS_Service_Name+2])
 	POS_Sequence := POS_Service_Name + 2 + int(size)
@@ -112,5 +112,5 @@ func HeaderOf(data []byte) (string, string, string, string, uint16, common.Prior
 		destination,
 		string(data[POS_Service_Name+2 : POS_Sequence]),
 		nets.Bytes2UInt16(data[POS_Service_Area:POS_Service_Name]),
-		common.Priority(data[POS_Priority])
+		ifs.Priority(data[POS_Priority])
 }

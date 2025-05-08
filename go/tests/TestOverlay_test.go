@@ -5,8 +5,8 @@ import (
 	. "github.com/saichler/l8test/go/infra/t_servicepoints"
 	. "github.com/saichler/l8test/go/infra/t_topology"
 	"github.com/saichler/layer8/go/overlay/health"
-	"github.com/saichler/types/go/common"
-	"github.com/saichler/types/go/types"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types"
 	"testing"
 )
 
@@ -87,7 +87,7 @@ func TestSendMultiCast(t *testing.T) {
 	Log.Info("*** Sending Multicast Message")
 	pb := CreateTestModelInstance(3)
 	eg2_1 := topo.VnicByVnetNum(2, 1)
-	err := eg2_1.Multicast(ServiceName, 0, common.POST, pb)
+	err := eg2_1.Multicast(ServiceName, 0, ifs.POST, pb)
 	if err != nil {
 		Log.Fail(t, err)
 		return
@@ -120,7 +120,7 @@ func TestUniCast(t *testing.T) {
 	pb := CreateTestModelInstance(3)
 	eg1_2 := topo.VnicByVnetNum(1, 2)
 	eg3_3 := topo.VnicByVnetNum(3, 3)
-	err := eg1_2.Unicast(eg3_3.Resources().SysConfig().LocalUuid, ServiceName, 0, common.POST, pb)
+	err := eg1_2.Unicast(eg3_3.Resources().SysConfig().LocalUuid, ServiceName, 0, ifs.POST, pb)
 	if err != nil {
 		Log.Fail(t, err)
 		return
@@ -138,7 +138,7 @@ func TestReconnect(t *testing.T) {
 	pb := CreateTestModelInstance(3)
 	eg2_1 := topo.VnicByVnetNum(2, 1)
 	eg1_3 := topo.VnicByVnetNum(1, 3)
-	err := eg2_1.Unicast(eg1_3.Resources().SysConfig().LocalUuid, ServiceName, 0, common.POST, pb)
+	err := eg2_1.Unicast(eg1_3.Resources().SysConfig().LocalUuid, ServiceName, 0, ifs.POST, pb)
 	if err != nil {
 		Log.Fail(t, err)
 		return
@@ -156,9 +156,9 @@ func TestReconnect(t *testing.T) {
 	data := make([]byte, eg2_1.Resources().SysConfig().MaxDataSize+1)
 	eg2_1.SendMessage(data)
 
-	err = eg2_1.Unicast(eg1_3.Resources().SysConfig().LocalUuid, ServiceName, 0, common.POST, pb)
-	err = eg2_1.Unicast(eg1_3.Resources().SysConfig().LocalUuid, ServiceName, 0, common.POST, pb)
-	err = eg2_1.Unicast(eg1_3.Resources().SysConfig().LocalUuid, ServiceName, 0, common.POST, pb)
+	err = eg2_1.Unicast(eg1_3.Resources().SysConfig().LocalUuid, ServiceName, 0, ifs.POST, pb)
+	err = eg2_1.Unicast(eg1_3.Resources().SysConfig().LocalUuid, ServiceName, 0, ifs.POST, pb)
+	err = eg2_1.Unicast(eg1_3.Resources().SysConfig().LocalUuid, ServiceName, 0, ifs.POST, pb)
 	if err != nil {
 		Log.Fail(t, err)
 		return
@@ -181,7 +181,7 @@ func TestDestinationUnreachable(t *testing.T) {
 		topo.RenewVnic(eg1_1.Resources().SysConfig().LocalAlias)
 	}()
 
-	err := eg3_2.Unicast(eg1_1.Resources().SysConfig().LocalUuid, ServiceName, 0, common.POST, pb)
+	err := eg3_2.Unicast(eg1_1.Resources().SysConfig().LocalUuid, ServiceName, 0, ifs.POST, pb)
 	if err != nil {
 		Log.Fail(t, err)
 		return
@@ -201,7 +201,7 @@ func TestDestinationUnreachable(t *testing.T) {
 
 	Sleep()
 
-	err = eg3_2.Unicast(eg1_1.Resources().SysConfig().LocalUuid, ServiceName, 0, common.POST, pb)
+	err = eg3_2.Unicast(eg1_1.Resources().SysConfig().LocalUuid, ServiceName, 0, ifs.POST, pb)
 	if err != nil {
 		Log.Fail(t, err)
 		return

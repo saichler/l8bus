@@ -3,8 +3,8 @@ package vnet
 import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
-	"github.com/saichler/types/go/common"
-	"github.com/saichler/types/go/types"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types"
 	"time"
 )
 
@@ -23,7 +23,7 @@ func newSwitchTable(switchService *VNet) *SwitchTable {
 	return switchTable
 }
 
-func (this *SwitchTable) addVNic(vnic common.IVirtualNetworkInterface) {
+func (this *SwitchTable) addVNic(vnic ifs.IVirtualNetworkInterface) {
 	config := vnic.Resources().SysConfig()
 	//check if this port is local to the machine, e.g. not belong to public subnet
 	isLocal := protocol.IpSegment.IsLocal(config.Address)

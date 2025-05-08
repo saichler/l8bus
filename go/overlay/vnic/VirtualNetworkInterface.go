@@ -5,9 +5,9 @@ import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	requests2 "github.com/saichler/layer8/go/overlay/vnic/requests"
-	"github.com/saichler/shared/go/share/strings"
-	"github.com/saichler/types/go/common"
-	"github.com/saichler/types/go/types"
+	"github.com/saichler/l8utils/go/utils/strings"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types"
 	"net"
 	"os"
 	"sync"
@@ -16,7 +16,7 @@ import (
 
 type VirtualNetworkInterface struct {
 	// Resources for this VNic such as registry, security & config
-	resources common.IResources
+	resources ifs.IResources
 	// The socket connection
 	conn net.Conn
 	// The socket connection mutex
@@ -40,7 +40,7 @@ type VirtualNetworkInterface struct {
 	connected bool
 }
 
-func NewVirtualNetworkInterface(resources common.IResources, conn net.Conn) *VirtualNetworkInterface {
+func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *VirtualNetworkInterface {
 	vnic := &VirtualNetworkInterface{}
 	vnic.conn = conn
 	vnic.resources = resources
@@ -53,7 +53,7 @@ func NewVirtualNetworkInterface(resources common.IResources, conn net.Conn) *Vir
 	vnic.requests = requests2.NewRequests()
 	vnic.stats = &types.HealthPointStats{}
 	if vnic.resources.SysConfig().LocalUuid == "" {
-		vnic.resources.SysConfig().LocalUuid = common.NewUuid()
+		vnic.resources.SysConfig().LocalUuid = ifs.NewUuid()
 	}
 
 	if conn == nil {
@@ -87,9 +87,9 @@ func (this *VirtualNetworkInterface) connectToSwitch() {
 func (this *VirtualNetworkInterface) connect() error {
 	// Dial the destination and validate the secret and key
 	destination := protocol.MachineIP
-	if common.NetworkMode_K8s() {
+	if ifs.NetworkMode_K8s() {
 		destination = os.Getenv("NODE_IP")
-	} else if common.NetworkMode_DOCKER() {
+	} else if ifs.NetworkMode_DOCKER() {
 		// inside a containet the switch ip will be the external subnet + ".1"
 		// for example if the address of the container is 172.1.1.112, the switch will be accessible
 		// via 172.1.1.1
@@ -148,11 +148,11 @@ func (this *VirtualNetworkInterface) SendMessage(data []byte) error {
 	return this.components.TX().SendMessage(data)
 }
 
-func (this *VirtualNetworkInterface) API(serviceName string, serviceArea uint16) common.API {
+func (this *VirtualNetworkInterface) API(serviceName string, serviceArea uint16) ifs.API {
 	return newAPI(serviceName, serviceArea, false, false)
 }
 
-func (this *VirtualNetworkInterface) Resources() common.IResources {
+func (this *VirtualNetworkInterface) Resources() ifs.IResources {
 	return this.resources
 }
 

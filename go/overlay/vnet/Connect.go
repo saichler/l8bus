@@ -2,9 +2,9 @@ package vnet
 
 import (
 	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
-	resources2 "github.com/saichler/shared/go/share/resources"
-	"github.com/saichler/types/go/common"
-	"github.com/saichler/types/go/types"
+	resources2 "github.com/saichler/l8utils/go/utils/resources"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types"
 )
 
 func (this *VNet) ConnectNetworks(host string, destPort uint32) error {
@@ -30,7 +30,7 @@ func (this *VNet) ConnectNetworks(host string, destPort uint32) error {
 		this.resources.ServicePoints(),
 		this.resources.Logger(),
 		this,
-		this.resources.Serializer(common.BINARY),
+		this.resources.Serializer(ifs.BINARY),
 		config,
 		this.resources.Introspector())
 

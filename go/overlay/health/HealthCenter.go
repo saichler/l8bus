@@ -3,17 +3,17 @@ package health
 import (
 	"github.com/saichler/reflect/go/reflect/introspecting"
 	"github.com/saichler/servicepoints/go/points/dcache"
-	"github.com/saichler/types/go/common"
-	"github.com/saichler/types/go/types"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types"
 )
 
 type HealthCenter struct {
-	healthPoints common.IDistributedCache
+	healthPoints ifs.IDistributedCache
 	services     *Services
-	resources    common.IResources
+	resources    ifs.IResources
 }
 
-func newHealthCenter(resources common.IResources, listener common.IServicePointCacheListener) *HealthCenter {
+func newHealthCenter(resources ifs.IResources, listener ifs.IServicePointCacheListener) *HealthCenter {
 	hc := &HealthCenter{}
 	rnode, _ := resources.Introspector().Inspect(&types.HealthPoint{})
 	introspecting.AddPrimaryKeyDecorator(rnode, "AUuid")
@@ -109,7 +109,7 @@ func (this *HealthCenter) Top() *types.Top {
 	return top
 }
 
-func Health(r common.IResources) *HealthCenter {
+func Health(r ifs.IResources) *HealthCenter {
 	sp, ok := r.ServicePoints().ServicePointHandler(ServiceName, 0)
 	if !ok {
 		return nil

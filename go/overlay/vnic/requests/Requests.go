@@ -3,7 +3,7 @@ package requests
 import (
 	"bytes"
 	"github.com/saichler/serializer/go/serialize/object"
-	"github.com/saichler/types/go/common"
+	"github.com/saichler/l8types/go/ifs"
 	"strconv"
 	"sync"
 	"time"
@@ -20,8 +20,8 @@ type Request struct {
 	msgNum         uint32
 	timeout        int64
 	timeoutReached bool
-	response       common.IElements
-	log            common.ILogger
+	response       ifs.IElements
+	log            ifs.ILogger
 }
 
 func NewRequests() *Requests {
@@ -31,7 +31,7 @@ func NewRequests() *Requests {
 	return this
 }
 
-func (this *Requests) NewRequest(msgNum uint32, msgSource string, timeout int64, log common.ILogger) *Request {
+func (this *Requests) NewRequest(msgNum uint32, msgSource string, timeout int64, log ifs.ILogger) *Request {
 	request := &Request{}
 	request.msgNum = msgNum
 	request.msgSource = msgSource
@@ -72,7 +72,7 @@ func (this *Request) MsgNum() uint32 {
 	return this.msgNum
 }
 
-func (this *Request) Response() common.IElements {
+func (this *Request) Response() ifs.IElements {
 	if this.timeoutReached {
 		return object.NewError("Timeout Reached!")
 	}
@@ -94,7 +94,7 @@ func (this *Request) timeoutCheck() {
 	}
 }
 
-func (this *Request) SetResponse(resp common.IElements) {
+func (this *Request) SetResponse(resp ifs.IElements) {
 	this.response = resp
 	this.cond.Broadcast()
 }

@@ -2,9 +2,9 @@ package vnic
 
 import (
 	"github.com/saichler/serializer/go/serialize/object"
-	"github.com/saichler/shared/go/share/queues"
-	"github.com/saichler/types/go/common"
-	"github.com/saichler/types/go/nets"
+	"github.com/saichler/l8utils/go/utils/queues"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/nets"
 )
 
 type RX struct {
@@ -129,11 +129,11 @@ func (this *RX) notifyRawDataListener() {
 	this.vnic.Shutdown()
 }
 
-func (this *RX) handleMessage(msg common.IMessage, pb common.IElements) {
-	if msg.Action() == common.Reply {
+func (this *RX) handleMessage(msg ifs.IMessage, pb ifs.IElements) {
+	if msg.Action() == ifs.Reply {
 		request := this.vnic.requests.GetRequest(msg.Sequence(), this.vnic.resources.SysConfig().LocalUuid)
 		request.SetResponse(pb)
-	} else if msg.Action() == common.Notify {
+	} else if msg.Action() == ifs.Notify {
 		resp := this.vnic.resources.ServicePoints().Notify(pb, this.vnic, msg, false)
 		if resp != nil && resp.Error() != nil {
 			//panic(this.vnic.resources.SysConfig().LocalAlias + " " + resp.Error().Error())

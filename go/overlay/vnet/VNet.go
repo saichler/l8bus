@@ -6,10 +6,10 @@ import (
 	"github.com/saichler/layer8/go/overlay/protocol"
 	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
 	"github.com/saichler/serializer/go/serialize/object"
-	resources2 "github.com/saichler/shared/go/share/resources"
-	"github.com/saichler/shared/go/share/strings"
-	"github.com/saichler/types/go/common"
-	"github.com/saichler/types/go/types"
+	resources2 "github.com/saichler/l8utils/go/utils/resources"
+	"github.com/saichler/l8utils/go/utils/strings"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types"
 	"google.golang.org/protobuf/proto"
 	"net"
 	"strconv"
@@ -17,7 +17,7 @@ import (
 )
 
 type VNet struct {
-	resources   common.IResources
+	resources   ifs.IResources
 	socket      net.Listener
 	running     bool
 	ready       bool
@@ -27,18 +27,18 @@ type VNet struct {
 	ns          *NotificationSender
 }
 
-func NewVNet(resources common.IResources) *VNet {
+func NewVNet(resources ifs.IResources) *VNet {
 	net := &VNet{}
 	net.resources = resources2.NewResources(resources.Registry(),
 		resources.Security(),
 		resources.ServicePoints(),
 		resources.Logger(),
 		net,
-		resources.Serializer(common.BINARY), resources.SysConfig(),
+		resources.Serializer(ifs.BINARY), resources.SysConfig(),
 		resources.Introspector())
 	net.protocol = protocol.New(net.resources)
 	net.running = true
-	net.resources.SysConfig().LocalUuid = common.NewUuid()
+	net.resources.SysConfig().LocalUuid = ifs.NewUuid()
 	net.switchTable = newSwitchTable(net)
 
 	net.resources.ServicePoints().AddServicePointType(&health.HealthServicePoint{})
@@ -133,7 +133,7 @@ func (this *VNet) connect(conn net.Conn) {
 		this.resources.ServicePoints(),
 		this.resources.Logger(),
 		this,
-		this.resources.Serializer(common.BINARY),
+		this.resources.Serializer(ifs.BINARY),
 		config,
 		this.resources.Introspector())
 
@@ -150,7 +150,7 @@ func (this *VNet) connect(conn net.Conn) {
 	this.notifyNewVNic(vnic)
 }
 
-func (this *VNet) notifyNewVNic(vnic common.IVirtualNetworkInterface) {
+func (this *VNet) notifyNewVNic(vnic ifs.IVirtualNetworkInterface) {
 	this.switchTable.addVNic(vnic)
 }
 
@@ -161,7 +161,7 @@ func (this *VNet) Shutdown() {
 	this.switchTable.shutdown()
 }
 
-func (this *VNet) Failed(data []byte, vnic common.IVirtualNetworkInterface, failMsg string) {
+func (this *VNet) Failed(data []byte, vnic ifs.IVirtualNetworkInterface, failMsg string) {
 	msg, err := this.protocol.MessageOf(data)
 	this.resources.Logger().Error("Failed Message ", msg.Action, ":", failMsg)
 	if err != nil {
@@ -178,7 +178,7 @@ func (this *VNet) Failed(data []byte, vnic common.IVirtualNetworkInterface, fail
 	}
 }
 
-func (this *VNet) HandleData(data []byte, vnic common.IVirtualNetworkInterface) {
+func (this *VNet) HandleData(data []byte, vnic ifs.IVirtualNetworkInterface) {
 	this.resources.Logger().Trace("********** Swith Service - HandleData **********")
 	source, sourceVnet, destination, serviceName, serviceArea, _ := protocol.HeaderOf(data)
 	this.resources.Logger().Trace("** Switch       : ", this.resources.SysConfig().LocalUuid)
@@ -242,7 +242,7 @@ func (this *VNet) publish(pb proto.Message) {
 
 }
 
-func (this *VNet) ShutdownVNic(vnic common.IVirtualNetworkInterface) {
+func (this *VNet) ShutdownVNic(vnic ifs.IVirtualNetworkInterface) {
 	h := health.Health(this.resources)
 	uuid := vnic.Resources().SysConfig().RemoteUuid
 	hp := h.HealthPoint(uuid)
@@ -253,7 +253,7 @@ func (this *VNet) ShutdownVNic(vnic common.IVirtualNetworkInterface) {
 	this.resources.Logger().Info("Shutdown complete ", vnic.Resources().SysConfig().LocalAlias)
 }
 
-func (this *VNet) switchDataReceived(data []byte, vnic common.IVirtualNetworkInterface) {
+func (this *VNet) switchDataReceived(data []byte, vnic ifs.IVirtualNetworkInterface) {
 	msg, err := this.protocol.MessageOf(data)
 	if err != nil {
 		this.resources.Logger().Error(err)
@@ -262,7 +262,7 @@ func (this *VNet) switchDataReceived(data []byte, vnic common.IVirtualNetworkInt
 
 	pb, err := this.protocol.ElementsOf(msg)
 	if err != nil {
-		if !common.IsNil(msg.Tr()) {
+		if !ifs.IsNil(msg.Tr()) {
 			//This message should not be processed and we should just
 			//reply with nil to unblock the transaction
 			vnic.Reply(msg, nil)
@@ -273,7 +273,7 @@ func (this *VNet) switchDataReceived(data []byte, vnic common.IVirtualNetworkInt
 	}
 	// Otherwise call the handler per the action & the type
 	this.resources.Logger().Trace("Switch Service is: ", this.resources.SysConfig().LocalUuid)
-	if msg.Action() == common.Notify {
+	if msg.Action() == ifs.Notify {
 		resp := this.resources.ServicePoints().Notify(pb, vnic, msg, false)
 		if resp != nil && resp.Error() != nil {
 			panic(pb)
@@ -287,7 +287,7 @@ func (this *VNet) switchDataReceived(data []byte, vnic common.IVirtualNetworkInt
 	}
 }
 
-func (this *VNet) Resources() common.IResources {
+func (this *VNet) Resources() ifs.IResources {
 	return this.resources
 }
 

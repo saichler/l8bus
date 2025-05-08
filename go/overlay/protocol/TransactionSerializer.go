@@ -1,8 +1,8 @@
 package protocol
 
 import (
-	"github.com/saichler/types/go/common"
-	"github.com/saichler/types/go/nets"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/nets"
 )
 
 const (
@@ -15,12 +15,12 @@ const (
 type TransactionSerializer struct {
 }
 
-func (this *TransactionSerializer) Mode() common.SerializerMode {
-	return common.BINARY
+func (this *TransactionSerializer) Mode() ifs.SerializerMode {
+	return ifs.BINARY
 }
 
-func (this *TransactionSerializer) Marshal(any interface{}, r common.IRegistry) ([]byte, error) {
-	if common.IsNil(any) {
+func (this *TransactionSerializer) Marshal(any interface{}, r ifs.IRegistry) ([]byte, error) {
+	if ifs.IsNil(any) {
 		return []byte{0}, nil
 	}
 	tr := any.(*Transaction)
@@ -36,13 +36,13 @@ func (this *TransactionSerializer) Marshal(any interface{}, r common.IRegistry) 
 	return data, nil
 }
 
-func (this *TransactionSerializer) Unmarshal(data []byte, r common.IRegistry) (interface{}, error) {
+func (this *TransactionSerializer) Unmarshal(data []byte, r ifs.IRegistry) (interface{}, error) {
 	if len(data) == 1 {
 		return nil, nil
 	}
 	tr := &Transaction{}
 	copy(tr.id[0:36], data[POS_Tr_Id:POS_Tr_State])
-	tr.state = common.TransactionState(data[POS_Tr_State])
+	tr.state = ifs.TransactionState(data[POS_Tr_State])
 	tr.startTime = nets.Bytes2Long(data[POS_Tr_Start_Time:POS_Tr_Err_Message])
 	size := nets.Bytes2UInt16(data[POS_Tr_Err_Message : POS_Tr_Err_Message+2])
 	POS_END := POS_Tr_Err_Message + 2 + int(size)

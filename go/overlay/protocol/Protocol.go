@@ -2,16 +2,16 @@ package protocol
 
 import (
 	"github.com/saichler/serializer/go/serialize/object"
-	"github.com/saichler/types/go/common"
+	"github.com/saichler/l8types/go/ifs"
 	"sync/atomic"
 )
 
 type Protocol struct {
 	sequence  atomic.Uint32
-	resources common.IResources
+	resources ifs.IResources
 }
 
-func New(resources common.IResources) *Protocol {
+func New(resources ifs.IResources) *Protocol {
 	p := &Protocol{}
 	p.resources = resources
 	object.MessageSerializer = &MessageSerializer{}
@@ -19,16 +19,16 @@ func New(resources common.IResources) *Protocol {
 	return p
 }
 
-func (this *Protocol) MessageOf(data []byte) (common.IMessage, error) {
+func (this *Protocol) MessageOf(data []byte) (ifs.IMessage, error) {
 	msg, _ := object.MessageSerializer.Unmarshal(data, nil)
-	return msg.(common.IMessage), nil
+	return msg.(ifs.IMessage), nil
 }
 
-func (this *Protocol) ElementsOf(msg common.IMessage) (common.IElements, error) {
+func (this *Protocol) ElementsOf(msg ifs.IMessage) (ifs.IElements, error) {
 	return ElementsOf(msg, this.resources)
 }
 
-func ElementsOf(msg common.IMessage, resourcs common.IResources) (common.IElements, error) {
+func ElementsOf(msg ifs.IMessage, resourcs ifs.IResources) (ifs.IElements, error) {
 	data, err := resourcs.Security().Decrypt(msg.Data())
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func (this *Protocol) NextMessageNumber() uint32 {
 	return this.sequence.Add(1)
 }
 
-func DataFor(elems common.IElements, security common.ISecurityProvider) (string, error) {
+func DataFor(elems ifs.IElements, security ifs.ISecurityProvider) (string, error) {
 	var data []byte
 	var err error
 
@@ -64,8 +64,8 @@ func DataFor(elems common.IElements, security common.ISecurityProvider) (string,
 }
 
 func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceArea uint16,
-	priority common.Priority, action common.Action, source, vnet string, o common.IElements,
-	isRequest, isReply bool, msgNum uint32, tr common.ITransaction) ([]byte, error) {
+	priority ifs.Priority, action ifs.Action, source, vnet string, o ifs.IElements,
+	isRequest, isReply bool, msgNum uint32, tr ifs.ITransaction) ([]byte, error) {
 
 	AddMessageCreated()
 
@@ -99,7 +99,7 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 	return object.MessageSerializer.Marshal(msg, nil)
 }
 
-func (this *Protocol) CreateMessageForm(msg common.IMessage, o common.IElements) ([]byte, error) {
+func (this *Protocol) CreateMessageForm(msg ifs.IMessage, o ifs.IElements) ([]byte, error) {
 	var data []byte
 	var err error
 

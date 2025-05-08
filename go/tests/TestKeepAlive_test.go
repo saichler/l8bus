@@ -4,7 +4,7 @@ import (
 	. "github.com/saichler/l8test/go/infra/t_resources"
 	. "github.com/saichler/l8test/go/infra/t_servicepoints"
 	"github.com/saichler/layer8/go/overlay/health"
-	"github.com/saichler/types/go/common"
+	"github.com/saichler/l8types/go/ifs"
 	"testing"
 	"time"
 )
@@ -24,7 +24,7 @@ func TestKeepAlive(t *testing.T) {
 	pb := CreateTestModelInstance(3)
 	eg2_1 := topo.VnicByVnetNum(2, 1)
 	eg1_2 := topo.VnicByVnetNum(1, 2)
-	err := eg2_1.Multicast(ServiceName, 0, common.POST, pb)
+	err := eg2_1.Multicast(ServiceName, 0, ifs.POST, pb)
 	if err != nil {
 		Log.Fail(t, err)
 		return
