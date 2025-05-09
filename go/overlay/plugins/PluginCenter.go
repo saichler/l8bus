@@ -23,7 +23,7 @@ func loadPlugin(p *types.Plugin, vnic ifs.IVNic) error {
 
 	pluginFile, err := plugin.Open(name)
 	if err != nil {
-		return errors.New("failed to load plugin #1")
+		return errors.New("failed to load plugin #1 " + err.Error())
 	}
 	plugin, err := pluginFile.Lookup("Plugin")
 	if err != nil {
