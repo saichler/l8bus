@@ -1,9 +1,9 @@
 package vnic
 
 import (
-	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
+	"github.com/saichler/layer8/go/overlay/health"
 	"runtime"
 	"time"
 )

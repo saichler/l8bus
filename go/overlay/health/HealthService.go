@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	ServiceNames    = "Health"
+	ServiceName     = "Health"
 	ServiceTypeName = "HealthService"
 )
 

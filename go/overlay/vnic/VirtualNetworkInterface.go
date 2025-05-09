@@ -59,7 +59,7 @@ func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *Virtua
 	if conn == nil {
 		// Register the health service
 		vnic.resources.Services().RegisterServiceHandlerType(&health.HealthService{})
-		vnic.resources.Services().Activate(health.ServiceTypeName, health.ServiceNames, 0, vnic.resources, nil)
+		vnic.resources.Services().Activate(health.ServiceTypeName, health.ServiceName, 0, vnic.resources, nil)
 	}
 
 	return vnic

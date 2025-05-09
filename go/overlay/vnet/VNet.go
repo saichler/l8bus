@@ -42,7 +42,7 @@ func NewVNet(resources ifs.IResources) *VNet {
 	net.switchTable = newSwitchTable(net)
 
 	net.resources.Services().RegisterServiceHandlerType(&health.HealthService{})
-	net.resources.Services().Activate(health.ServiceTypeName, health.ServiceNames, 0, net.resources, net)
+	net.resources.Services().Activate(health.ServiceTypeName, health.ServiceName, 0, net.resources, net)
 	net.discovery = NewDiscovery(net)
 	net.ns = newNotificationSender(net)
 
@@ -123,7 +123,7 @@ func (this *VNet) connect(conn net.Conn) {
 		LocalAlias:  this.resources.SysConfig().LocalAlias,
 		LocalUuid:   this.resources.SysConfig().LocalUuid,
 		Services: &types.Services{ServiceToAreas: map[string]*types.ServiceAreas{
-			health.ServiceNames: &types.ServiceAreas{
+			health.ServiceName: &types.ServiceAreas{
 				Areas: map[int32]bool{0: true},
 			}}},
 	}
@@ -212,7 +212,7 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 		uuidMap := this.switchTable.ServiceUuids(serviceName, serviceArea, sourceVnet)
 		if uuidMap != nil {
 			this.uniCastToPorts(uuidMap, data, sourceVnet)
-			if serviceName == health.ServiceNames && source != this.resources.SysConfig().LocalUuid {
+			if serviceName == health.ServiceName && source != this.resources.SysConfig().LocalUuid {
 				this.switchDataReceived(data, vnic)
 			}
 			return

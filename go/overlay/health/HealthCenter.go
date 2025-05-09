@@ -17,7 +17,7 @@ func newHealthCenter(resources ifs.IResources, listener ifs.IServiceCacheListene
 	hc := &HealthCenter{}
 	rnode, _ := resources.Introspector().Inspect(&types.Health{})
 	introspecting.AddPrimaryKeyDecorator(rnode, "AUuid")
-	hc.healths = dcache.NewDistributedCache(ServiceNames, 0, "Health",
+	hc.healths = dcache.NewDistributedCache(ServiceName, 0, "Health",
 		resources.SysConfig().LocalUuid, listener, resources)
 	hc.services = newServices()
 	hc.resources = resources
@@ -110,7 +110,7 @@ func (this *HealthCenter) Top() *types.Top {
 }
 
 func Health(r ifs.IResources) *HealthCenter {
-	sp, ok := r.Services().ServiceHandler(ServiceNames, 0)
+	sp, ok := r.Services().ServiceHandler(ServiceName, 0)
 	if !ok {
 		return nil
 	}
