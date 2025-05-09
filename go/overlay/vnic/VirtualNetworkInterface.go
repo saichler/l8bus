@@ -36,7 +36,7 @@ type VirtualNetworkInterface struct {
 
 	requests *requests2.Requests
 
-	stats     *types.HealthPointStats
+	stats     *types.HealthStats
 	connected bool
 }
 
@@ -51,15 +51,15 @@ func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *Virtua
 	vnic.components.addComponent(newTX(vnic))
 	vnic.components.addComponent(newKeepAlive(vnic))
 	vnic.requests = requests2.NewRequests()
-	vnic.stats = &types.HealthPointStats{}
+	vnic.stats = &types.HealthStats{}
 	if vnic.resources.SysConfig().LocalUuid == "" {
 		vnic.resources.SysConfig().LocalUuid = ifs.NewUuid()
 	}
 
 	if conn == nil {
 		// Register the health service
-		vnic.resources.Services().RegisterServiceHandlerType(&health.HealthServicePoint{})
-		vnic.resources.Services().Activate(health.ServicePointName, health.ServiceName, 0, vnic.resources, nil)
+		vnic.resources.Services().RegisterServiceHandlerType(&health.HealthService{})
+		vnic.resources.Services().Activate(health.ServiceTypeName, health.ServiceNames, 0, vnic.resources, nil)
 	}
 
 	return vnic
@@ -181,7 +181,7 @@ func (this *VirtualNetworkInterface) reconnect() {
 	}
 }
 
-func (this *VirtualNetworkInterface) Stats() *types.HealthPointStats {
+func (this *VirtualNetworkInterface) Stats() *types.HealthStats {
 	return this.stats
 }
 
@@ -190,9 +190,9 @@ func (this *VirtualNetworkInterface) WaitForConnection() {
 		time.Sleep(time.Millisecond * 100)
 	}
 	hc := health.Health(this.resources)
-	hp := hc.HealthPoint(this.resources.SysConfig().LocalUuid)
+	hp := hc.Health(this.resources.SysConfig().LocalUuid)
 	for hp == nil {
 		time.Sleep(time.Millisecond * 100)
-		hp = hc.HealthPoint(this.resources.SysConfig().LocalUuid)
+		hp = hc.Health(this.resources.SysConfig().LocalUuid)
 	}
 }

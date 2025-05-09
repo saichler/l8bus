@@ -51,7 +51,7 @@ func (this *VirtualNetworkInterface) Reply(msg ifs.IMessage, response ifs.IEleme
 		return e
 	}
 	hc := health.Health(this.resources)
-	hp := hc.HealthPoint(msg.Source())
+	hp := hc.Health(msg.Source())
 	this.resources.Logger().Debug("Replying to ", msg.Source(), " ", hp.Alias)
 	return this.SendMessage(data)
 }
@@ -73,7 +73,7 @@ func (this *VirtualNetworkInterface) Single(serviceName string, serviceArea uint
 			strconv.Itoa(int(serviceArea)))
 	}
 
-	hp := hc.HealthPoint(destination)
+	hp := hc.Health(destination)
 	this.Resources().Logger().Info("Sending Single to ", destination, " alias ", hp.Alias)
 
 	return destination, this.Unicast(destination, serviceName, serviceArea, action, any)
@@ -87,7 +87,7 @@ func (this *VirtualNetworkInterface) SingleRequest(serviceName string, serviceAr
 			strconv.Itoa(int(serviceArea)))
 	}
 
-	hp := hc.HealthPoint(destination)
+	hp := hc.Health(destination)
 	this.Resources().Logger().Info("Sending Single Request to ", destination, " alias ", hp.Alias)
 	return this.Request(destination, serviceName, serviceArea, action, any)
 }

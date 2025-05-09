@@ -2,14 +2,14 @@ package vnet
 
 import (
 	"errors"
+	"github.com/saichler/l8srlz/go/serialize/object"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types"
+	resources2 "github.com/saichler/l8utils/go/utils/resources"
+	"github.com/saichler/l8utils/go/utils/strings"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
-	"github.com/saichler/l8srlz/go/serialize/object"
-	resources2 "github.com/saichler/l8utils/go/utils/resources"
-	"github.com/saichler/l8utils/go/utils/strings"
-	"github.com/saichler/l8types/go/ifs"
-	"github.com/saichler/l8types/go/types"
 	"google.golang.org/protobuf/proto"
 	"net"
 	"strconv"
@@ -41,13 +41,13 @@ func NewVNet(resources ifs.IResources) *VNet {
 	net.resources.SysConfig().LocalUuid = ifs.NewUuid()
 	net.switchTable = newSwitchTable(net)
 
-	net.resources.Services().RegisterServiceHandlerType(&health.HealthServicePoint{})
-	net.resources.Services().Activate(health.ServicePointName, health.ServiceName, 0, net.resources, net)
+	net.resources.Services().RegisterServiceHandlerType(&health.HealthService{})
+	net.resources.Services().Activate(health.ServiceTypeName, health.ServiceNames, 0, net.resources, net)
 	net.discovery = NewDiscovery(net)
 	net.ns = newNotificationSender(net)
 
 	hc := health.Health(net.resources)
-	hp := &types.HealthPoint{}
+	hp := &types.Health{}
 	hp.Alias = net.resources.SysConfig().LocalAlias
 	hp.AUuid = net.resources.SysConfig().LocalUuid
 	hp.IsVnet = true
@@ -123,7 +123,7 @@ func (this *VNet) connect(conn net.Conn) {
 		LocalAlias:  this.resources.SysConfig().LocalAlias,
 		LocalUuid:   this.resources.SysConfig().LocalUuid,
 		Services: &types.Services{ServiceToAreas: map[string]*types.ServiceAreas{
-			health.ServiceName: &types.ServiceAreas{
+			health.ServiceNames: &types.ServiceAreas{
 				Areas: map[int32]bool{0: true},
 			}}},
 	}
@@ -212,7 +212,7 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 		uuidMap := this.switchTable.ServiceUuids(serviceName, serviceArea, sourceVnet)
 		if uuidMap != nil {
 			this.uniCastToPorts(uuidMap, data, sourceVnet)
-			if serviceName == health.ServiceName && source != this.resources.SysConfig().LocalUuid {
+			if serviceName == health.ServiceNames && source != this.resources.SysConfig().LocalUuid {
 				this.switchDataReceived(data, vnic)
 			}
 			return
@@ -245,7 +245,7 @@ func (this *VNet) publish(pb proto.Message) {
 func (this *VNet) ShutdownVNic(vnic ifs.IVNic) {
 	h := health.Health(this.resources)
 	uuid := vnic.Resources().SysConfig().RemoteUuid
-	hp := h.HealthPoint(uuid)
+	hp := h.Health(uuid)
 	if hp.Status != types.HealthState_Down {
 		hp.Status = types.HealthState_Down
 		h.Update(hp, false)

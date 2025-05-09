@@ -1,54 +1,54 @@
 package health
 
 import (
-	"github.com/saichler/reflect/go/reflect/introspecting"
 	"github.com/saichler/l8services/go/services/dcache"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
+	"github.com/saichler/reflect/go/reflect/introspecting"
 )
 
 type HealthCenter struct {
-	healthPoints ifs.IDistributedCache
-	services     *Services
-	resources    ifs.IResources
+	healths   ifs.IDistributedCache
+	services  *Services
+	resources ifs.IResources
 }
 
 func newHealthCenter(resources ifs.IResources, listener ifs.IServiceCacheListener) *HealthCenter {
 	hc := &HealthCenter{}
-	rnode, _ := resources.Introspector().Inspect(&types.HealthPoint{})
+	rnode, _ := resources.Introspector().Inspect(&types.Health{})
 	introspecting.AddPrimaryKeyDecorator(rnode, "AUuid")
-	hc.healthPoints = dcache.NewDistributedCache(ServiceName, 0, "HealthPoint",
+	hc.healths = dcache.NewDistributedCache(ServiceNames, 0, "Health",
 		resources.SysConfig().LocalUuid, listener, resources)
 	hc.services = newServices()
 	hc.resources = resources
 	return hc
 }
 
-func (this *HealthCenter) Add(healthPoint *types.HealthPoint, isNotification bool) {
-	this.healthPoints.Put(healthPoint.AUuid, healthPoint, isNotification)
-	this.services.Update(healthPoint)
+func (this *HealthCenter) Add(health *types.Health, isNotification bool) {
+	this.healths.Put(health.AUuid, health, isNotification)
+	this.services.Update(health)
 }
 
-func (this *HealthCenter) Update(healthPoint *types.HealthPoint, isNotification bool) {
-	_, err := this.healthPoints.Update(healthPoint.AUuid, healthPoint, isNotification)
+func (this *HealthCenter) Update(health *types.Health, isNotification bool) {
+	_, err := this.healths.Update(health.AUuid, health, isNotification)
 	if err != nil {
 		this.resources.Logger().Error("Error updating health point ", err)
 		return
 	}
-	updatedHealthPoint := this.HealthPoint(healthPoint.AUuid)
-	this.services.Update(updatedHealthPoint)
+	updatedHealth := this.Health(health.AUuid)
+	this.services.Update(updatedHealth)
 }
 
 func (this *HealthCenter) ZSide(uuid string) string {
-	hp, ok := this.healthPoints.Get(uuid).(*types.HealthPoint)
+	hp, ok := this.healths.Get(uuid).(*types.Health)
 	if ok {
 		return hp.ZUuid
 	}
 	return ""
 }
 
-func (this *HealthCenter) HealthPoint(uuid string) *types.HealthPoint {
-	hp, _ := this.healthPoints.Get(uuid).(*types.HealthPoint)
+func (this *HealthCenter) Health(uuid string) *types.Health {
+	hp, _ := this.healths.Get(uuid).(*types.Health)
 	return hp
 }
 
@@ -74,16 +74,16 @@ func (this *HealthCenter) DestinationFor(serviceName string, serviceArea uint16,
 	return this.services.Leader(serviceName, serviceArea)
 }
 
-func healthPoint(item interface{}) (bool, interface{}) {
-	hp := item.(*types.HealthPoint)
+func health(item interface{}) (bool, interface{}) {
+	hp := item.(*types.Health)
 	return true, hp
 }
 
-func (this *HealthCenter) All() map[string]*types.HealthPoint {
-	uuids := this.healthPoints.Collect(healthPoint)
-	result := make(map[string]*types.HealthPoint)
+func (this *HealthCenter) All() map[string]*types.Health {
+	uuids := this.healths.Collect(health)
+	result := make(map[string]*types.Health)
 	for k, v := range uuids {
-		result[k] = v.(*types.HealthPoint)
+		result[k] = v.(*types.Health)
 	}
 	return result
 }
@@ -102,17 +102,17 @@ func (this *HealthCenter) Uuids(serviceName string, serviceArea uint16) map[stri
 
 func (this *HealthCenter) Top() *types.Top {
 	all := this.All()
-	top := &types.Top{HealthPoints: make(map[string]*types.HealthPoint)}
+	top := &types.Top{Healths: make(map[string]*types.Health)}
 	for k, v := range all {
-		top.HealthPoints[k] = v
+		top.Healths[k] = v
 	}
 	return top
 }
 
 func Health(r ifs.IResources) *HealthCenter {
-	sp, ok := r.Services().ServicePointHandler(ServiceName, 0)
+	sp, ok := r.Services().ServiceHandler(ServiceNames, 0)
 	if !ok {
 		return nil
 	}
-	return (sp.(*HealthServicePoint)).healthCenter
+	return (sp.(*HealthService)).healthCenter
 }

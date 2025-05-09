@@ -76,26 +76,26 @@ func (this *Services) Leader(serviceName string, serviceArea uint16) string {
 	return area.leader
 }
 
-func (this *Services) checkHealthPointDown(healthPoint *types.HealthPoint, areasToCalc *[]*ServiceArea) {
-	if healthPoint.Status != types.HealthState_Invalid_State &&
-		healthPoint.Status != types.HealthState_Up {
+func (this *Services) checkHealthDown(health *types.Health, areasToCalc *[]*ServiceArea) {
+	if health.Status != types.HealthState_Invalid_State &&
+		health.Status != types.HealthState_Up {
 		for _, serviceAreas := range this.services {
 			for _, area := range serviceAreas.areas {
-				_, ok := area.members[healthPoint.AUuid]
+				_, ok := area.members[health.AUuid]
 				if ok {
 					*areasToCalc = append(*areasToCalc, area)
-					delete(area.members, healthPoint.AUuid)
+					delete(area.members, health.AUuid)
 				}
 			}
 		}
 	}
 }
 
-func (this *Services) updateServices(healthPoint *types.HealthPoint, areasToCalcLeader *[]*ServiceArea) {
-	if healthPoint.Services == nil {
+func (this *Services) updateServices(health *types.Health, areasToCalcLeader *[]*ServiceArea) {
+	if health.Services == nil {
 		return
 	}
-	for serviceName, serviceAreas := range healthPoint.Services.ServiceToAreas {
+	for serviceName, serviceAreas := range health.Services.ServiceToAreas {
 		_, ok := this.services[serviceName]
 		if !ok {
 			this.services[serviceName] = &ServiceAreas{}
@@ -109,32 +109,32 @@ func (this *Services) updateServices(healthPoint *types.HealthPoint, areasToCalc
 				this.services[serviceName].areas[serviceArea] = &ServiceArea{}
 				this.services[serviceName].areas[serviceArea].members = make(map[string]*Member)
 			}
-			if healthPoint.Status != types.HealthState_Up {
-				delete(this.services[serviceName].areas[serviceArea].members, healthPoint.AUuid)
+			if health.Status != types.HealthState_Up {
+				delete(this.services[serviceName].areas[serviceArea].members, health.AUuid)
 				continue
 			}
-			if this.services[serviceName].areas[serviceArea].members[healthPoint.AUuid] == nil {
-				this.services[serviceName].areas[serviceArea].members[healthPoint.AUuid] = &Member{}
+			if this.services[serviceName].areas[serviceArea].members[health.AUuid] == nil {
+				this.services[serviceName].areas[serviceArea].members[health.AUuid] = &Member{}
 			}
-			if healthPoint.StartTime != 0 {
-				this.services[serviceName].areas[serviceArea].members[healthPoint.AUuid].t = healthPoint.StartTime
+			if health.StartTime != 0 {
+				this.services[serviceName].areas[serviceArea].members[health.AUuid].t = health.StartTime
 			}
 			*areasToCalcLeader = append(*areasToCalcLeader, this.services[serviceName].areas[serviceArea])
 		}
 	}
 }
 
-func (this *Services) Update(healthPoint *types.HealthPoint) {
+func (this *Services) Update(health *types.Health) {
 	areasToCalcLeader := make([]*ServiceArea, 0)
 
 	this.mtx.Lock()
 	defer this.mtx.Unlock()
 
-	if healthPoint.AUuid != "" && healthPoint.ZUuid != "" {
-		this.aSide2zSide[healthPoint.AUuid] = healthPoint.ZUuid
+	if health.AUuid != "" && health.ZUuid != "" {
+		this.aSide2zSide[health.AUuid] = health.ZUuid
 	}
-	this.checkHealthPointDown(healthPoint, &areasToCalcLeader)
-	this.updateServices(healthPoint, &areasToCalcLeader)
+	this.checkHealthDown(health, &areasToCalcLeader)
+	this.updateServices(health, &areasToCalcLeader)
 	for _, vlan := range areasToCalcLeader {
 		calcLeader(vlan)
 	}

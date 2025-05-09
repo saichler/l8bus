@@ -4,7 +4,7 @@ package tests
 
 import (
 	. "github.com/saichler/l8test/go/infra/t_resources"
-	. "github.com/saichler/l8test/go/infra/t_servicepoints"
+	. "github.com/saichler/l8test/go/infra/t_service"
 	"github.com/saichler/l8utils/go/utils/strings"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/testtypes"

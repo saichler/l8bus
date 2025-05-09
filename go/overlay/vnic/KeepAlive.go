@@ -39,7 +39,7 @@ func (this *KeepAlive) run() {
 }
 
 func (this *KeepAlive) sendState() {
-	stats := &types.HealthPointStats{}
+	stats := &types.HealthStats{}
 	stats.TxMsgCount = this.vnic.stats.TxMsgCount
 	stats.TxDataCount = this.vnic.stats.TxDataCount
 	stats.RxMsgCount = this.vnic.stats.RxMsgCount
@@ -48,7 +48,7 @@ func (this *KeepAlive) sendState() {
 	stats.MemoryUsage = memoryUsage()
 	stats.CpuUsage = cpuUsage()
 
-	hp := &types.HealthPoint{}
+	hp := &types.Health{}
 	hp.AUuid = this.vnic.resources.SysConfig().LocalUuid
 	hp.Status = types.HealthState_Up
 	hp.Stats = stats

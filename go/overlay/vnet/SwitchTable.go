@@ -36,9 +36,9 @@ func (this *SwitchTable) addVNic(vnic ifs.IVNic) {
 	}
 
 	hc := health.Health(this.switchService.resources)
-	hp := hc.HealthPoint(config.RemoteUuid)
+	hp := hc.Health(config.RemoteUuid)
 	if hp == nil {
-		hp = this.newHealthPoint(config)
+		hp = this.newHealth(config)
 		hc.Add(hp, false)
 	} else {
 		this.mergeServices(hp, config)
@@ -47,7 +47,7 @@ func (this *SwitchTable) addVNic(vnic ifs.IVNic) {
 	this.switchService.ns.requestHealthServiceNotification()
 }
 
-func (this *SwitchTable) mergeServices(hp *types.HealthPoint, config *types.SysConfig) {
+func (this *SwitchTable) mergeServices(hp *types.Health, config *types.SysConfig) {
 	if hp.Services == nil {
 		hp.Services = config.Services
 		return
@@ -69,8 +69,8 @@ func (this *SwitchTable) mergeServices(hp *types.HealthPoint, config *types.SysC
 	}
 }
 
-func (this *SwitchTable) newHealthPoint(config *types.SysConfig) *types.HealthPoint {
-	hp := &types.HealthPoint{}
+func (this *SwitchTable) newHealth(config *types.SysConfig) *types.Health {
+	hp := &types.Health{}
 	hp.Alias = config.RemoteAlias
 	hp.AUuid = config.RemoteUuid
 	hp.Status = types.HealthState_Up

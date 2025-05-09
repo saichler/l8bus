@@ -2,7 +2,7 @@ package tests
 
 import (
 	. "github.com/saichler/l8test/go/infra/t_resources"
-	. "github.com/saichler/l8test/go/infra/t_servicepoints"
+	. "github.com/saichler/l8test/go/infra/t_service"
 	. "github.com/saichler/l8test/go/infra/t_topology"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/l8types/go/ifs"
@@ -49,18 +49,18 @@ func TestTopologyHealth(t *testing.T) {
 	eg1_1 := topo.VnicByVnetNum(1, 1)
 	eg2_1 := topo.VnicByVnetNum(2, 1)
 	eg3_1 := topo.VnicByVnetNum(3, 1)
-	eg1_1_Points := health.Health(eg1_1.Resources()).All()
-	eg2_1_Points := health.Health(eg2_1.Resources()).All()
-	eg3_1_Points := health.Health(eg3_1.Resources()).All()
-	if len(eg1_1_Points) != len(eg2_1_Points) || len(eg1_1_Points) != len(eg3_1_Points) {
-		Log.Fail(t, "Expected health points to be equal ", len(eg1_1_Points), ":", len(eg2_1_Points), ":", len(eg3_1_Points))
+	eg1_1_s := health.Health(eg1_1.Resources()).All()
+	eg2_1_s := health.Health(eg2_1.Resources()).All()
+	eg3_1_s := health.Health(eg3_1.Resources()).All()
+	if len(eg1_1_s) != len(eg2_1_s) || len(eg1_1_s) != len(eg3_1_s) {
+		Log.Fail(t, "Expected health points to be equal ", len(eg1_1_s), ":", len(eg2_1_s), ":", len(eg3_1_s))
 		return
 	}
-	for k, _ := range eg1_1_Points {
-		delete(eg2_1_Points, k)
+	for k, _ := range eg1_1_s {
+		delete(eg2_1_s, k)
 	}
-	if len(eg2_1_Points) != 0 {
-		Log.Fail(t, "Expected health points to be empty ", len(eg1_1_Points), ":", len(eg2_1_Points), ":", len(eg3_1_Points))
+	if len(eg2_1_s) != 0 {
+		Log.Fail(t, "Expected health points to be empty ", len(eg1_1_s), ":", len(eg2_1_s), ":", len(eg3_1_s))
 		return
 	}
 
@@ -75,7 +75,7 @@ func TestTopologyHealth(t *testing.T) {
 	if len(uuids) != 15 {
 		Log.Fail(t, "Expected uuids to be 15, but it is ", len(uuids))
 		for uuid, _ := range uuids {
-			p := hc.HealthPoint(uuid)
+			p := hc.Health(uuid)
 			Log.Info(p.Alias)
 		}
 		return
@@ -216,7 +216,7 @@ func TestDestinationUnreachable(t *testing.T) {
 	}
 
 	h := health.Health(eg3_2.Resources())
-	eg4h := h.HealthPoint(eg1_1.Resources().SysConfig().LocalUuid)
+	eg4h := h.Health(eg1_1.Resources().SysConfig().LocalUuid)
 	if eg4h.Status != types.HealthState_Down {
 		Log.Fail(t, "eg1_1 state", " Not Down")
 		return

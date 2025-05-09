@@ -11,8 +11,8 @@ import (
 
 func (this *VirtualNetworkInterface) NotifyServiceAdded(serviceNames []string, serviceArea uint16) error {
 	hc := health.Health(this.resources)
-	curr := hc.HealthPoint(this.resources.SysConfig().LocalUuid)
-	hp := &types.HealthPoint{}
+	curr := hc.Health(this.resources.SysConfig().LocalUuid)
+	hp := &types.Health{}
 	hp.AUuid = curr.AUuid
 	hp.Services = curr.Services
 	mergeServices(hp, this.resources.SysConfig().Services)
@@ -36,8 +36,8 @@ func (this *VirtualNetworkInterface) requestCacheSync(serviceName string, servic
 
 func (this *VirtualNetworkInterface) NotifyServiceRemoved(serviceName string, serviceArea uint16) error {
 	hc := health.Health(this.resources)
-	curr := hc.HealthPoint(this.resources.SysConfig().LocalUuid)
-	hp := &types.HealthPoint{}
+	curr := hc.Health(this.resources.SysConfig().LocalUuid)
+	hp := &types.Health{}
 	hp.AUuid = curr.AUuid
 	hp.Services = curr.Services
 	mergeServices(hp, this.resources.SysConfig().Services)
@@ -50,7 +50,7 @@ func (this *VirtualNetworkInterface) PropertyChangeNotification(set *types.Notif
 	this.Multicast(set.ServiceName, uint16(set.ServiceArea), ifs.Notify, set)
 }
 
-func mergeServices(hp *types.HealthPoint, services *types.Services) {
+func mergeServices(hp *types.Health, services *types.Services) {
 	if hp.Services == nil {
 		hp.Services = services
 		return
