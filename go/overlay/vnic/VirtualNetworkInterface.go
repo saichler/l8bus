@@ -6,6 +6,7 @@ import (
 	"github.com/saichler/l8types/go/types"
 	"github.com/saichler/l8utils/go/utils/strings"
 	"github.com/saichler/layer8/go/overlay/health"
+	"github.com/saichler/layer8/go/overlay/plugins"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	requests2 "github.com/saichler/layer8/go/overlay/vnic/requests"
 	"net"
@@ -60,6 +61,9 @@ func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *Virtua
 		// Register the health service
 		vnic.resources.Services().RegisterServiceHandlerType(&health.HealthService{})
 		vnic.resources.Services().Activate(health.ServiceTypeName, health.ServiceName, 0, vnic.resources, nil)
+		vnic.resources.Services().RegisterServiceHandlerType(&plugins.PluginService{})
+		h, _ := vnic.resources.Services().Activate(plugins.ServiceTypeName, plugins.ServiceName, 0, vnic.resources, nil)
+		h.(*plugins.PluginService).Vnic = vnic
 	}
 
 	return vnic
