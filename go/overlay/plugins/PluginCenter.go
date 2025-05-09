@@ -9,10 +9,6 @@ import (
 	"plugin"
 )
 
-type IPlugin interface {
-	Install(ifs.IVNic) error
-}
-
 func loadPlugin(p *types.Plugin, vnic ifs.IVNic) error {
 	data, err := base64.StdEncoding.DecodeString(p.Data)
 	if err != nil {
@@ -36,6 +32,6 @@ func loadPlugin(p *types.Plugin, vnic ifs.IVNic) error {
 	if plugin == nil {
 		return errors.New("failed to load plugin #3")
 	}
-	pluginInterface := *plugin.(*IPlugin)
+	pluginInterface := *plugin.(*ifs.IPlugin)
 	return pluginInterface.Install(vnic)
 }
