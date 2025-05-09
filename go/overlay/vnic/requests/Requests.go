@@ -2,7 +2,7 @@ package requests
 
 import (
 	"bytes"
-	"github.com/saichler/l8srlz/go/l8srlz/object"
+	"github.com/saichler/l8srlz/go/serialize//object"
 	"github.com/saichler/l8types/go/ifs"
 	"strconv"
 	"sync"
