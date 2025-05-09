@@ -1,7 +1,7 @@
 package vnic
 
 import (
-	"github.com/saichler/l8srlz/go/serialize//object"
+	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8utils/go/utils/queues"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/nets"
