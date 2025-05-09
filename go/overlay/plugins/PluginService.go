@@ -31,7 +31,7 @@ func (this *PluginService) Post(pb ifs.IElements, resourcs ifs.IResources) ifs.I
 	if err != nil {
 		resourcs.Logger().Error(err.Error())
 	}
-	return nil
+	return object.New(err, nil)
 }
 func (this *PluginService) Put(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
 	return nil
