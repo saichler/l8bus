@@ -5,7 +5,7 @@ import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
-	"github.com/saichler/serializer/go/serialize/object"
+	"github.com/saichler/serializer/go/l8srlz/object"
 	resources2 "github.com/saichler/l8utils/go/utils/resources"
 	"github.com/saichler/l8utils/go/utils/strings"
 	"github.com/saichler/l8types/go/ifs"
