@@ -29,32 +29,32 @@ func (this *HealthService) DeActivate() error {
 	return nil
 }
 
-func (this *HealthService) Post(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
+func (this *HealthService) Post(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	hp := pb.Element().(*types.Health)
 	this.healthCenter.Add(hp, pb.Notification())
 	return nil
 }
-func (this *HealthService) Put(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
+func (this *HealthService) Put(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	hp := pb.Element().(*types.Health)
 	this.healthCenter.Add(hp, pb.Notification())
 	this.healthCenter.healths.Sync()
 	return nil
 }
-func (this *HealthService) Patch(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
+func (this *HealthService) Patch(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	hp := pb.Element().(*types.Health)
 	this.healthCenter.Update(hp, pb.Notification())
 	return nil
 }
-func (this *HealthService) Delete(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
+func (this *HealthService) Delete(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	return nil
 }
-func (this *HealthService) GetCopy(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
+func (this *HealthService) GetCopy(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	return nil
 }
-func (this *HealthService) Get(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
+func (this *HealthService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	return object.New(nil, this.healthCenter.Top())
 }
-func (this *HealthService) Failed(pb ifs.IElements, resourcs ifs.IResources, msg ifs.IMessage) ifs.IElements {
+func (this *HealthService) Failed(pb ifs.IElements, vnic ifs.IVNic, msg ifs.IMessage) ifs.IElements {
 	return nil
 }
 

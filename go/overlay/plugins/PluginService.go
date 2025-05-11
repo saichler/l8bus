@@ -12,7 +12,6 @@ const (
 )
 
 type PluginService struct {
-	Vnic ifs.IVNic
 }
 
 func (this *PluginService) Activate(serviceName string, serviceArea uint16,
@@ -25,30 +24,30 @@ func (this *PluginService) DeActivate() error {
 	return nil
 }
 
-func (this *PluginService) Post(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
+func (this *PluginService) Post(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	plugin := pb.Element().(*types.Plugin)
-	err := loadPlugin(plugin, this.Vnic, plugin.InstallRegistry, plugin.InstallService)
+	err := loadPlugin(plugin, vnic, plugin.InstallRegistry, plugin.InstallService)
 	if err != nil {
-		resourcs.Logger().Error(err.Error())
+		vnic.Resources().Logger().Error(err.Error())
 	}
 	return object.New(err, nil)
 }
-func (this *PluginService) Put(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
+func (this *PluginService) Put(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	return nil
 }
-func (this *PluginService) Patch(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
+func (this *PluginService) Patch(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	return nil
 }
-func (this *PluginService) Delete(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
+func (this *PluginService) Delete(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	return nil
 }
-func (this *PluginService) GetCopy(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
+func (this *PluginService) GetCopy(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	return nil
 }
-func (this *PluginService) Get(pb ifs.IElements, resourcs ifs.IResources) ifs.IElements {
+func (this *PluginService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	return object.New(nil, nil)
 }
-func (this *PluginService) Failed(pb ifs.IElements, resourcs ifs.IResources, msg ifs.IMessage) ifs.IElements {
+func (this *PluginService) Failed(pb ifs.IElements, vnic ifs.IVNic, msg ifs.IMessage) ifs.IElements {
 	return nil
 }
 
