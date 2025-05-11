@@ -46,7 +46,7 @@ func loadPluginFile(p *types.Plugin) (*plugin.Plugin, error) {
 	return pluginFile, nil
 }
 
-func loadPlugin(p *types.Plugin, vnic ifs.IVNic) error {
+func loadPlugin(p *types.Plugin, vnic ifs.IVNic, iRegistry, iService bool) error {
 	pluginFile, err := loadPluginFile(p)
 	if err != nil {
 		return err
@@ -59,6 +59,15 @@ func loadPlugin(p *types.Plugin, vnic ifs.IVNic) error {
 	if plg == nil {
 		return errors.New("failed to load plugin #3")
 	}
-	pluginInterface := *plg.(*ifs.IPlugin)
-	return pluginInterface.Install(vnic)
+	pluginInterface := *plg.(*ifs.IServicePlugin)
+	if iRegistry {
+		err = pluginInterface.InstallRegistry(vnic)
+		if err != nil {
+			return err
+		}
+	}
+	if iService {
+		err = pluginInterface.InstallServices(vnic)
+	}
+	return err
 }
