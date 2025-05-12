@@ -4,6 +4,7 @@ import (
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
+	"github.com/saichler/l8utils/go/utils/web"
 )
 
 const (
@@ -60,4 +61,9 @@ func (this *HealthService) Failed(pb ifs.IElements, vnic ifs.IVNic, msg ifs.IMes
 
 func (this *HealthService) TransactionMethod() ifs.ITransactionMethod {
 	return nil
+}
+
+func (this *HealthService) WebService() ifs.IWebService {
+	return web.New(ServiceName, 0, nil, nil, nil, nil, nil, nil, nil, nil,
+		nil, &types.Top{})
 }

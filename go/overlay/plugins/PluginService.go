@@ -26,7 +26,7 @@ func (this *PluginService) DeActivate() error {
 
 func (this *PluginService) Post(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	plugin := pb.Element().(*types.Plugin)
-	err := loadPlugin(plugin, vnic, plugin.InstallRegistry, plugin.InstallService)
+	err := loadPlugin(plugin, vnic)
 	if err != nil {
 		vnic.Resources().Logger().Error(err.Error())
 	}
@@ -52,5 +52,9 @@ func (this *PluginService) Failed(pb ifs.IElements, vnic ifs.IVNic, msg ifs.IMes
 }
 
 func (this *PluginService) TransactionMethod() ifs.ITransactionMethod {
+	return nil
+}
+
+func (this *PluginService) WebService() ifs.IWebService {
 	return nil
 }
