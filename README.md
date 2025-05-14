@@ -23,6 +23,7 @@ The following are the projects under the Layer8 platform:
 - Layer 8 Testing platform - https://github.com/saichler/l8test
 - Agnostic Collection, Parsing & Inventory - https://github.com/saichler/collect
 
+**Current explicit line of code count - 25,590**
 
 # The Problem Definition
 ![alt text](https://github.com/saichler/layer8/blob/main/problem-1.png)
