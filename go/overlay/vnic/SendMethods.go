@@ -2,11 +2,11 @@ package vnic
 
 import (
 	"errors"
-	"github.com/saichler/layer8/go/overlay/health"
-	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
+	"github.com/saichler/layer8/go/overlay/health"
+	"github.com/saichler/layer8/go/overlay/protocol"
 	"google.golang.org/protobuf/proto"
 	"reflect"
 	"strconv"
@@ -52,7 +52,11 @@ func (this *VirtualNetworkInterface) Reply(msg ifs.IMessage, response ifs.IEleme
 	}
 	hc := health.Health(this.resources)
 	hp := hc.Health(msg.Source())
-	this.resources.Logger().Debug("Replying to ", msg.Source(), " ", hp.Alias)
+	alias := " No Alias Yet"
+	if hp != nil {
+		alias = hp.Alias
+	}
+	this.resources.Logger().Debug("Replying to ", msg.Source(), " ", alias)
 	return this.SendMessage(data)
 }
 
