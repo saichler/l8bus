@@ -6,6 +6,24 @@ horizontally scaling, high availability & etc., indicates there is a large, miss
 infrastructure piece that is causing companies to spend huge amount of resources & money to re-develop
 every time. Equivalent to inventing a Language every time, using the same alphabet.
 
+# The Platform
+**Layer8** is not just a single project—it has evolved into a platform designed to significantly accelerate the development of microservices-based applications.
+The following are the projects under the Layer8 platform:
+
+- Probler An emphasing application built on Layer8 platform for k8s - https://github.com/saichler/probler
+- Basic types and interfaces - https://github.com/saichler/l8types
+- Shared Generic Components and Utils - https://github.com/saichler/l8utils
+- Security - PRIVATE!
+- Generic Type Serialization & Protobuf - https://github.com/saichler/l8srlz
+- Agnostic Model analysis & updating - https://github.com/saichler/reflect
+- Runtime Services & API platform - https://github.com/saichler/l8services
+- Generic & Agnostic model query language - https://github.com/saichler/gsql
+- Generic & Agnostic ORM as a service - https://github.com/saichler/l8orm
+- Agnistic Web Server for Services - https://github.com/saichler/l8web
+- Layer 8 Testing platform - https://github.com/saichler/l8test
+- Agnostic Collection, Parsing & Inventory - https://github.com/saichler/collect
+
+
 # The Problem Definition
 ![alt text](https://github.com/saichler/layer8/blob/main/problem-1.png)
 ![alt text](https://github.com/saichler/layer8/blob/main/problem-2.png)
@@ -14,12 +32,6 @@ every time. Equivalent to inventing a Language every time, using the same alphab
 
 # Deep Dive to the Architecture
 https://github.com/saichler/layer8/blob/main/docs/README.md
-
-# Base Projects
-- Shared Interfaces & Components - https://github.com/saichler/shared/tree/main
-- Serializers & Protobuf Object - https://github.com/saichler/serializer/tree/main
-- Generic Model Alteration - https://github.com/saichler/reflect/tree/main
-- Service Points & Generic Model Cache - https://github.com/saichler/servicepoints
 
 **Layer8** is attempting to cover the gap by introducing abstraction and encapsulation of secure, seamless, 
 networking & API invocation between **Micro Services**, alongside built-in features & design patterns
