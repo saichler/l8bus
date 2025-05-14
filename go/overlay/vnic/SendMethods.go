@@ -83,7 +83,11 @@ func (this *VirtualNetworkInterface) Single(serviceName string, serviceArea uint
 	}
 
 	hp := hc.Health(destination)
-	this.Resources().Logger().Info("Sending Single to ", destination, " alias ", hp.Alias)
+	alias := "Unknown Yet"
+	if hp != nil {
+		alias = hp.Alias
+	}
+	this.Resources().Logger().Info("Sending Single to ", destination, " alias ", alias)
 
 	return destination, this.Unicast(destination, serviceName, serviceArea, action, any)
 }
@@ -96,7 +100,11 @@ func (this *VirtualNetworkInterface) SingleRequest(serviceName string, serviceAr
 	}
 
 	hp := hc.Health(destination)
-	this.Resources().Logger().Info("Sending Single Request to ", destination, " alias ", hp.Alias)
+	alias := "Unknown Yet"
+	if hp != nil {
+		alias = hp.Alias
+	}
+	this.Resources().Logger().Info("Sending Single Request to ", destination, " alias ", alias)
 	return this.Request(destination, serviceName, serviceArea, action, any)
 }
 
