@@ -1,7 +1,6 @@
 package vnic
 
 import (
-	"errors"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
@@ -9,11 +8,13 @@ import (
 	"github.com/saichler/layer8/go/overlay/protocol"
 	"google.golang.org/protobuf/proto"
 	"reflect"
-	"strconv"
 )
 
 func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, serviceArea uint16,
 	action ifs.Action, any interface{}) error {
+	if destination == "" {
+		destination = ifs.DESTINATION_Single
+	}
 	elems, err := createElements(any, this.resources)
 	if err != nil {
 		return err
@@ -24,6 +25,11 @@ func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, se
 
 func (this *VirtualNetworkInterface) Request(destination, serviceName string, serviceArea uint16,
 	action ifs.Action, any interface{}) ifs.IElements {
+
+	if destination == "" {
+		destination = ifs.DESTINATION_Single
+	}
+
 	request := this.requests.NewRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid, 5, this.resources.Logger())
 
 	request.Lock()
@@ -73,8 +79,7 @@ func (this *VirtualNetworkInterface) Single(serviceName string, serviceArea uint
 	hc := health.Health(this.resources)
 	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.SysConfig().LocalUuid, false, false)
 	if destination == "" {
-		return destination, errors.New("Cannot find a destinstion for " + serviceName + " area " +
-			strconv.Itoa(int(serviceArea)))
+		destination = ifs.DESTINATION_Single
 	}
 
 	hp := hc.Health(destination)
@@ -87,8 +92,7 @@ func (this *VirtualNetworkInterface) SingleRequest(serviceName string, serviceAr
 	hc := health.Health(this.resources)
 	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.SysConfig().LocalUuid, false, false)
 	if destination == "" {
-		return object.NewError("Cannot find a destinstion for " + serviceName + " area " +
-			strconv.Itoa(int(serviceArea)))
+		destination = ifs.DESTINATION_Single
 	}
 
 	hp := hc.Health(destination)
@@ -99,6 +103,9 @@ func (this *VirtualNetworkInterface) SingleRequest(serviceName string, serviceAr
 func (this *VirtualNetworkInterface) Leader(serviceName string, serviceArea uint16, action ifs.Action, any interface{}) ifs.IElements {
 	hc := health.Health(this.resources)
 	destination := hc.DestinationFor(serviceName, serviceArea, this.resources.SysConfig().LocalUuid, false, true)
+	if destination == "" {
+		destination = ifs.DESTINATION_Leader
+	}
 	return this.Request(destination, serviceName, serviceArea, action, any)
 }
 

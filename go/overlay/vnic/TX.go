@@ -2,9 +2,9 @@ package vnic
 
 import (
 	"errors"
-	"github.com/saichler/l8utils/go/utils/queues"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/nets"
+	"github.com/saichler/l8utils/go/utils/queues"
 	"strconv"
 	"time"
 )

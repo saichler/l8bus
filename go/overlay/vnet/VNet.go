@@ -193,21 +193,32 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 		if destination == this.resources.SysConfig().LocalUuid {
 			this.switchDataReceived(data, vnic)
 			return
-		} else {
-			//The destination is a single port
-			_, p := this.switchTable.conns.getConnection(destination, true, this.resources)
-			if p == nil {
-				this.resources.Logger().Error("Unknown destination ", destination)
-				this.Failed(data, vnic, strings.New("Cannot find destination port for ", destination).String())
-				return
-			}
-			err := p.SendMessage(data)
-			if err != nil {
-				this.resources.Logger().Error("Unable to send to destination ", destination)
-				this.Failed(data, vnic, strings.New("Error sending data:", err.Error()).String())
-				return
+		}
+		if destination == ifs.DESTINATION_Single {
+			uuidMap := this.switchTable.ServiceUuids(serviceName, serviceArea, sourceVnet)
+			if uuidMap != nil {
+				for uuid, _ := range uuidMap {
+					if uuid != source {
+						destination = uuid
+						break
+					}
+				}
 			}
 		}
+		//The destination is a single port
+		_, p := this.switchTable.conns.getConnection(destination, true, this.resources)
+		if p == nil {
+			this.resources.Logger().Error("Unknown destination ", destination)
+			this.Failed(data, vnic, strings.New("Cannot find destination port for ", destination).String())
+			return
+		}
+		err := p.SendMessage(data)
+		if err != nil {
+			this.resources.Logger().Error("Unable to send to destination ", destination)
+			this.Failed(data, vnic, strings.New("Error sending data:", err.Error()).String())
+			return
+		}
+
 	} else {
 		uuidMap := this.switchTable.ServiceUuids(serviceName, serviceArea, sourceVnet)
 		if uuidMap != nil {

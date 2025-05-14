@@ -4,9 +4,9 @@ import (
 	. "github.com/saichler/l8test/go/infra/t_resources"
 	. "github.com/saichler/l8test/go/infra/t_service"
 	. "github.com/saichler/l8test/go/infra/t_topology"
-	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
+	"github.com/saichler/layer8/go/overlay/health"
 	"testing"
 )
 
@@ -131,6 +131,29 @@ func TestUniCast(t *testing.T) {
 		Log.Fail(t, "eg3_3", " Post count does not equal 1")
 		return
 	}
+}
+
+func TestUniCastService(t *testing.T) {
+	defer reset("TestUniCastService")
+	pb := CreateTestModelInstance(3)
+	eg1_2 := topo.VnicByVnetNum(1, 2)
+	err := eg1_2.Unicast("", ServiceName, 0, ifs.POST, pb)
+	if err != nil {
+		Log.Fail(t, err)
+		return
+	}
+	WaitForCondition(func() bool {
+		handlers := topo.AllHandlers()
+		count := 0
+		for _, handler := range handlers {
+			count += handler.PostN()
+		}
+
+		if count != 1 {
+			return false
+		}
+		return true
+	}, 1, t, "Count does not eq 1")
 }
 
 func TestReconnect(t *testing.T) {
