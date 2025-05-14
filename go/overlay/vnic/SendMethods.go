@@ -129,6 +129,9 @@ func (this *VirtualNetworkInterface) Forward(msg ifs.IMessage, destination strin
 }
 
 func createElements(any interface{}, resources ifs.IResources) (ifs.IElements, error) {
+	if any == nil {
+		return object.New(nil, nil), nil
+	}
 	pq, ok := any.(*types.Query)
 	if ok {
 		return object.NewQuery(pq.Text, resources)
