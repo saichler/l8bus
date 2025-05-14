@@ -26,7 +26,7 @@ func (this *PluginService) DeActivate() error {
 
 func (this *PluginService) Post(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	plugin := pb.Element().(*types.Plugin)
-	err := loadPlugin(plugin, vnic)
+	err := LoadPlugin(plugin, vnic)
 	if err != nil {
 		vnic.Resources().Logger().Error(err.Error())
 	}

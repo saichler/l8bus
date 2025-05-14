@@ -46,7 +46,7 @@ func loadPluginFile(p *types.Plugin) (*plugin.Plugin, error) {
 	return pluginFile, nil
 }
 
-func loadPlugin(p *types.Plugin, vnic ifs.IVNic) error {
+func LoadPlugin(p *types.Plugin, vnic ifs.IVNic) error {
 	pluginFile, err := loadPluginFile(p)
 	if err != nil {
 		return err
