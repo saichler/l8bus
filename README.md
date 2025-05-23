@@ -5,7 +5,7 @@ I’ve observed and demonstrated that this apparent contradiction can actually
 be resolved into a **Win/Win** situation. By following a few key principles or "rules of thumb," **it’s not 
 only possible but practical**. 
 
-[Slide dock of the ecosystem](https://docs.google.com/presentation/d/e/2PACX-1vR7UtPNXRou5uORi-wxZgEYDdVDddT9QCwLH7hrFwnDWJVCx3iCjo6SalAt_jKokB9i_W7mPNU2ntBM/pub?start=false&loop=false&delayms=3000)
+[Layer 8 Ecosystem Overview Slide Deck](https://docs.google.com/presentation/d/e/2PACX-1vR7UtPNXRou5uORi-wxZgEYDdVDddT9QCwLH7hrFwnDWJVCx3iCjo6SalAt_jKokB9i_W7mPNU2ntBM/pub?start=false&loop=false&delayms=3000)
 # A major lose-lose situation
 When microservices started gaining traction around 2013, the promise of modular, scalable 
 systems captured the industry's attention. However, the lack of mature design patterns, 
