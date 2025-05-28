@@ -65,5 +65,5 @@ func (this *HealthService) TransactionMethod() ifs.ITransactionMethod {
 
 func (this *HealthService) WebService() ifs.IWebService {
 	return web.New(ServiceName, 0, nil, nil, nil, nil, nil, nil, nil, nil,
-		nil, &types.Top{})
+		&types.Empty{}, &types.Top{})
 }

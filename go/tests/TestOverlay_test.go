@@ -8,6 +8,7 @@ import (
 	"github.com/saichler/l8types/go/types"
 	"github.com/saichler/layer8/go/overlay/health"
 	"testing"
+	"time"
 )
 
 func TestMain(m *testing.M) {
@@ -63,6 +64,8 @@ func TestTopologyHealth(t *testing.T) {
 		Log.Fail(t, "Expected health points to be empty ", len(eg1_1_s), ":", len(eg2_1_s), ":", len(eg3_1_s))
 		return
 	}
+
+	time.Sleep(time.Second)
 
 	hc := health.Health(eg3_1.Resources())
 	uuids := hc.Uuids(ServiceName, 0)

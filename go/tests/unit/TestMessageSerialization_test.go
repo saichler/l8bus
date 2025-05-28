@@ -2,12 +2,12 @@ package unit
 
 import (
 	"fmt"
-	"github.com/saichler/l8test/go/infra/t_resources"
-	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/l8srlz/go/serialize/object"
-	"github.com/saichler/l8utils/go/utils/strings"
+	"github.com/saichler/l8test/go/infra/t_resources"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/testtypes"
+	"github.com/saichler/l8utils/go/utils/strings"
+	"github.com/saichler/layer8/go/overlay/protocol"
 	"testing"
 	"time"
 )
@@ -24,7 +24,7 @@ func testMessageSerialization(t *testing.T) {
 		pb.MyInt32 = int32(i)
 		obj := object.New(nil, pb)
 		d, _ := p.CreateMessageFor(uuid, "HelloWorld", 1, ifs.P1, ifs.POST, uuid, uuid, obj, false, false, 120, nil)
-		msg, _ := p.MessageOf(d)
+		msg, _ := p.MessageOf(d, res)
 		p.ElementsOf(msg)
 	}
 	end := time.Now().Unix()
