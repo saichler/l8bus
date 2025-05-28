@@ -29,13 +29,9 @@ type VNet struct {
 
 func NewVNet(resources ifs.IResources) *VNet {
 	net := &VNet{}
-	net.resources = resources2.NewResources(resources.Registry(),
-		resources.Security(),
-		resources.Services(),
-		resources.Logger(),
-		net,
-		resources.Serializer(ifs.BINARY), resources.SysConfig(),
-		resources.Introspector())
+	net.resources = resources
+	net.resources.Set(net)
+
 	net.protocol = protocol.New(net.resources)
 	net.running = true
 	net.resources.SysConfig().LocalUuid = ifs.NewUuid()
@@ -128,14 +124,10 @@ func (this *VNet) connect(conn net.Conn) {
 			}}},
 	}
 
-	resources := resources2.NewResources(this.resources.Registry(),
-		this.resources.Security(),
-		this.resources.Services(),
-		this.resources.Logger(),
-		this,
-		this.resources.Serializer(ifs.BINARY),
-		config,
-		this.resources.Introspector())
+	resources := resources2.NewResources(this.resources.Logger())
+	resources.Copy(this.resources)
+	resources.Set(this)
+	resources.Set(config)
 
 	vnic := vnic2.NewVirtualNetworkInterface(resources, conn)
 	vnic.Resources().SysConfig().LocalUuid = this.resources.SysConfig().LocalUuid
@@ -162,7 +154,7 @@ func (this *VNet) Shutdown() {
 }
 
 func (this *VNet) Failed(data []byte, vnic ifs.IVNic, failMsg string) {
-	msg, err := this.protocol.MessageOf(data)
+	msg, err := this.protocol.MessageOf(data, this.resources)
 	this.resources.Logger().Error("Failed Message ", msg.Action, ":", failMsg)
 	if err != nil {
 		this.resources.Logger().Error(err)
@@ -170,7 +162,7 @@ func (this *VNet) Failed(data []byte, vnic ifs.IVNic, failMsg string) {
 	}
 
 	msg = msg.(*protocol.Message).FailClone(failMsg)
-	data, _ = object.MessageSerializer.Marshal(msg, nil)
+	data, _ = object.MessageSerializer.Marshal(msg, this.resources)
 
 	err = vnic.SendMessage(data)
 	if err != nil {
@@ -180,7 +172,7 @@ func (this *VNet) Failed(data []byte, vnic ifs.IVNic, failMsg string) {
 
 func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 	this.resources.Logger().Trace("********** Swith Service - HandleData **********")
-	source, sourceVnet, destination, serviceName, serviceArea, _ := protocol.HeaderOf(data)
+	source, sourceVnet, destination, serviceName, serviceArea := protocol.HeaderOf(data)
 	this.resources.Logger().Trace("** Switch       : ", this.resources.SysConfig().LocalUuid)
 	this.resources.Logger().Trace("** Source       : ", source)
 	this.resources.Logger().Trace("** SourceVnet   : ", sourceVnet)
@@ -265,7 +257,7 @@ func (this *VNet) ShutdownVNic(vnic ifs.IVNic) {
 }
 
 func (this *VNet) switchDataReceived(data []byte, vnic ifs.IVNic) {
-	msg, err := this.protocol.MessageOf(data)
+	msg, err := this.protocol.MessageOf(data, this.resources)
 	if err != nil {
 		this.resources.Logger().Error(err)
 		return

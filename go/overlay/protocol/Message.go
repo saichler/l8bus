@@ -2,16 +2,28 @@ package protocol
 
 import (
 	"github.com/saichler/l8types/go/ifs"
-	"github.com/saichler/l8types/go/nets"
 	"time"
 )
 
 type MessageHeader struct {
 	source      [36]byte
 	vnet        [36]byte
-	destination string
+	destination [36]byte
 	serviceArea uint16
 	serviceName string
+}
+
+type MessageBody struct {
+	sequence    uint32
+	priority    ifs.Priority
+	action      ifs.Action
+	timeout     uint16
+	request     bool
+	reply       bool
+	aaaId       string
+	failMessage string
+	data        string
+	tr          *Transaction
 }
 
 type Transaction struct {
@@ -31,24 +43,8 @@ func NewTransaction() ifs.ITransaction {
 
 type Message struct {
 	MessageHeader
-	sequence    uint32
-	priority    ifs.Priority
-	action      ifs.Action
-	timeout     uint16
-	request     bool
-	reply       bool
-	failMessage string
-	data        string
-	tr          *Transaction
+	MessageBody
 }
-
-const (
-	POS_Source       = 0
-	POS_Vnet         = 36
-	POS_Destination  = POS_Vnet + 36
-	POS_Service_Area = POS_Destination + 37
-	POS_Service_Name = POS_Service_Area + 2
-)
 
 func (this *Message) Clone() *Message {
 	clone := &Message{}
@@ -65,6 +61,7 @@ func (this *Message) Clone() *Message {
 	clone.data = this.data
 	clone.failMessage = this.failMessage
 	clone.timeout = this.timeout
+	clone.aaaId = this.aaaId
 	if !ifs.IsNil(this.tr) {
 		clone.tr = &Transaction{
 			id:        this.tr.id,
@@ -79,7 +76,7 @@ func (this *Message) Clone() *Message {
 func (this *Message) ReplyClone(resources ifs.IResources) ifs.IMessage {
 	reply := this.Clone()
 	reply.action = ifs.Reply
-	reply.destination = string(this.source[0:36])
+	copy(reply.destination[0:36], this.source[0:36])
 	copy(reply.source[0:36], resources.SysConfig().LocalUuid)
 	copy(reply.vnet[0:36], resources.SysConfig().RemoteUuid)
 	reply.request = false
@@ -90,27 +87,7 @@ func (this *Message) ReplyClone(resources ifs.IResources) ifs.IMessage {
 func (this *Message) FailClone(failMessage string) ifs.IMessage {
 	fail := this.Clone()
 	fail.failMessage = failMessage
-	copy(fail.source[0:36], this.destination)
-	fail.destination = string(this.source[0:36])
+	copy(fail.source[0:36], this.destination[0:36])
+	copy(fail.destination[0:36], this.source[0:36])
 	return fail
-}
-
-func HeaderOf(data []byte) (string, string, string, string, uint16, ifs.Priority) {
-
-	size := nets.Bytes2UInt16(data[POS_Service_Name : POS_Service_Name+2])
-	POS_Sequence := POS_Service_Name + 2 + int(size)
-	POS_Priority := POS_Sequence + 4
-
-	destSize := data[POS_Destination]
-	destination := ""
-	if destSize != 0 {
-		destination = string(data[POS_Destination+1 : POS_Service_Area])
-	}
-
-	return string(data[POS_Source:POS_Vnet]),
-		string(data[POS_Vnet:POS_Destination]),
-		destination,
-		string(data[POS_Service_Name+2 : POS_Sequence]),
-		nets.Bytes2UInt16(data[POS_Service_Area:POS_Service_Name]),
-		ifs.Priority(data[POS_Priority])
 }

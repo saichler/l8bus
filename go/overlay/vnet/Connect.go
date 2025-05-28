@@ -1,10 +1,9 @@
 package vnet
 
 import (
-	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
-	resources2 "github.com/saichler/l8utils/go/utils/resources"
-	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
+	resources2 "github.com/saichler/l8utils/go/utils/resources"
+	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
 )
 
 func (this *VNet) ConnectNetworks(host string, destPort uint32) error {
@@ -25,14 +24,11 @@ func (this *VNet) ConnectNetworks(host string, destPort uint32) error {
 		LocalAlias:    this.resources.SysConfig().LocalAlias,
 	}
 
-	resources := resources2.NewResources(this.resources.Registry(),
-		this.resources.Security(),
-		this.resources.Services(),
-		this.resources.Logger(),
-		this,
-		this.resources.Serializer(ifs.BINARY),
-		config,
-		this.resources.Introspector())
+	resources := resources2.NewResources(this.resources.Logger())
+	resources.Copy(this.resources)
+
+	resources.Set(config)
+	resources.Set(this)
 
 	vnic := vnic2.NewVirtualNetworkInterface(resources, conn)
 

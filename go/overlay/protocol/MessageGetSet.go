@@ -13,7 +13,7 @@ func (this *Message) Vnet() string {
 }
 
 func (this *Message) Destination() string {
-	return this.destination
+	return string(this.destination[0:])
 }
 
 func (this *Message) ServiceName() string {
@@ -62,6 +62,10 @@ func (this *Message) Data() string {
 
 func (this *Message) SetData(data string) {
 	this.data = data
+}
+
+func (this *Message) AAAId() string {
+	return this.aaaId
 }
 
 func (this *Message) Tr() ifs.ITransaction {

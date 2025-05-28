@@ -2,9 +2,9 @@ package vnic
 
 import (
 	"github.com/saichler/l8srlz/go/serialize/object"
-	"github.com/saichler/l8utils/go/utils/queues"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/nets"
+	"github.com/saichler/l8utils/go/utils/queues"
 )
 
 type RX struct {
@@ -86,7 +86,7 @@ func (this *RX) notifyRawDataListener() {
 			if this.vnic.resources.DataListener() != nil {
 				this.vnic.resources.DataListener().HandleData(data, this.vnic)
 			} else {
-				msg, err := this.vnic.protocol.MessageOf(data)
+				msg, err := this.vnic.protocol.MessageOf(data, this.vnic.resources)
 				if err != nil {
 					this.vnic.resources.Logger().Error(err)
 					continue

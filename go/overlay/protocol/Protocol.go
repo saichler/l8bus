@@ -1,6 +1,7 @@
 package protocol
 
 import (
+	"encoding/base64"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"sync/atomic"
@@ -19,8 +20,8 @@ func New(resources ifs.IResources) *Protocol {
 	return p
 }
 
-func (this *Protocol) MessageOf(data []byte) (ifs.IMessage, error) {
-	msg, _ := object.MessageSerializer.Unmarshal(data, nil)
+func (this *Protocol) MessageOf(data []byte, resources ifs.IResources) (ifs.IMessage, error) {
+	msg, _ := object.MessageSerializer.Unmarshal(data, resources)
 	return msg.(ifs.IMessage), nil
 }
 
@@ -29,11 +30,11 @@ func (this *Protocol) ElementsOf(msg ifs.IMessage) (ifs.IElements, error) {
 }
 
 func ElementsOf(msg ifs.IMessage, resourcs ifs.IResources) (ifs.IElements, error) {
-	data, err := resourcs.Security().Decrypt(msg.Data())
+
+	data, err := base64.StdEncoding.DecodeString(msg.Data())
 	if err != nil {
 		return nil, err
 	}
-
 	result := &object.Elements{}
 	err = result.Deserialize(data, resourcs.Registry())
 	if err != nil {
@@ -51,16 +52,7 @@ func DataFor(elems ifs.IElements, security ifs.ISecurityProvider) (string, error
 	var err error
 
 	data, err = elems.Serialize()
-	if err != nil {
-		return "", err
-	}
-
-	//Encode the data
-	encData, err := security.Encrypt(data)
-	if err != nil {
-		return "", err
-	}
-	return encData, err
+	return base64.StdEncoding.EncodeToString(data), err
 }
 
 func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceArea uint16,
@@ -77,26 +69,21 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 		return nil, err
 	}
 
-	//Encode the data
-	encData, err := this.resources.Security().Encrypt(data)
-	if err != nil {
-		return nil, err
-	}
 	//create the wrapping message for the destination
 	msg := &Message{}
 	copy(msg.source[0:36], source)
 	copy(msg.vnet[0:36], vnet)
-	msg.destination = destination
+	copy(msg.destination[0:36], destination)
 	msg.serviceName = serviceName
 	msg.serviceArea = serviceArea
 	msg.sequence = msgNum
 	msg.priority = priority
-	msg.data = encData
+	msg.data = base64.StdEncoding.EncodeToString(data)
 	msg.action = action
 	msg.request = isRequest
 	msg.reply = isReply
 	msg.tr, _ = tr.(*Transaction)
-	return object.MessageSerializer.Marshal(msg, nil)
+	return object.MessageSerializer.Marshal(msg, this.resources)
 }
 
 func (this *Protocol) CreateMessageForm(msg ifs.IMessage, o ifs.IElements) ([]byte, error) {
@@ -108,12 +95,7 @@ func (this *Protocol) CreateMessageForm(msg ifs.IMessage, o ifs.IElements) ([]by
 		return nil, err
 	}
 
-	//Encode the data
-	encData, err := this.resources.Security().Encrypt(data)
-	if err != nil {
-		return nil, err
-	}
 	//create the wrapping message for the destination
-	msg.SetData(encData)
-	return object.MessageSerializer.Marshal(msg, nil)
+	msg.SetData(base64.StdEncoding.EncodeToString(data))
+	return object.MessageSerializer.Marshal(msg, this.resources)
 }

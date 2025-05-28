@@ -4,8 +4,8 @@ import (
 	. "github.com/saichler/l8test/go/infra/t_resources"
 	. "github.com/saichler/l8test/go/infra/t_service"
 	. "github.com/saichler/l8test/go/infra/t_topology"
-	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/layer8/go/overlay/health"
 	"testing"
 )
 
@@ -19,7 +19,7 @@ func getLeader(uuid string) ifs.IVNic {
 	panic("No Leader")
 }
 
-func testLeader(t *testing.T) {
+func TestLeader(t *testing.T) {
 	eg2_3 := topo.VnicByVnetNum(2, 3)
 	hc := health.Health(eg2_3.Resources())
 	leaderBefore := hc.Leader(ServiceName, 0)

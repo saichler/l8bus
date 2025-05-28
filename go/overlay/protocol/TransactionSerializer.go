@@ -19,7 +19,7 @@ func (this *TransactionSerializer) Mode() ifs.SerializerMode {
 	return ifs.BINARY
 }
 
-func (this *TransactionSerializer) Marshal(any interface{}, r ifs.IRegistry) ([]byte, error) {
+func (this *TransactionSerializer) Marshal(any interface{}, resources ifs.IResources) ([]byte, error) {
 	if ifs.IsNil(any) {
 		return []byte{0}, nil
 	}
@@ -36,7 +36,7 @@ func (this *TransactionSerializer) Marshal(any interface{}, r ifs.IRegistry) ([]
 	return data, nil
 }
 
-func (this *TransactionSerializer) Unmarshal(data []byte, r ifs.IRegistry) (interface{}, error) {
+func (this *TransactionSerializer) Unmarshal(data []byte, resources ifs.IResources) (interface{}, error) {
 	if len(data) == 1 {
 		return nil, nil
 	}

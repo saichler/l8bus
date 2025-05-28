@@ -5,9 +5,9 @@ package tests
 import (
 	. "github.com/saichler/l8test/go/infra/t_resources"
 	. "github.com/saichler/l8test/go/infra/t_service"
-	"github.com/saichler/l8utils/go/utils/strings"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/testtypes"
+	"github.com/saichler/l8utils/go/utils/strings"
 	"testing"
 	"time"
 )
@@ -54,6 +54,7 @@ func scaleTest(size, exp int, timeout int64, t *testing.T) bool {
 
 func TestScale(t *testing.T) {
 	Log.SetLogLevel(ifs.Info_Level)
+	topo.SetLogLevel(ifs.Info_Level)
 	exp := 1000
 	ok := scaleTest(1000, exp, 4, t)
 	if !ok {
