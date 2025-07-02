@@ -14,7 +14,7 @@ const (
 type PluginService struct {
 }
 
-func (this *PluginService) Activate(serviceName string, serviceArea uint16,
+func (this *PluginService) Activate(serviceName string, serviceArea byte,
 	resources ifs.IResources, listener ifs.IServiceCacheListener, args ...interface{}) error {
 	resources.Registry().Register(&types.Plugin{})
 	return nil
@@ -47,7 +47,7 @@ func (this *PluginService) GetCopy(pb ifs.IElements, vnic ifs.IVNic) ifs.IElemen
 func (this *PluginService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	return object.New(nil, nil)
 }
-func (this *PluginService) Failed(pb ifs.IElements, vnic ifs.IVNic, msg ifs.IMessage) ifs.IElements {
+func (this *PluginService) Failed(pb ifs.IElements, vnic ifs.IVNic, msg *ifs.Message) ifs.IElements {
 	return nil
 }
 

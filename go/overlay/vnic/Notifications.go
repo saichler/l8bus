@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func (this *VirtualNetworkInterface) NotifyServiceAdded(serviceNames []string, serviceArea uint16) error {
+func (this *VirtualNetworkInterface) NotifyServiceAdded(serviceNames []string, serviceArea byte) error {
 	hc := health.Health(this.resources)
 	curr := hc.Health(this.resources.SysConfig().LocalUuid)
 	hp := &types.Health{}
@@ -26,7 +26,7 @@ func (this *VirtualNetworkInterface) NotifyServiceAdded(serviceNames []string, s
 	return err
 }
 
-func (this *VirtualNetworkInterface) requestCacheSync(serviceName string, serviceArea uint16) {
+func (this *VirtualNetworkInterface) requestCacheSync(serviceName string, serviceArea byte) {
 	time.Sleep(time.Second)
 	err := this.Multicast(serviceName, serviceArea, ifs.Sync, object.New(nil, nil))
 	if err != nil {
@@ -34,7 +34,7 @@ func (this *VirtualNetworkInterface) requestCacheSync(serviceName string, servic
 	}
 }
 
-func (this *VirtualNetworkInterface) NotifyServiceRemoved(serviceName string, serviceArea uint16) error {
+func (this *VirtualNetworkInterface) NotifyServiceRemoved(serviceName string, serviceArea byte) error {
 	hc := health.Health(this.resources)
 	curr := hc.Health(this.resources.SysConfig().LocalUuid)
 	hp := &types.Health{}
@@ -42,12 +42,12 @@ func (this *VirtualNetworkInterface) NotifyServiceRemoved(serviceName string, se
 	hp.Services = curr.Services
 	mergeServices(hp, this.resources.SysConfig().Services)
 	ifs.RemoveService(hp.Services, serviceName, int32(serviceArea))
-	return this.Unicast(this.resources.SysConfig().RemoteUuid, health.ServiceName, 0, ifs.PATCH, hp)
+	return this.Unicast(this.resources.SysConfig().RemoteUuid, health.ServiceName, serviceArea, ifs.PATCH, hp)
 }
 
 func (this *VirtualNetworkInterface) PropertyChangeNotification(set *types.NotificationSet) {
 	protocol.AddPropertyChangeCalled(set, this.resources.SysConfig().LocalAlias)
-	this.Multicast(set.ServiceName, uint16(set.ServiceArea), ifs.Notify, set)
+	this.Multicast(set.ServiceName, byte(set.ServiceArea), ifs.Notify, set)
 }
 
 func mergeServices(hp *types.Health, services *types.Services) {

@@ -2,7 +2,6 @@ package vnet
 
 import (
 	"errors"
-	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
 	resources2 "github.com/saichler/l8utils/go/utils/resources"
@@ -161,8 +160,8 @@ func (this *VNet) Failed(data []byte, vnic ifs.IVNic, failMsg string) {
 		return
 	}
 
-	msg = msg.(*protocol.Message).FailClone(failMsg)
-	data, _ = object.MessageSerializer.Marshal(msg, this.resources)
+	failMessage := msg.CloneFail(failMsg, this.resources.SysConfig().RemoteUuid)
+	data, _ = failMessage.Marshal(nil, this.resources)
 
 	err = vnic.SendMessage(data)
 	if err != nil {
@@ -172,7 +171,7 @@ func (this *VNet) Failed(data []byte, vnic ifs.IVNic, failMsg string) {
 
 func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 	this.resources.Logger().Trace("********** Swith Service - HandleData **********")
-	source, sourceVnet, destination, serviceName, serviceArea := protocol.HeaderOf(data)
+	source, sourceVnet, destination, serviceName, serviceArea, _ := ifs.HeaderOf(data)
 	this.resources.Logger().Trace("** Switch       : ", this.resources.SysConfig().LocalUuid)
 	this.resources.Logger().Trace("** Source       : ", source)
 	this.resources.Logger().Trace("** SourceVnet   : ", sourceVnet)
@@ -265,7 +264,7 @@ func (this *VNet) switchDataReceived(data []byte, vnic ifs.IVNic) {
 
 	pb, err := this.protocol.ElementsOf(msg)
 	if err != nil {
-		if !ifs.IsNil(msg.Tr()) {
+		if msg.Tr_State() != ifs.Empty {
 			//This message should not be processed and we should just
 			//reply with nil to unblock the transaction
 			vnic.Reply(msg, nil)

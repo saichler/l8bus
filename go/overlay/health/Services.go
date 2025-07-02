@@ -14,7 +14,7 @@ type Services struct {
 
 type ServiceAreas struct {
 	name  string
-	areas map[uint16]*ServiceArea
+	areas map[byte]*ServiceArea
 }
 
 type ServiceArea struct {
@@ -40,7 +40,7 @@ func (this *Services) ZUuid(auuid string) string {
 	return this.aSide2zSide[auuid]
 }
 
-func (this *Services) UUIDs(serviceName string, serviceArea uint16) map[string]bool {
+func (this *Services) UUIDs(serviceName string, serviceArea byte) map[string]bool {
 	result := make(map[string]bool)
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
@@ -62,7 +62,7 @@ func (this *Services) UUIDs(serviceName string, serviceArea uint16) map[string]b
 	return result
 }
 
-func (this *Services) Leader(serviceName string, serviceArea uint16) string {
+func (this *Services) Leader(serviceName string, serviceArea byte) string {
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
 	serviceAreas, ok := this.services[serviceName]
@@ -100,10 +100,10 @@ func (this *Services) updateServices(health *types.Health, areasToCalcLeader *[]
 		if !ok {
 			this.services[serviceName] = &ServiceAreas{}
 			this.services[serviceName].name = serviceName
-			this.services[serviceName].areas = make(map[uint16]*ServiceArea)
+			this.services[serviceName].areas = make(map[byte]*ServiceArea)
 		}
 		for svArea, _ := range serviceAreas.Areas {
-			serviceArea := uint16(svArea)
+			serviceArea := byte(svArea)
 			_, ok = this.services[serviceName].areas[serviceArea]
 			if !ok {
 				this.services[serviceName].areas[serviceArea] = &ServiceArea{}

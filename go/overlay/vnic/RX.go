@@ -129,7 +129,7 @@ func (this *RX) notifyRawDataListener() {
 	this.vnic.Shutdown()
 }
 
-func (this *RX) handleMessage(msg ifs.IMessage, pb ifs.IElements) {
+func (this *RX) handleMessage(msg *ifs.Message, pb ifs.IElements) {
 	if msg.Action() == ifs.Reply {
 		request := this.vnic.requests.GetRequest(msg.Sequence(), this.vnic.resources.SysConfig().LocalUuid)
 		request.SetResponse(pb)

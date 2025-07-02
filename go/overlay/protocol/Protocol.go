@@ -15,21 +15,20 @@ type Protocol struct {
 func New(resources ifs.IResources) *Protocol {
 	p := &Protocol{}
 	p.resources = resources
-	object.MessageSerializer = &MessageSerializer{}
-	object.TransactionSerializer = &TransactionSerializer{}
 	return p
 }
 
-func (this *Protocol) MessageOf(data []byte, resources ifs.IResources) (ifs.IMessage, error) {
-	msg, _ := object.MessageSerializer.Unmarshal(data, resources)
-	return msg.(ifs.IMessage), nil
+func (this *Protocol) MessageOf(data []byte, resources ifs.IResources) (*ifs.Message, error) {
+	msg := &ifs.Message{}
+	_, err := msg.Unmarshal(data, this.resources)
+	return msg, err
 }
 
-func (this *Protocol) ElementsOf(msg ifs.IMessage) (ifs.IElements, error) {
+func (this *Protocol) ElementsOf(msg *ifs.Message) (ifs.IElements, error) {
 	return ElementsOf(msg, this.resources)
 }
 
-func ElementsOf(msg ifs.IMessage, resourcs ifs.IResources) (ifs.IElements, error) {
+func ElementsOf(msg *ifs.Message, resourcs ifs.IResources) (ifs.IElements, error) {
 
 	data, err := base64.StdEncoding.DecodeString(msg.Data())
 	if err != nil {
@@ -55,9 +54,9 @@ func DataFor(elems ifs.IElements, security ifs.ISecurityProvider) (string, error
 	return base64.StdEncoding.EncodeToString(data), err
 }
 
-func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceArea uint16,
+func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceArea byte,
 	priority ifs.Priority, action ifs.Action, source, vnet string, o ifs.IElements,
-	isRequest, isReply bool, msgNum uint32, tr ifs.ITransaction) ([]byte, error) {
+	isRequest, isReply bool, msgNum uint32, tr_state ifs.TransactionState, tr_id, tr_errMsg string, tr_start int64) ([]byte, error) {
 
 	AddMessageCreated()
 
@@ -69,24 +68,26 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 		return nil, err
 	}
 
-	//create the wrapping message for the destination
-	msg := &Message{}
-	copy(msg.source[0:36], source)
-	copy(msg.vnet[0:36], vnet)
-	copy(msg.destination[0:36], destination)
-	msg.serviceName = serviceName
-	msg.serviceArea = serviceArea
-	msg.sequence = msgNum
-	msg.priority = priority
-	msg.data = base64.StdEncoding.EncodeToString(data)
-	msg.action = action
-	msg.request = isRequest
-	msg.reply = isReply
-	msg.tr, _ = tr.(*Transaction)
-	return object.MessageSerializer.Marshal(msg, this.resources)
+	msg := ifs.NewMessage(destination,
+		serviceName,
+		serviceArea,
+		priority,
+		action,
+		source,
+		vnet,
+		base64.StdEncoding.EncodeToString(data),
+		isRequest,
+		isReply,
+		msgNum,
+		tr_state,
+		tr_id,
+		tr_errMsg,
+		tr_start)
+
+	return msg.Marshal(nil, this.resources)
 }
 
-func (this *Protocol) CreateMessageForm(msg ifs.IMessage, o ifs.IElements) ([]byte, error) {
+func (this *Protocol) CreateMessageForm(msg *ifs.Message, o ifs.IElements) ([]byte, error) {
 	var data []byte
 	var err error
 
@@ -97,5 +98,5 @@ func (this *Protocol) CreateMessageForm(msg ifs.IMessage, o ifs.IElements) ([]by
 
 	//create the wrapping message for the destination
 	msg.SetData(base64.StdEncoding.EncodeToString(data))
-	return object.MessageSerializer.Marshal(msg, this.resources)
+	return msg.Marshal(nil, this.resources)
 }

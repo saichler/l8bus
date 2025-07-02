@@ -1,10 +1,10 @@
 package vnet
 
 import (
-	"github.com/saichler/layer8/go/overlay/health"
-	"github.com/saichler/layer8/go/overlay/protocol"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
+	"github.com/saichler/layer8/go/overlay/health"
+	"github.com/saichler/layer8/go/overlay/protocol"
 	"time"
 )
 
@@ -85,7 +85,7 @@ func (this *SwitchTable) newHealth(config *types.SysConfig) *types.Health {
 	return hp
 }
 
-func (this *SwitchTable) ServiceUuids(serviceName string, serviceArea uint16, sourceSwitch string) map[string]bool {
+func (this *SwitchTable) ServiceUuids(serviceName string, serviceArea byte, sourceSwitch string) map[string]bool {
 	h := health.Health(this.switchService.resources)
 	uuidsMap := h.Uuids(serviceName, serviceArea)
 	if uuidsMap != nil && sourceSwitch != this.switchService.resources.SysConfig().LocalUuid {

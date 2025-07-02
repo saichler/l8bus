@@ -52,7 +52,7 @@ func (this *HealthCenter) Health(uuid string) *types.Health {
 	return hp
 }
 
-func (this *HealthCenter) DestinationFor(serviceName string, serviceArea uint16, source string, all, leader bool) string {
+func (this *HealthCenter) DestinationFor(serviceName string, serviceArea byte, source string, all, leader bool) string {
 	if all {
 		return ""
 	}
@@ -88,7 +88,7 @@ func (this *HealthCenter) All() map[string]*types.Health {
 	return result
 }
 
-func (this *HealthCenter) Leader(multicast string, serviceArea uint16) string {
+func (this *HealthCenter) Leader(multicast string, serviceArea byte) string {
 	return this.services.Leader(multicast, serviceArea)
 }
 
@@ -96,7 +96,7 @@ func (this *HealthCenter) AllServices() *types.Services {
 	return this.services.AllServices()
 }
 
-func (this *HealthCenter) Uuids(serviceName string, serviceArea uint16) map[string]bool {
+func (this *HealthCenter) Uuids(serviceName string, serviceArea byte) map[string]bool {
 	return this.services.UUIDs(serviceName, serviceArea)
 }
 

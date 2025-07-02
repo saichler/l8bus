@@ -151,7 +151,7 @@ func (this *VirtualNetworkInterface) SendMessage(data []byte) error {
 	return this.components.TX().SendMessage(data)
 }
 
-func (this *VirtualNetworkInterface) ServiceAPI(serviceName string, serviceArea uint16) ifs.ServiceAPI {
+func (this *VirtualNetworkInterface) ServiceAPI(serviceName string, serviceArea byte) ifs.ServiceAPI {
 	return newAPI(serviceName, serviceArea, false, false)
 }
 

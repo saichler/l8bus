@@ -16,7 +16,7 @@ type HealthService struct {
 	healthCenter *HealthCenter
 }
 
-func (this *HealthService) Activate(serviceName string, serviceArea uint16,
+func (this *HealthService) Activate(serviceName string, serviceArea byte,
 	resources ifs.IResources, listener ifs.IServiceCacheListener, args ...interface{}) error {
 	_, err := resources.Registry().Register(&types.Health{})
 	if err != nil {
@@ -55,7 +55,7 @@ func (this *HealthService) GetCopy(pb ifs.IElements, vnic ifs.IVNic) ifs.IElemen
 func (this *HealthService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	return object.New(nil, this.healthCenter.Top())
 }
-func (this *HealthService) Failed(pb ifs.IElements, vnic ifs.IVNic, msg ifs.IMessage) ifs.IElements {
+func (this *HealthService) Failed(pb ifs.IElements, vnic ifs.IVNic, msg *ifs.Message) ifs.IElements {
 	return nil
 }
 
