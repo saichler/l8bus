@@ -40,8 +40,8 @@ func TestTopologyHealth(t *testing.T) {
 			if len(hp) != 15 {
 				Log.Fail(t, "Expected ", nic.Resources().SysConfig().LocalAlias,
 					" to have 15 heath points, but it has ", len(hp))
-				for _, h := range hp {
-					Log.Info(h.Alias)
+				for uuid, h := range hp {
+					Log.Info(uuid, " - ", h.Alias)
 				}
 				return
 			}

@@ -22,7 +22,7 @@ func NewDiscovery(vnet *VNet) *Discovery {
 }
 
 func (this *Discovery) Discover() {
-	if protocol.MachineIP == "127.0.0.1" {
+	if !protocol.Discovery_Enabled {
 		this.vnet.resources.Logger().Info("Discovery is disabled, machine IP is ", protocol.MachineIP)
 		return
 	}

@@ -7,6 +7,8 @@ import (
 	"sync/atomic"
 )
 
+var Discovery_Enabled = true
+
 type Protocol struct {
 	sequence  atomic.Uint32
 	resources ifs.IResources
