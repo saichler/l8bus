@@ -56,7 +56,9 @@ func DataFor(elems ifs.IElements, security ifs.ISecurityProvider) (string, error
 
 func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceArea byte,
 	priority ifs.Priority, action ifs.Action, source, vnet string, o ifs.IElements,
-	isRequest, isReply bool, msgNum uint32, tr_state ifs.TransactionState, tr_id, tr_errMsg string, tr_start int64) ([]byte, error) {
+	isRequest, isReply bool, msgNum uint32,
+	tr_state ifs.TransactionState, tr_id, tr_errMsg string, tr_start int64,
+	token string) ([]byte, error) {
 
 	AddMessageCreated()
 
@@ -68,7 +70,11 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 		return nil, err
 	}
 
-	msg := ifs.NewMessage(destination,
+	msg, err := this.resources.Security().Message(token)
+	if err != nil {
+		return nil, err
+	}
+	msg.Init(destination,
 		serviceName,
 		serviceArea,
 		priority,

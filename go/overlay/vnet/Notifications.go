@@ -63,7 +63,7 @@ func (this *NotificationSender) processHealthServiceNotifications() {
 			nextId := this.vnet.protocol.NextMessageNumber()
 			syncData, _ := this.vnet.protocol.CreateMessageFor("", health.ServiceName, 0, ifs.P1,
 				ifs.Sync, vnetUuid, vnetUuid, object.New(nil, nil), false, false,
-				nextId, ifs.Empty, "", "", -1)
+				nextId, ifs.Empty, "", "", -1, "")
 			go this.vnet.HandleData(syncData, nil)
 		}
 		this.cond.L.Unlock()
@@ -79,7 +79,7 @@ func (this *VNet) PropertyChangeNotification(set *types.NotificationSet) {
 	nextId := this.protocol.NextMessageNumber()
 	syncData, _ := this.protocol.CreateMessageFor("", set.ServiceName, byte(set.ServiceArea), ifs.P1,
 		ifs.Notify, vnetUuid, vnetUuid, object.New(nil, set), false, false,
-		nextId, ifs.Empty, "", "", -1)
+		nextId, ifs.Empty, "", "", -1, "")
 
 	go this.HandleData(syncData, nil)
 }

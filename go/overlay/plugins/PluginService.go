@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	ServiceName     = "Plugin"
+	ServiceName     = "Plugin____"
 	ServiceTypeName = "PluginService"
 )
 

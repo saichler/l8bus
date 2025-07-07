@@ -19,11 +19,11 @@ func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, se
 		return err
 	}
 	return this.components.TX().Unicast(destination, serviceName, serviceArea, action, elems, 0,
-		false, false, this.protocol.NextMessageNumber(), ifs.Empty, "", "", -1)
+		false, false, this.protocol.NextMessageNumber(), ifs.Empty, "", "", -1, "")
 }
 
 func (this *VirtualNetworkInterface) Request(destination, serviceName string, serviceArea byte,
-	action ifs.Action, any interface{}) ifs.IElements {
+	action ifs.Action, any interface{}, tokens ...string) ifs.IElements {
 
 	if destination == "" {
 		destination = ifs.DESTINATION_Single
@@ -38,9 +38,12 @@ func (this *VirtualNetworkInterface) Request(destination, serviceName string, se
 	if err != nil {
 		return object.NewError(err.Error())
 	}
-
+	token := ""
+	if tokens != nil && len(tokens) > 0 {
+		token = tokens[0]
+	}
 	e := this.components.TX().Unicast(destination, serviceName, serviceArea, action, elements, 0,
-		true, false, request.MsgNum(), ifs.Empty, "", "", -1)
+		true, false, request.MsgNum(), ifs.Empty, "", "", -1, token)
 	if e != nil {
 		return object.NewError(e.Error())
 	}
@@ -71,7 +74,7 @@ func (this *VirtualNetworkInterface) Multicast(serviceName string, serviceArea b
 		return err
 	}
 	return this.components.TX().Multicast("", serviceName, serviceArea, action, elems, 0,
-		false, false, this.protocol.NextMessageNumber(), ifs.Empty, "", "", -1)
+		false, false, this.protocol.NextMessageNumber(), ifs.Empty, "", "", -1, "")
 }
 
 func (this *VirtualNetworkInterface) Single(serviceName string, serviceArea byte, action ifs.Action, any interface{}) (string, error) {
@@ -128,7 +131,7 @@ func (this *VirtualNetworkInterface) Forward(msg *ifs.Message, destination strin
 
 	e := this.components.TX().Unicast(destination, msg.ServiceName(), msg.ServiceArea(), msg.Action(),
 		pb, 0, true, false, request.MsgNum(),
-		msg.Tr_State(), msg.Tr_Id(), msg.Tr_ErrMsg(), msg.Tr_StartTime())
+		msg.Tr_State(), msg.Tr_Id(), msg.Tr_ErrMsg(), msg.Tr_StartTime(), msg.AAAId())
 	if e != nil {
 		return object.NewError(e.Error())
 	}
