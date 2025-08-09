@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layer8 - Virtual Overlay Network</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-color: #ecf0f1;
+            --text-color: #2c3e50;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            font-weight: 300;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        /* Navigation */
+        nav {
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        nav li {
+            margin: 0;
+        }
+
+        nav a {
+            display: block;
+            padding: 1rem 1.5rem;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: background-color 0.3s;
+        }
+
+        nav a:hover {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        /* Main Content */
+        main {
+            padding: 3rem 0;
+        }
+
+        section {
+            margin-bottom: 4rem;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--secondary-color);
+        }
+
+        h4 {
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+            color: var(--primary-color);
+        }
+
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h4 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--secondary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        /* Network Diagram */
+        .network-diagram {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .diagram-container {
+            position: relative;
+            margin: 2rem 0;
+            min-height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .network-node {
+            background: var(--secondary-color);
+            color: white;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            position: absolute;
+            min-width: 120px;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .network-node:hover {
+            transform: scale(1.1);
+            background: var(--accent-color);
+        }
+
+        .network-node.vnet {
+            background: var(--primary-color);
+        }
+
+        .network-node.vnic {
+            background: var(--secondary-color);
+        }
+
+        .network-node.service {
+            background: #27ae60;
+        }
+
+        /* Position network nodes */
+        .node-1 { top: 50px; left: 50%; transform: translateX(-50%); }
+        .node-2 { top: 200px; left: 20%; }
+        .node-3 { top: 200px; right: 20%; }
+        .node-4 { bottom: 50px; left: 30%; }
+        .node-5 { bottom: 50px; right: 30%; }
+
+        /* Connection lines */
+        .connection-line {
+            position: absolute;
+            height: 2px;
+            background: var(--secondary-color);
+            transform-origin: left center;
+            opacity: 0.7;
+        }
+
+        /* Code blocks */
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        /* Features list */
+        .features-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-item {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .feature-item h4 {
+            margin-bottom: 0.5rem;
+            color: var(--secondary-color);
+        }
+
+        /* Architecture overview */
+        .architecture-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .component-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border-top: 4px solid var(--secondary-color);
+        }
+
+        .component-card.core {
+            border-top-color: var(--accent-color);
+        }
+
+        .component-card.health {
+            border-top-color: #27ae60;
+        }
+
+        .component-card.plugins {
+            border-top-color: #f39c12;
+        }
+
+        /* Interactive elements */
+        .interactive-demo {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .demo-button {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem;
+            transition: background-color 0.3s;
+        }
+
+        .demo-button:hover {
+            background: var(--primary-color);
+        }
+
+        .status-display {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #ecf0f1;
+            border-radius: var(--border-radius);
+            font-family: monospace;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 4rem;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+
+            nav ul {
+                flex-direction: column;
+            }
+
+            .network-node {
+                position: relative;
+                margin: 1rem;
+            }
+
+            .diagram-container {
+                flex-direction: column;
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Layer8</h1>
+            <p>Virtual Overlay Network for Distributed Systems</p>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#architecture">Architecture</a></li>
+                <li><a href="#components">Components</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#topology">Network Topology</a></li>
+                <li><a href="#usage">Usage</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="container">
+            <section id="overview">
+                <h2>Overview</h2>
+                <p style="font-size: 1.1rem; text-align: center; margin-bottom: 2rem;">
+                    The Layer8 overlay package provides a comprehensive virtual networking layer built on top of TCP connections, 
+                    enabling distributed systems to communicate as if they were on a single network.
+                </p>
+
+                <div class="card-grid">
+                    <div class="card">
+                        <h4><span class="card-icon">V</span>Virtual Networking</h4>
+                        <p>Creates a virtual network layer that abstracts physical network topology, allowing seamless communication between distributed nodes.</p>
+                    </div>
+                    <div class="card">
+                        <h4><span class="card-icon">S</span>Service Discovery</h4>
+                        <p>Automatic service registration and discovery with health monitoring and leader election capabilities.</p>
+                    </div>
+                    <div class="card">
+                        <h4><span class="card-icon">R</span>Robust Routing</h4>
+                        <p>Intelligent message routing with support for unicast, multicast, and service-based routing patterns.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="architecture">
+                <h2>Architecture Overview</h2>
+                
+                <div class="network-diagram">
+                    <h3>Network Topology</h3>
+                    <div class="diagram-container">
+                        <div class="network-node vnet node-1" data-info="Central VNet Switch - Manages all connections and routing">VNet Switch</div>
+                        <div class="network-node vnic node-2" data-info="Virtual Network Interface - Node connection point">VNic A</div>
+                        <div class="network-node vnic node-3" data-info="Virtual Network Interface - Node connection point">VNic B</div>
+                        <div class="network-node service node-4" data-info="Health Service - Monitors system health">Health Service</div>
+                        <div class="network-node service node-5" data-info="Plugin Service - Manages dynamic plugins">Plugin Service</div>
+                    </div>
+                    <p><em>Click on nodes to see more information</em></p>
+                </div>
+
+                <div class="architecture-grid">
+                    <div class="component-card core">
+                        <h4>Core Components</h4>
+                        <ul>
+                            <li><strong>VNet</strong> - Central network switch</li>
+                            <li><strong>VNic</strong> - Virtual network interface</li>
+                            <li><strong>Protocol</strong> - Message handling</li>
+                        </ul>
+                    </div>
+                    <div class="component-card health">
+                        <h4>Health System</h4>
+                        <ul>
+                            <li><strong>HealthCenter</strong> - Monitoring hub</li>
+                            <li><strong>HealthService</strong> - Status management</li>
+                            <li><strong>Services</strong> - Registry system</li>
+                        </ul>
+                    </div>
+                    <div class="component-card plugins">
+                        <h4>Plugin Framework</h4>
+                        <ul>
+                            <li><strong>PluginCenter</strong> - Plugin management</li>
+                            <li><strong>PluginService</strong> - Dynamic loading</li>
+                            <li><strong>Extensions</strong> - .so file support</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="components">
+                <h2>Core Components</h2>
+                
+                <div class="card-grid">
+                    <div class="card">
+                        <h4>VNet (Virtual Network)</h4>
+                        <p><strong>Location:</strong> <code>vnet/VNet.go</code></p>
+                        <p><strong>Purpose:</strong> Central network switch that manages connections between nodes</p>
+                        <ul>
+                            <li>TCP listener for incoming connections</li>
+                            <li>Message routing and switching</li>
+                            <li>Health monitoring integration</li>
+                            <li>Service discovery</li>
+                            <li>Connection management</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h4>VNic (Virtual Network Interface)</h4>
+                        <p><strong>Location:</strong> <code>vnic/VirtualNetworkInterface.go</code></p>
+                        <p><strong>Purpose:</strong> Network interface for individual nodes to connect to the overlay</p>
+                        <ul>
+                            <li>Bidirectional communication (TX/RX)</li>
+                            <li>Keep-alive mechanisms</li>
+                            <li>Automatic reconnection</li>
+                            <li>Service API integration</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h4>Protocol</h4>
+                        <p><strong>Location:</strong> <code>protocol/Protocol.go</code></p>
+                        <p><strong>Purpose:</strong> Message serialization/deserialization and protocol handling</p>
+                        <ul>
+                            <li>Base64 encoded message data</li>
+                            <li>Sequence number management</li>
+                            <li>Message creation and parsing</li>
+                            <li>Transaction state management</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="features">
+                <h2>Key Features</h2>
+                
+                <div class="features-list">
+                    <div class="feature-item">
+                        <h4>Network Discovery</h4>
+                        <p>Automatic peer discovery using UDP broadcasts with dynamic network topology building and IP-based routing decisions.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <h4>Message Routing</h4>
+                        <p>Service-based message routing with support for unicast and multicast, plus leader election for service instances.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <h4>Connection Management</h4>
+                        <p>Internal vs external connection classification, automatic reconnection on failures, and connection pooling.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <h4>Service Framework</h4>
+                        <p>Plugin-based architecture with service registration and discovery, health monitoring integration.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <h4>Security</h4>
+                        <p>Connection validation, security provider integration, and token-based authentication.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <h4>Health Monitoring</h4>
+                        <p>Distributed health monitoring system with real-time status tracking and automatic failover capabilities.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="topology">
+                <h2>Network Topology</h2>
+                
+                <div class="card">
+                    <h3>Hybrid Network Architecture</h3>
+                    <p>The overlay creates a sophisticated hybrid network topology with three distinct connection types:</p>
+                    
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <h4>Internal Connections</h4>
+                            <p>Direct connections between processes on the same machine for high-performance local communication.</p>
+                        </div>
+
+                        <div class="feature-item">
+                            <h4>External Connections</h4>
+                            <p>TCP connections to remote VNet switches enabling cross-network communication.</p>
+                        </div>
+
+                        <div class="feature-item">
+                            <h4>Service Routing</h4>
+                            <p>Messages routed based on service names and areas, providing intelligent service-aware networking.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="interactive-demo">
+                    <h3>Interactive Network Demo</h3>
+                    <p>Simulate network operations and see how Layer8 handles different scenarios:</p>
+                    
+                    <button class="demo-button" onclick="simulateDiscovery()">Network Discovery</button>
+                    <button class="demo-button" onclick="simulateRouting()">Message Routing</button>
+                    <button class="demo-button" onclick="simulateFailover()">Health Check</button>
+                    <button class="demo-button" onclick="clearDemo()">Clear</button>
+                    
+                    <div class="status-display" id="demo-status">
+                        Ready to simulate network operations...
+                    </div>
+                </div>
+            </section>
+
+            <section id="usage">
+                <h2>Usage Examples</h2>
+                
+                <div class="card-grid">
+                    <div class="card">
+                        <h4>Creating a VNet (Network Switch)</h4>
+                        <div class="code-block">
+vnet := NewVNet(resources)
+err := vnet.Start()
+if err != nil {
+    log.Fatal("Failed to start VNet:", err)
+}
+                        </div>
+                        <p>Initialize and start the central network switch that will manage all node connections and route messages.</p>
+                    </div>
+
+                    <div class="card">
+                        <h4>Creating a VNic (Network Interface)</h4>
+                        <div class="code-block">
+vnic := NewVirtualNetworkInterface(resources, nil)
+vnic.Start()
+
+// Wait for connection to be established
+vnic.WaitForConnection()
+                        </div>
+                        <p>Create a virtual network interface that connects your application to the Layer8 overlay network.</p>
+                    </div>
+
+                    <div class="card">
+                        <h4>Service Registration</h4>
+                        <div class="code-block">
+// Services are automatically registered through 
+// the health system and can be discovered by 
+// other nodes in the network.
+
+healthService := &health.HealthService{}
+resources.Services().RegisterServiceHandlerType(healthService)
+resources.Services().Activate("health", "HealthService", 0, resources, vnic)
+                        </div>
+                        <p>Register services that will be automatically discovered by other nodes in the network.</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Configuration</h3>
+                    <p>The overlay network is configured through <code>SysConfig</code> which includes:</p>
+                    <ul style="margin: 1rem 0;">
+                        <li>Local and remote UUIDs and aliases</li>
+                        <li>VNet port configuration</li>
+                        <li>Service definitions</li>
+                        <li>Queue sizes and data limits</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>Dependencies</h3>
+                    <div class="code-block">
+github.com/saichler/l8types      // Type definitions and interfaces
+github.com/saichler/l8utils      // Utility functions and resources  
+github.com/saichler/l8services   // Service framework
+github.com/saichler/l8srlz       // Serialization library
+google.golang.org/protobuf       // Protocol buffer support
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Layer8 Overlay Network. A comprehensive virtual networking solution for distributed systems.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Interactive network demo functions
+        function simulateDiscovery() {
+            const status = document.getElementById('demo-status');
+            status.innerHTML = `
+<strong>Network Discovery Simulation:</strong><br>
+1. Broadcasting UDP discovery packets on port (VnetPort-2)...<br>
+2. Listening for peer responses...<br>
+3. Found peer at 192.168.1.100<br>
+4. Establishing TCP connection...<br>
+5. ✓ Connection established and added to switch table
+            `;
+        }
+
+        function simulateRouting() {
+            const status = document.getElementById('demo-status');
+            status.innerHTML = `
+<strong>Message Routing Simulation:</strong><br>
+1. Received message for service "HealthService" area 0<br>
+2. Consulting switch table for available instances...<br>
+3. Found 3 healthy instances: [uuid1, uuid2, uuid3]<br>
+4. Selecting leader instance: uuid2<br>
+5. ✓ Message routed to destination successfully
+            `;
+        }
+
+        function simulateFailover() {
+            const status = document.getElementById('demo-status');
+            status.innerHTML = `
+<strong>Health Check Simulation:</strong><br>
+1. Performing health check on all registered services...<br>
+2. HealthService: UP (3 instances)<br>
+3. PluginService: UP (1 instance)<br>
+4. CustomService: DOWN (connection timeout)<br>
+5. ✓ Failed service removed from routing table
+            `;
+        }
+
+        function clearDemo() {
+            const status = document.getElementById('demo-status');
+            status.innerHTML = 'Ready to simulate network operations...';
+        }
+
+        // Add click handlers for network nodes
+        document.addEventListener('DOMContentLoaded', function() {
+            const nodes = document.querySelectorAll('.network-node');
+            nodes.forEach(node => {
+                node.addEventListener('click', function() {
+                    const info = this.getAttribute('data-info');
+                    if (info) {
+                        alert(info);
+                    }
+                });
+            });
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
