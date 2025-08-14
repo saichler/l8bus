@@ -1,0 +1,66 @@
+package vnic
+
+import (
+	"github.com/saichler/l8srlz/go/serialize/object"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/layer8/go/overlay/health"
+)
+
+func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, serviceArea byte,
+	action ifs.Action, any interface{}) error {
+	if destination == "" {
+		destination = ifs.DESTINATION_Single
+	}
+	elems, err := createElements(any, this.resources)
+	if err != nil {
+		return err
+	}
+	return this.components.TX().Unicast(destination, serviceName, serviceArea, action, elems, 0,
+		false, false, this.protocol.NextMessageNumber(), ifs.Empty, "", "", -1, "")
+}
+
+func (this *VirtualNetworkInterface) Request(destination, serviceName string, serviceArea byte,
+	action ifs.Action, any interface{}, tokens ...string) ifs.IElements {
+
+	if destination == "" {
+		destination = ifs.DESTINATION_Single
+	}
+
+	request := this.requests.NewRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid, 5, this.resources.Logger())
+
+	request.Lock()
+	defer request.Unlock()
+
+	elements, err := createElements(any, this.resources)
+	if err != nil {
+		return object.NewError(err.Error())
+	}
+	token := ""
+	if tokens != nil && len(tokens) > 0 {
+		token = tokens[0]
+	}
+	e := this.components.TX().Unicast(destination, serviceName, serviceArea, action, elements, 0,
+		true, false, request.MsgNum(), ifs.Empty, "", "", -1, token)
+	if e != nil {
+		return object.NewError(e.Error())
+	}
+	request.Wait()
+	return request.Response()
+}
+
+func (this *VirtualNetworkInterface) Reply(msg *ifs.Message, response ifs.IElements) error {
+	reply := msg.CloneReply(this.resources.SysConfig().LocalUuid, this.resources.SysConfig().RemoteUuid)
+	data, e := this.protocol.CreateMessageForm(reply, response)
+	if e != nil {
+		this.resources.Logger().Error(e)
+		return e
+	}
+	hc := health.Health(this.resources)
+	hp := hc.Health(msg.Source())
+	alias := " No Alias Yet"
+	if hp != nil {
+		alias = hp.Alias
+	}
+	this.resources.Logger().Debug("Replying to ", msg.Source(), " ", alias)
+	return this.SendMessage(data)
+}

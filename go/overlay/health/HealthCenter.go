@@ -5,12 +5,15 @@ import (
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
 	"github.com/saichler/reflect/go/reflect/introspecting"
+	"sync"
 )
 
 type HealthCenter struct {
-	healths   ifs.IDistributedCache
-	services  *Services
-	resources ifs.IResources
+	healths       ifs.IDistributedCache
+	services      *Services
+	resources     ifs.IResources
+	roundRobin    map[string]map[byte]map[string]bool
+	roundRobinMtx *sync.Mutex
 }
 
 func newHealthCenter(resources ifs.IResources, listener ifs.IServiceCacheListener) *HealthCenter {
@@ -21,6 +24,8 @@ func newHealthCenter(resources ifs.IResources, listener ifs.IServiceCacheListene
 		resources.SysConfig().LocalUuid, listener, resources)
 	hc.services = newServices()
 	hc.resources = resources
+	hc.roundRobin = make(map[string]map[byte]map[string]bool)
+	hc.roundRobinMtx = &sync.Mutex{}
 	return hc
 }
 
@@ -50,6 +55,71 @@ func (this *HealthCenter) ZSide(uuid string) string {
 func (this *HealthCenter) Health(uuid string) *types.Health {
 	hp, _ := this.healths.Get(uuid).(*types.Health)
 	return hp
+}
+
+func (this *HealthCenter) LeaderFor(multicast string, serviceArea byte) string {
+	return this.services.Leader(multicast, serviceArea)
+}
+
+func (this *HealthCenter) ProximityFor(serviceName string, serviceArea byte, source string) string {
+	if source == "" {
+		return ""
+	}
+	uuids := this.services.UUIDs(serviceName, serviceArea)
+	_, ok := uuids[source]
+	if ok {
+		return source
+	}
+	sourceZSide := this.services.ZUuid(source)
+	for uuid, _ := range uuids {
+		uuidZside := this.services.ZUuid(uuid)
+		if sourceZSide == uuidZside {
+			return uuid
+		}
+	}
+	return this.services.Leader(serviceName, serviceArea)
+}
+
+func (this *HealthCenter) RoundRobinFor(serviceName string, serviceArea byte, source string) string {
+	if source == "" {
+		return ""
+	}
+	uuids := this.services.UUIDs(serviceName, serviceArea)
+
+	this.roundRobinMtx.Lock()
+	for uuid, _ := range uuids {
+		areas, ok := this.roundRobin[serviceName]
+		if !ok {
+			areas = make(map[byte]map[string]bool)
+			this.roundRobin[serviceName] = areas
+		}
+		rbUuids, ok := areas[serviceArea]
+		if !ok || len(rbUuids) >= len(uuids) {
+			rbUuids = make(map[string]bool)
+			areas[serviceArea] = rbUuids
+		}
+		_, ok = rbUuids[uuid]
+		if !ok {
+			rbUuids[uuid] = true
+			this.roundRobinMtx.Unlock()
+			return uuid
+		}
+	}
+	this.roundRobinMtx.Unlock()
+
+	return this.services.Leader(serviceName, serviceArea)
+}
+
+func (this *HealthCenter) LocalFor(serviceName string, serviceArea byte, source string) string {
+	if source == "" {
+		return ""
+	}
+	uuids := this.services.UUIDs(serviceName, serviceArea)
+	_, ok := uuids[source]
+	if ok {
+		return source
+	}
+	return this.services.Leader(serviceName, serviceArea)
 }
 
 func (this *HealthCenter) DestinationFor(serviceName string, serviceArea byte, source string, all, leader bool) string {
@@ -86,10 +156,6 @@ func (this *HealthCenter) All() map[string]*types.Health {
 		result[k] = v.(*types.Health)
 	}
 	return result
-}
-
-func (this *HealthCenter) Leader(multicast string, serviceArea byte) string {
-	return this.services.Leader(multicast, serviceArea)
 }
 
 func (this *HealthCenter) AllServices() *types.Services {
