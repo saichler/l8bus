@@ -12,7 +12,8 @@ import (
 )
 
 type KeepAlive struct {
-	vnic *VirtualNetworkInterface
+	vnic      *VirtualNetworkInterface
+	startTime int64
 }
 
 func newKeepAlive(vnic *VirtualNetworkInterface) *KeepAlive {
@@ -27,6 +28,7 @@ func (this *KeepAlive) name() string {
 	return "KA"
 }
 func (this *KeepAlive) run() {
+	this.startTime = time.Now().UnixMilli()
 	if this.vnic.resources.SysConfig().KeepAliveIntervalSeconds == 0 {
 		return
 	}
@@ -55,6 +57,7 @@ func (this *KeepAlive) sendState() {
 	hp.AUuid = this.vnic.resources.SysConfig().LocalUuid
 	hp.Status = types.HealthState_Up
 	hp.Stats = stats
+	hp.StartTime = this.startTime
 	//this.vnic.resources.Logger().Debug("Sending Keep Alive for ", this.vnic.resources.SysConfig().LocalUuid, " ", this.vnic.resources.SysConfig().LocalAlias)
 	//We unicast to the vnet, it will multicast the change to all
 	this.vnic.Unicast(this.vnic.resources.SysConfig().RemoteUuid, health.ServiceName, 0, ifs.PATCH, hp)
@@ -71,39 +74,39 @@ func cpuUsage() float64 {
 	if err != nil {
 		return 0
 	}
-	
+
 	statFields := strings.Fields(string(procStatData))
 	if len(statFields) < 17 {
 		return 0
 	}
-	
+
 	utime, _ := strconv.ParseUint(statFields[13], 10, 64)
 	stime, _ := strconv.ParseUint(statFields[14], 10, 64)
-	
+
 	systemStatData, err := os.ReadFile("/proc/stat")
 	if err != nil {
 		return 0
 	}
-	
+
 	systemStatLines := strings.Split(string(systemStatData), "\n")
 	cpuLine := systemStatLines[0]
 	cpuFields := strings.Fields(cpuLine)
 	if len(cpuFields) < 8 {
 		return 0
 	}
-	
+
 	var totalCPU uint64
 	for i := 1; i < len(cpuFields); i++ {
 		val, _ := strconv.ParseUint(cpuFields[i], 10, 64)
 		totalCPU += val
 	}
-	
+
 	processCPU := float64(utime + stime)
 	totalCPUFloat := float64(totalCPU)
-	
+
 	if totalCPUFloat == 0 {
 		return 0
 	}
-	
+
 	return (processCPU / totalCPUFloat) * 100.0
 }
