@@ -4,7 +4,10 @@ import (
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
 	"github.com/saichler/layer8/go/overlay/health"
+	"os"
 	"runtime"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -64,7 +67,43 @@ func memoryUsage() uint64 {
 }
 
 func cpuUsage() float64 {
-	//pprof.StartCPUProfile()
-	//@TODO implement a second profile
-	return 0
+	procStatData, err := os.ReadFile("/proc/self/stat")
+	if err != nil {
+		return 0
+	}
+	
+	statFields := strings.Fields(string(procStatData))
+	if len(statFields) < 17 {
+		return 0
+	}
+	
+	utime, _ := strconv.ParseUint(statFields[13], 10, 64)
+	stime, _ := strconv.ParseUint(statFields[14], 10, 64)
+	
+	systemStatData, err := os.ReadFile("/proc/stat")
+	if err != nil {
+		return 0
+	}
+	
+	systemStatLines := strings.Split(string(systemStatData), "\n")
+	cpuLine := systemStatLines[0]
+	cpuFields := strings.Fields(cpuLine)
+	if len(cpuFields) < 8 {
+		return 0
+	}
+	
+	var totalCPU uint64
+	for i := 1; i < len(cpuFields); i++ {
+		val, _ := strconv.ParseUint(cpuFields[i], 10, 64)
+		totalCPU += val
+	}
+	
+	processCPU := float64(utime + stime)
+	totalCPUFloat := float64(totalCPU)
+	
+	if totalCPUFloat == 0 {
+		return 0
+	}
+	
+	return (processCPU / totalCPUFloat) * 100.0
 }
