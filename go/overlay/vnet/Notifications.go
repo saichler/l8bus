@@ -1,6 +1,7 @@
 package vnet
 
 import (
+	"fmt"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
@@ -74,7 +75,7 @@ func (this *VNet) PropertyChangeNotification(set *types.NotificationSet) {
 	//only health service will call this callback so check if the notification is from a local source
 	//if it is from local source, then just notify local vnics
 	protocol.AddPropertyChangeCalled(set, this.resources.SysConfig().LocalAlias)
-
+	this.resources.Logger().Info("Publish Notification ", fmt.Sprintf("", set))
 	vnetUuid := this.resources.SysConfig().LocalUuid
 	nextId := this.protocol.NextMessageNumber()
 	syncData, _ := this.protocol.CreateMessageFor("", set.ServiceName, byte(set.ServiceArea), ifs.P1,
