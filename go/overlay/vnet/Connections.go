@@ -165,12 +165,12 @@ func (this *Connections) allDownConnections() map[string]bool {
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
 	for uuid, conn := range this.internal {
-		if conn.Running() {
+		if !conn.Running() {
 			result[uuid] = true
 		}
 	}
 	for uuid, conn := range this.external {
-		if conn.Running() {
+		if !conn.Running() {
 			result[uuid] = true
 		}
 	}
