@@ -84,7 +84,7 @@ func (this *RX) notifyRawDataListener() {
 			this.vnic.stats.RxDataCont += int64(len(data))
 			// if there is a dataListener, this is a switch
 			if this.vnic.resources.DataListener() != nil {
-				this.vnic.resources.DataListener().HandleData(data, this.vnic)
+				this.vnic.resources.DataListener().HandleData(data, this.vnic, false)
 			} else {
 				msg, err := this.vnic.protocol.MessageOf(data, this.vnic.resources)
 				if err != nil {
