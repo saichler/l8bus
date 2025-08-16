@@ -150,6 +150,7 @@ func (this *Connections) allExternals() map[string]ifs.IVNic {
 func (this *Connections) shutdownConnection(uuid string) {
 	this.mtx.RLock()
 	defer this.mtx.RUnlock()
+	this.logger.Info("Shutting down connection ", uuid)
 	conn, ok := this.internal[uuid]
 	if ok {
 		conn.Shutdown()

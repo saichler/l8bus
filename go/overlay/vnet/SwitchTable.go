@@ -117,6 +117,7 @@ func (this *SwitchTable) monitor() {
 			this.conns.shutdownConnection(uuid)
 			hp := hc.Health(uuid)
 			if hp.Status != types.HealthState_Down {
+				this.switchService.resources.Logger().Info("Update health status to Down")
 				hp.Status = types.HealthState_Down
 				hc.Update(hp, false)
 			}
