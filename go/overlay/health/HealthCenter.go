@@ -26,6 +26,7 @@ func newHealthCenter(resources ifs.IResources, listener ifs.IServiceCacheListene
 	hc.resources = resources
 	hc.roundRobin = make(map[string]map[byte]map[string]bool)
 	hc.roundRobinMtx = &sync.Mutex{}
+	resources.Registry().Register(&types.Empty{})
 	return hc
 }
 
