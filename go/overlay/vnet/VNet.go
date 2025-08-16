@@ -287,6 +287,12 @@ func (this *VNet) switchDataReceived(data []byte, vnic ifs.IVNic) {
 		if resp != nil && resp.Error() != nil {
 			this.resources.Logger().Error(resp.Error())
 		}
+		if msg.Request() {
+			err = vnic.Reply(msg, resp)
+			if err != nil {
+				this.resources.Logger().Error(err.Error())
+			}
+		}
 	}
 }
 
