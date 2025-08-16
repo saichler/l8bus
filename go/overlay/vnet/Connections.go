@@ -1,8 +1,8 @@
 package vnet
 
 import (
-	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/layer8/go/overlay/health"
 	"sync"
 )
 
@@ -143,6 +143,36 @@ func (this *Connections) allExternals() map[string]ifs.IVNic {
 	result := make(map[string]ifs.IVNic)
 	for uuid, vnic := range this.external {
 		result[uuid] = vnic
+	}
+	return result
+}
+
+func (this *Connections) shutdownConnection(uuid string) {
+	this.mtx.RLock()
+	defer this.mtx.RUnlock()
+	conn, ok := this.internal[uuid]
+	if ok {
+		conn.Shutdown()
+	}
+	conn, ok = this.external[uuid]
+	if ok {
+		conn.Shutdown()
+	}
+}
+
+func (this *Connections) allDownConnections() map[string]bool {
+	result := make(map[string]bool)
+	this.mtx.RLock()
+	defer this.mtx.RUnlock()
+	for uuid, conn := range this.internal {
+		if conn.Running() {
+			result[uuid] = true
+		}
+	}
+	for uuid, conn := range this.external {
+		if conn.Running() {
+			result[uuid] = true
+		}
 	}
 	return result
 }

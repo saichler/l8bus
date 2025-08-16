@@ -20,6 +20,7 @@ func newSwitchTable(switchService *VNet) *SwitchTable {
 	switchTable.conns = newConnections(switchService.resources.Logger())
 	switchTable.switchService = switchService
 	switchTable.desc = "SwitchTable (" + switchService.resources.SysConfig().LocalUuid + ") - "
+	go switchTable.monitor()
 	return switchTable
 }
 
@@ -101,5 +102,24 @@ func (this *SwitchTable) shutdown() {
 	conns := this.conns.all()
 	for _, conn := range conns {
 		conn.Shutdown()
+	}
+}
+
+func (this *SwitchTable) monitor() {
+	for this.switchService.running {
+		time.Sleep(time.Second * 15)
+		hc := health.Health(this.switchService.resources)
+		if hc == nil {
+			continue
+		}
+		allDown := this.conns.allDownConnections()
+		for uuid, _ := range allDown {
+			this.conns.shutdownConnection(uuid)
+			hp := hc.Health(uuid)
+			if hp.Status != types.HealthState_Down {
+				hp.Status = types.HealthState_Down
+				hc.Update(hp, false)
+			}
+		}
 	}
 }

@@ -127,7 +127,7 @@ func (this *VirtualNetworkInterface) receiveConnection() {
 }
 
 func (this *VirtualNetworkInterface) Shutdown() {
-	this.resources.Logger().Info("Shutdown was called")
+	this.resources.Logger().Info("Shutdown was called on ", this.resources.SysConfig().LocalAlias)
 	this.running = false
 	if this.conn != nil {
 		this.conn.Close()
@@ -198,4 +198,8 @@ func (this *VirtualNetworkInterface) WaitForConnection() {
 		time.Sleep(time.Millisecond * 100)
 		hp = hc.Health(this.resources.SysConfig().LocalUuid)
 	}
+}
+
+func (this *VirtualNetworkInterface) Running() bool {
+	return this.running
 }
