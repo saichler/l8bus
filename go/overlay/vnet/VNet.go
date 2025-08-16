@@ -249,6 +249,7 @@ func (this *VNet) ShutdownVNic(vnic ifs.IVNic) {
 	uuid := vnic.Resources().SysConfig().RemoteUuid
 	hp := h.Health(uuid)
 	if hp.Status != types.HealthState_Down {
+		this.resources.Logger().Info("Update health status to Down")
 		hp.Status = types.HealthState_Down
 		h.Update(hp, false)
 	}

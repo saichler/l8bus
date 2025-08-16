@@ -106,6 +106,9 @@ func (this *SwitchTable) shutdown() {
 }
 
 func (this *SwitchTable) monitor() {
+	if true {
+		return
+	}
 	for this.switchService.running {
 		time.Sleep(time.Second * 15)
 		hc := health.Health(this.switchService.resources)
