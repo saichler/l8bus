@@ -169,7 +169,7 @@ func (this *VNet) Failed(data []byte, vnic ifs.IVNic, failMsg string) {
 	}
 }
 
-func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
+func (this *VNet) HandleData(data []byte, vnic ifs.IVNic, logMessage bool) {
 	this.resources.Logger().Trace("********** Swith Service - HandleData **********")
 	source, sourceVnet, destination, serviceName, serviceArea, _ := ifs.HeaderOf(data)
 	this.resources.Logger().Trace("** Switch       : ", this.resources.SysConfig().LocalUuid)
@@ -212,8 +212,14 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 
 	} else {
 		uuidMap := this.switchTable.ServiceUuids(serviceName, serviceArea, sourceVnet)
+		if logMessage {
+			this.resources.Logger().Info("Message is multicast, going to send to the following uuids:")
+			for uuid, _ := range uuidMap {
+				this.resources.Logger().Info("   ", uuid)
+			}
+		}
 		if uuidMap != nil {
-			this.uniCastToPorts(uuidMap, data, sourceVnet)
+			this.uniCastToPorts(uuidMap, data, sourceVnet, logMessage)
 			if serviceName == health.ServiceName && source != this.resources.SysConfig().LocalUuid {
 				this.switchDataReceived(data, vnic)
 			}
@@ -222,7 +228,7 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 	}
 }
 
-func (this *VNet) uniCastToPorts(uuids map[string]bool, data []byte, sourceSwitch string) {
+func (this *VNet) uniCastToPorts(uuids map[string]bool, data []byte, sourceSwitch string, logMessage bool) {
 	alreadySent := make(map[string]bool)
 	for vnicUuid, _ := range uuids {
 		isHope0 := this.resources.SysConfig().LocalUuid == sourceSwitch
@@ -234,8 +240,15 @@ func (this *VNet) uniCastToPorts(uuids map[string]bool, data []byte, sourceSwitc
 			if !ok {
 				alreadySent[usedUuid] = true
 				this.resources.Logger().Trace("Sending from ", this.resources.SysConfig().LocalUuid, " to ", usedUuid)
+				if logMessage {
+					this.resources.Logger().Info("Sending unicast to ", vnicUuid, ":", usedUuid)
+				}
 				port.SendMessage(data)
+			} else if logMessage {
+				this.resources.Logger().Info("Already Sent unicast to ", vnicUuid, ":", usedUuid)
 			}
+		} else if logMessage {
+			this.resources.Logger().Info("Port is nil, did not send to uuid:", vnicUuid, ":", usedUuid)
 		}
 	}
 }
