@@ -257,7 +257,8 @@ func (this *VNet) ShutdownVNic(vnic ifs.IVNic) {
 	if hp.Status != types.HealthState_Down {
 		this.resources.Logger().Info("Update health status to Down")
 		hp.Status = types.HealthState_Down
-		h.Update(hp, false)
+		h.Update(hp, true)
+		this.sendHealth(hp)
 	}
 	this.resources.Logger().Info("Shutdown complete ", vnic.Resources().SysConfig().LocalAlias)
 }
