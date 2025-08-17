@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	. "github.com/saichler/l8test/go/infra/t_resources"
 	. "github.com/saichler/l8test/go/infra/t_service"
 	. "github.com/saichler/l8test/go/infra/t_topology"
@@ -109,6 +110,7 @@ func TestSendMultiCast(t *testing.T) {
 		posts += handler.PostN()
 		if handler.PostN() == 0 {
 			Log.Error(handler.Name())
+			return
 		}
 	}
 
@@ -123,12 +125,13 @@ func TestUniCast(t *testing.T) {
 	pb := CreateTestModelInstance(3)
 	eg1_2 := topo.VnicByVnetNum(1, 2)
 	eg3_3 := topo.VnicByVnetNum(3, 3)
-	err := eg1_2.Unicast(eg3_3.Resources().SysConfig().LocalUuid, ServiceName, 0, ifs.POST, pb)
+	addr := eg3_3.Resources().SysConfig().LocalUuid
+	err := eg1_2.Unicast(addr, ServiceName, 0, ifs.POST, pb)
 	if err != nil {
 		Log.Fail(t, err)
 		return
 	}
-	Sleep()
+	time.Sleep(time.Second)
 	handler := topo.HandlerByVnetNum(3, 3)
 	if handler.PostN() != 1 {
 		Log.Fail(t, "eg3_3", " Post count does not equal 1")
@@ -226,14 +229,16 @@ func TestDestinationUnreachable(t *testing.T) {
 	eg1_1.Shutdown()
 
 	Sleep()
-
-	err = eg3_2.Unicast(eg1_1.Resources().SysConfig().LocalUuid, ServiceName, 0, ifs.POST, pb)
+	uu := eg1_1.Resources().SysConfig().LocalUuid
+	fmt.Println(uu)
+	err = eg3_2.Unicast(uu, ServiceName, 0, ifs.POST, pb)
 	if err != nil {
 		Log.Fail(t, err)
 		return
 	}
 
-	Sleep()
+	time.Sleep(time.Second * 5)
+
 	handler = topo.HandlerByVnetNum(3, 2)
 
 	if handler.FailedN() != 1 {

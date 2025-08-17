@@ -11,13 +11,12 @@ import (
 type SwitchTable struct {
 	conns         *Connections
 	switchService *VNet
-	routes        map[string]string
 	desc          string
 }
 
 func newSwitchTable(switchService *VNet) *SwitchTable {
 	switchTable := &SwitchTable{}
-	switchTable.conns = newConnections(switchService.resources.Logger())
+	switchTable.conns = newConnections(switchService.resources.SysConfig().LocalUuid, switchService.resources.Logger())
 	switchTable.switchService = switchService
 	switchTable.desc = "SwitchTable (" + switchService.resources.SysConfig().LocalUuid + ") - "
 	go switchTable.monitor()
@@ -45,7 +44,8 @@ func (this *SwitchTable) addVNic(vnic ifs.IVNic) {
 		this.mergeServices(hp, config)
 		hc.Update(hp, false)
 	}
-	this.switchService.ns.requestHealthServiceNotification()
+
+	this.switchService.publishRoutes()
 }
 
 func (this *SwitchTable) mergeServices(hp *types.Health, config *types.SysConfig) {
@@ -66,7 +66,6 @@ func (this *SwitchTable) mergeServices(hp *types.Health, config *types.SysConfig
 				exist.Areas[k2] = v2
 			}
 		}
-
 	}
 }
 
@@ -86,16 +85,18 @@ func (this *SwitchTable) newHealth(config *types.SysConfig) *types.Health {
 	return hp
 }
 
-func (this *SwitchTable) ServiceUuids(serviceName string, serviceArea byte, sourceSwitch string) map[string]bool {
+func (this *SwitchTable) connectionsForService(serviceName string, serviceArea byte, sourceSwitch string) map[string]ifs.IVNic {
 	h := health.Health(this.switchService.resources)
 	uuidsMap := h.Uuids(serviceName, serviceArea)
-	if uuidsMap != nil && sourceSwitch != this.switchService.resources.SysConfig().LocalUuid {
-		// When the message source is not within this switch,
-		// we should not publish to adjacent as the overlay is o one hope
-		// publish.
-		this.conns.filterExternals(uuidsMap)
+	result := make(map[string]ifs.IVNic)
+	isHope0 := this.switchService.resources.SysConfig().LocalUuid == sourceSwitch
+	for uuid, _ := range uuidsMap {
+		usedUuid, vnic := this.conns.getConnection(uuid, isHope0)
+		if vnic != nil {
+			result[usedUuid] = vnic
+		}
 	}
-	return uuidsMap
+	return result
 }
 
 func (this *SwitchTable) shutdown() {

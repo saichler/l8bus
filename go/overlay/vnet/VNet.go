@@ -2,6 +2,7 @@ package vnet
 
 import (
 	"errors"
+	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
 	resources2 "github.com/saichler/l8utils/go/utils/resources"
@@ -15,6 +16,11 @@ import (
 	"time"
 )
 
+const (
+	internalS = "internal"
+	internalA = byte(99)
+)
+
 type VNet struct {
 	resources   ifs.IResources
 	socket      net.Listener
@@ -23,10 +29,12 @@ type VNet struct {
 	switchTable *SwitchTable
 	protocol    *protocol.Protocol
 	discovery   *Discovery
-	ns          *NotificationSender
 }
 
 func NewVNet(resources ifs.IResources) *VNet {
+	resources.Registry().Register(&types.Routes{})
+	resources.Registry().Register(&types.Empty{})
+	resources.Registry().Register(&types.Top{})
 	net := &VNet{}
 	net.resources = resources
 	net.resources.Set(net)
@@ -39,7 +47,6 @@ func NewVNet(resources ifs.IResources) *VNet {
 	net.resources.Services().RegisterServiceHandlerType(&health.HealthService{})
 	net.resources.Services().Activate(health.ServiceTypeName, health.ServiceName, 0, net.resources, net)
 	net.discovery = NewDiscovery(net)
-	net.ns = newNotificationSender(net)
 
 	hc := health.Health(net.resources)
 	hp := &types.Health{}
@@ -169,7 +176,7 @@ func (this *VNet) Failed(data []byte, vnic ifs.IVNic, failMsg string) {
 	}
 }
 
-func (this *VNet) HandleData(data []byte, vnic ifs.IVNic, logMessage bool) {
+func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 	this.resources.Logger().Trace("********** Swith Service - HandleData **********")
 	source, sourceVnet, destination, serviceName, serviceArea, _ := ifs.HeaderOf(data)
 	this.resources.Logger().Trace("** Switch       : ", this.resources.SysConfig().LocalUuid)
@@ -179,14 +186,20 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic, logMessage bool) {
 	this.resources.Logger().Trace("** Service Name : ", serviceName)
 	this.resources.Logger().Trace("** Service Area : ", serviceArea)
 
+	if serviceName == internalS && serviceArea == internalA {
+		go this.switchDataReceived(data, vnic)
+		return
+	}
+
 	if destination != "" {
 		//The destination is the vnet
 		if destination == this.resources.SysConfig().LocalUuid {
-			this.switchDataReceived(data, vnic)
+			go this.switchDataReceived(data, vnic)
 			return
 		}
 		if destination == ifs.DESTINATION_Single {
-			uuidMap := this.switchTable.ServiceUuids(serviceName, serviceArea, sourceVnet)
+			h := health.Health(this.resources)
+			uuidMap := h.Uuids(serviceName, serviceArea)
 			if uuidMap != nil {
 				for uuid, _ := range uuidMap {
 					if uuid != source {
@@ -197,59 +210,39 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic, logMessage bool) {
 			}
 		}
 		//The destination is a single port
-		_, p := this.switchTable.conns.getConnection(destination, true, this.resources)
+		_, p := this.switchTable.conns.getConnection(destination, true)
 		if p == nil {
 			this.resources.Logger().Error("Unknown destination ", destination)
 			this.Failed(data, vnic, strings.New("Cannot find destination port for ", destination).String())
 			return
 		}
+
 		err := p.SendMessage(data)
 		if err != nil {
+			if !p.Running() {
+				uuid := p.Resources().SysConfig().RemoteUuid
+				h := health.Health(this.resources)
+				hp := h.Health(uuid)
+				this.sendHealth(hp)
+			}
 			this.resources.Logger().Error("Unable to send to destination ", destination)
 			this.Failed(data, vnic, strings.New("Error sending data:", err.Error()).String())
 			return
 		}
-
 	} else {
-		uuidMap := this.switchTable.ServiceUuids(serviceName, serviceArea, sourceVnet)
-		if logMessage {
-			this.resources.Logger().Info("Message is multicast, going to send to the following uuids:")
-			for uuid, _ := range uuidMap {
-				this.resources.Logger().Info("   ", uuid)
-			}
+		connections := this.switchTable.connectionsForService(serviceName, serviceArea, sourceVnet)
+		this.uniCastToPorts(connections, data)
+		if serviceName == health.ServiceName && source != this.resources.SysConfig().LocalUuid {
+			go this.switchDataReceived(data, vnic)
 		}
-		if uuidMap != nil {
-			this.uniCastToPorts(uuidMap, data, sourceVnet, logMessage)
-			if serviceName == health.ServiceName && source != this.resources.SysConfig().LocalUuid {
-				this.switchDataReceived(data, vnic)
-			}
-			return
-		}
+		return
 	}
 }
 
-func (this *VNet) uniCastToPorts(uuids map[string]bool, data []byte, sourceSwitch string, logMessage bool) {
-	alreadySent := make(map[string]bool)
-	for vnicUuid, _ := range uuids {
-		isHope0 := this.resources.SysConfig().LocalUuid == sourceSwitch
-		usedUuid, port := this.switchTable.conns.getConnection(vnicUuid, isHope0, this.resources)
-		if port != nil {
-			// if the port is external, it may already been forward this message
-			// so skip it.
-			_, ok := alreadySent[usedUuid]
-			if !ok {
-				alreadySent[usedUuid] = true
-				this.resources.Logger().Trace("Sending from ", this.resources.SysConfig().LocalUuid, " to ", usedUuid)
-				if logMessage {
-					this.resources.Logger().Info("Sending unicast to ", vnicUuid, ":", usedUuid)
-				}
-				port.SendMessage(data)
-			} else if logMessage {
-				this.resources.Logger().Info("Already Sent unicast to ", vnicUuid, ":", usedUuid)
-			}
-		} else if logMessage {
-			this.resources.Logger().Info("Port is nil, did not send to uuid:", vnicUuid, ":", usedUuid)
-		}
+func (this *VNet) uniCastToPorts(connections map[string]ifs.IVNic, data []byte) {
+	for vnicUuid, port := range connections {
+		this.resources.Logger().Trace("Sending from ", this.resources.SysConfig().LocalUuid, " to ", vnicUuid)
+		port.SendMessage(data)
 	}
 }
 
@@ -287,24 +280,32 @@ func (this *VNet) switchDataReceived(data []byte, vnic ifs.IVNic) {
 		this.resources.Logger().Error(err)
 		return
 	}
+
+	if msg.Action() == ifs.Routes {
+		routes := pb.Element().(*types.Routes)
+		added := this.switchTable.conns.addRoutes(routes.Table)
+		this.requestTop(added)
+		return
+	}
+
 	// Otherwise call the handler per the action & the type
-	this.resources.Logger().Trace("Switch Service is: ", this.resources.SysConfig().LocalUuid)
 	if msg.Action() == ifs.Notify {
 		resp := this.resources.Services().Notify(pb, vnic, msg, false)
 		if resp != nil && resp.Error() != nil {
 			panic(pb)
 			this.resources.Logger().Error(resp.Error())
 		}
-	} else {
-		resp := this.resources.Services().Handle(pb, msg.Action(), vnic, msg)
-		if resp != nil && resp.Error() != nil {
-			this.resources.Logger().Error(resp.Error())
-		}
-		if msg.Request() {
-			err = vnic.Reply(msg, resp)
-			if err != nil {
-				this.resources.Logger().Error(err.Error())
-			}
+		return
+	}
+
+	resp := this.resources.Services().Handle(pb, msg.Action(), vnic, msg)
+	if resp != nil && resp.Error() != nil {
+		this.resources.Logger().Error(resp.Error(), " : ", msg.Action())
+	}
+	if msg.Request() {
+		err = vnic.Reply(msg, resp)
+		if err != nil {
+			this.resources.Logger().Error(err.Error())
 		}
 	}
 }
@@ -319,4 +320,30 @@ func (this *VNet) LocalCount() int {
 
 func (this *VNet) ExternalCount() int {
 	return len(this.switchTable.conns.external)
+}
+
+func (this *VNet) requestTop(added map[string]string) {
+	if len(added) > 0 {
+		this.resources.Logger().Info("Route Table ", this.resources.SysConfig().VnetPort, " Size is:", this.switchTable.conns.RouteTableSize(), " added ", len(added))
+		this.publishRoutes()
+		this.requestHealthSync()
+	}
+}
+
+func (this *VNet) requestHealthSync() {
+	vnetUuid := this.resources.SysConfig().LocalUuid
+	nextId := this.protocol.NextMessageNumber()
+	sync, _ := this.protocol.CreateMessageFor("", health.ServiceName, 0, ifs.P1,
+		ifs.Sync, vnetUuid, vnetUuid, object.New(nil, nil), false, false,
+		nextId, ifs.Empty, "", "", -1, "")
+	go this.HandleData(sync, nil)
+}
+
+func (this *VNet) sendHealth(hp *types.Health) {
+	vnetUuid := this.resources.SysConfig().LocalUuid
+	nextId := this.protocol.NextMessageNumber()
+	h, _ := this.protocol.CreateMessageFor("", health.ServiceName, 0, ifs.P1,
+		ifs.POST, vnetUuid, vnetUuid, object.New(nil, hp), false, false,
+		nextId, ifs.Empty, "", "", -1, "")
+	go this.HandleData(h, nil)
 }

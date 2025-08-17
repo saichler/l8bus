@@ -43,9 +43,6 @@ func (this *HealthService) Put(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 }
 func (this *HealthService) Patch(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	hp := pb.Element().(*types.Health)
-	if hp.Status == types.HealthState_Down {
-		vnic.Resources().Logger().Info("Received Down state health notification")
-	}
 	this.healthCenter.Update(hp, pb.Notification())
 	return nil
 }
