@@ -2,13 +2,14 @@ package protocol
 
 import (
 	"bytes"
-	"github.com/saichler/l8utils/go/utils/logger"
 	"github.com/saichler/l8types/go/types"
+	"github.com/saichler/l8utils/go/utils/logger"
 	"sync/atomic"
 )
 
 var CountMessages = false
 var messagesCreated atomic.Uint64
+var handleData atomic.Uint64
 var propertyChangeCalled atomic.Uint64
 var ExplicitLog = logger.NewLoggerDirectImpl(logger.NewFileLogMethod("/tmp/Explicit.log"))
 
@@ -41,4 +42,14 @@ func MessagesCreated() uint64 {
 
 func PropertyChangedCalled() uint64 {
 	return propertyChangeCalled.Load()
+}
+
+func AddHandleData() {
+	if CountMessages {
+		handleData.Add(1)
+	}
+}
+
+func HandleData() uint64 {
+	return handleData.Load()
 }

@@ -177,6 +177,7 @@ func (this *VNet) Failed(data []byte, vnic ifs.IVNic, failMsg string) {
 }
 
 func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
+	protocol.AddHandleData()
 	this.resources.Logger().Trace("********** Swith Service - HandleData **********")
 	source, sourceVnet, destination, serviceName, serviceArea, _ := ifs.HeaderOf(data)
 	this.resources.Logger().Trace("** Switch       : ", this.resources.SysConfig().LocalUuid)
