@@ -2,6 +2,10 @@ package vnet
 
 import (
 	"errors"
+	"net"
+	"strconv"
+	"time"
+
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
@@ -11,9 +15,6 @@ import (
 	"github.com/saichler/layer8/go/overlay/protocol"
 	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
 	"google.golang.org/protobuf/proto"
-	"net"
-	"strconv"
-	"time"
 )
 
 const (
@@ -179,7 +180,7 @@ func (this *VNet) Failed(data []byte, vnic ifs.IVNic, failMsg string) {
 func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 	protocol.AddHandleData()
 	this.resources.Logger().Trace("********** Swith Service - HandleData **********")
-	source, sourceVnet, destination, serviceName, serviceArea, _ := ifs.HeaderOf(data)
+	source, sourceVnet, destination, serviceName, serviceArea, _, _ := ifs.HeaderOf(data)
 	this.resources.Logger().Trace("** Switch       : ", this.resources.SysConfig().LocalUuid)
 	this.resources.Logger().Trace("** Source       : ", source)
 	this.resources.Logger().Trace("** SourceVnet   : ", sourceVnet)
