@@ -237,7 +237,7 @@ func TestDestinationUnreachable(t *testing.T) {
 		return
 	}
 
-	time.Sleep(time.Second * 5)
+	time.Sleep(time.Second * 1)
 
 	handler = topo.HandlerByVnetNum(3, 2)
 
