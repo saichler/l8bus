@@ -24,10 +24,12 @@ func (this *VNet) publishRoutes() {
 	vnetUuid := this.resources.SysConfig().LocalUuid
 	nextId := this.protocol.NextMessageNumber()
 
-	routes := &types.Route{Table: this.switchTable.conns.Routes()}
+	routeTable := &types.RouteTable{Rows: this.switchTable.conns.Routes()}
+	data := &types.SystemMessage_RouteTable{RouteTable: routeTable}
+	routes := &types.SystemMessage{Action: types.SystemAction_Routes_Add, Data: data}
 
 	routesData, _ := this.protocol.CreateMessageFor("", internalS, internalA, ifs.P1,
-		ifs.Routes, vnetUuid, vnetUuid, object.New(nil, routes), false, false,
+		ifs.POST, vnetUuid, vnetUuid, object.New(nil, routes), false, false,
 		nextId, ifs.Empty, "", "", -1, "")
 
 	allExternal := this.switchTable.conns.allExternals()

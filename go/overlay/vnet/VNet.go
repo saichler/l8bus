@@ -33,7 +33,7 @@ type VNet struct {
 }
 
 func NewVNet(resources ifs.IResources) *VNet {
-	resources.Registry().Register(&types.Route{})
+	resources.Registry().Register(&types.SystemMessage{})
 	resources.Registry().Register(&types.Empty{})
 	resources.Registry().Register(&types.Top{})
 	net := &VNet{}
@@ -189,7 +189,7 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 	this.resources.Logger().Trace("** Service Area : ", serviceArea)
 
 	if serviceName == internalS && serviceArea == internalA {
-		go this.switchDataReceived(data, vnic)
+		go this.systemMessageReceived(data, vnic)
 		return
 	}
 
@@ -284,13 +284,6 @@ func (this *VNet) switchDataReceived(data []byte, vnic ifs.IVNic) {
 		return
 	}
 
-	if msg.Action() == ifs.Routes {
-		routes := pb.Element().(*types.Route)
-		added := this.switchTable.conns.addRoutes(routes.Table)
-		this.requestTop(added)
-		return
-	}
-
 	// Otherwise call the handler per the action & the type
 	if msg.Action() == ifs.Notify {
 		resp := this.resources.Services().Notify(pb, vnic, msg, false)
@@ -323,14 +316,6 @@ func (this *VNet) LocalCount() int {
 
 func (this *VNet) ExternalCount() int {
 	return len(this.switchTable.conns.external)
-}
-
-func (this *VNet) requestTop(added map[string]string) {
-	if len(added) > 0 {
-		this.resources.Logger().Info("Route Table ", this.resources.SysConfig().VnetPort, " Size is:", this.switchTable.conns.RouteTableSize(), " added ", len(added))
-		this.publishRoutes()
-		this.requestHealthSync()
-	}
 }
 
 func (this *VNet) requestHealthSync() {
