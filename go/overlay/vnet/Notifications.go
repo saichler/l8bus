@@ -24,7 +24,7 @@ func (this *VNet) publishRoutes() {
 	vnetUuid := this.resources.SysConfig().LocalUuid
 	nextId := this.protocol.NextMessageNumber()
 
-	routes := &types.Routes{Table: this.switchTable.conns.Routes()}
+	routes := &types.Route{Table: this.switchTable.conns.Routes()}
 
 	routesData, _ := this.protocol.CreateMessageFor("", internalS, internalA, ifs.P1,
 		ifs.Routes, vnetUuid, vnetUuid, object.New(nil, routes), false, false,

@@ -33,7 +33,7 @@ type VNet struct {
 }
 
 func NewVNet(resources ifs.IResources) *VNet {
-	resources.Registry().Register(&types.Routes{})
+	resources.Registry().Register(&types.Route{})
 	resources.Registry().Register(&types.Empty{})
 	resources.Registry().Register(&types.Top{})
 	net := &VNet{}
@@ -285,7 +285,7 @@ func (this *VNet) switchDataReceived(data []byte, vnic ifs.IVNic) {
 	}
 
 	if msg.Action() == ifs.Routes {
-		routes := pb.Element().(*types.Routes)
+		routes := pb.Element().(*types.Route)
 		added := this.switchTable.conns.addRoutes(routes.Table)
 		this.requestTop(added)
 		return
