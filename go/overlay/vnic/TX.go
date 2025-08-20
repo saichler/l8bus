@@ -2,24 +2,25 @@ package vnic
 
 import (
 	"errors"
+	"strconv"
+	"time"
+
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/nets"
 	"github.com/saichler/l8utils/go/utils/queues"
-	"strconv"
-	"time"
 )
 
 type TX struct {
 	vnic         *VirtualNetworkInterface
 	shuttingDown bool
 	// The incoming data queue
-	tx *queues.ByteSliceQueue
+	tx *queues.ByteQueue
 }
 
 func newTX(vnic *VirtualNetworkInterface) *TX {
 	tx := &TX{}
 	tx.vnic = vnic
-	tx.tx = queues.NewByteSliceQueue("TX", int(vnic.resources.SysConfig().TxQueueSize))
+	tx.tx = queues.NewByteQueue("TX", int(vnic.resources.SysConfig().TxQueueSize))
 	return tx
 }
 

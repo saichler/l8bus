@@ -11,13 +11,13 @@ type RX struct {
 	vnic         *VirtualNetworkInterface
 	shuttingDown bool
 	// The incoming data queue
-	rx *queues.ByteSliceQueue
+	rx *queues.ByteQueue
 }
 
 func newRX(vnic *VirtualNetworkInterface) *RX {
 	rx := &RX{}
 	rx.vnic = vnic
-	rx.rx = queues.NewByteSliceQueue("RX", int(vnic.resources.SysConfig().RxQueueSize))
+	rx.rx = queues.NewByteQueue("RX", int(vnic.resources.SysConfig().RxQueueSize))
 	return rx
 }
 
