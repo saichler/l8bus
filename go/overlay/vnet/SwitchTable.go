@@ -1,22 +1,28 @@
 package vnet
 
 import (
+	"time"
+
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
-	"time"
 )
 
 type SwitchTable struct {
 	conns         *Connections
+	services      *Services
+	routeTable    *RouteTable
 	switchService *VNet
 	desc          string
 }
 
 func newSwitchTable(switchService *VNet) *SwitchTable {
 	switchTable := &SwitchTable{}
-	switchTable.conns = newConnections(switchService.resources.SysConfig().LocalUuid, switchService.resources.Logger())
+	vnetUuid := switchService.resources.SysConfig().LocalUuid
+	switchTable.routeTable = newRouteTable(vnetUuid)
+	switchTable.conns = newConnections(vnetUuid, switchTable.routeTable, switchService.resources.Logger())
+	switchTable.services = newServices(switchTable.routeTable)
 	switchTable.switchService = switchService
 	switchTable.desc = "SwitchTable (" + switchService.resources.SysConfig().LocalUuid + ") - "
 	go switchTable.monitor()
@@ -82,21 +88,40 @@ func (this *SwitchTable) newHealth(config *types.SysConfig) *types.Health {
 		hp.StartTime = time.Now().UnixMilli()
 		hp.ZUuid = config.LocalUuid
 	}
+	sd := &types.ServiceData{ServiceName: health.ServiceName, ServiceArea: 0, ServiceUuid: hp.AUuid}
+	this.services.addService(sd)
+	for k, v := range hp.Services.ServiceToAreas {
+		for k2, _ := range v.Areas {
+			sd = &types.ServiceData{ServiceName: k, ServiceArea: k2, ServiceUuid: hp.AUuid}
+			this.services.addService(sd)
+		}
+	}
+
 	return hp
 }
 
-func (this *SwitchTable) connectionsForService(serviceName string, serviceArea byte, sourceSwitch string) map[string]ifs.IVNic {
-	h := health.Health(this.switchService.resources)
-	uuidsMap := h.Uuids(serviceName, serviceArea)
-	result := make(map[string]ifs.IVNic)
+func (this *SwitchTable) connectionsForService(serviceName string, serviceArea byte, sourceSwitch string, mode ifs.MulticastMode) map[string]ifs.IVNic {
 	isHope0 := this.switchService.resources.SysConfig().LocalUuid == sourceSwitch
-	for uuid, _ := range uuidsMap {
-		usedUuid, vnic := this.conns.getConnection(uuid, isHope0)
-		if vnic != nil {
+	result := make(map[string]ifs.IVNic)
+	switch mode {
+	case ifs.M_All:
+		uuidMap := this.services.serviceUuids(serviceName, serviceArea)
+		for uuid, _ := range uuidMap {
+			usedUuid, vnic := this.conns.getConnection(uuid, isHope0)
+			if vnic != nil {
+				result[usedUuid] = vnic
+			}
+		}
+		return result
+	default:
+		uuid := this.services.serviceFor(serviceName, serviceArea, sourceSwitch, mode)
+		if uuid != "" {
+			usedUuid, vnic := this.conns.getConnection(uuid, isHope0)
 			result[usedUuid] = vnic
+			return result
 		}
 	}
-	return result
+	return this.connectionsForService(serviceName, serviceArea, sourceSwitch, ifs.M_All)
 }
 
 func (this *SwitchTable) shutdown() {

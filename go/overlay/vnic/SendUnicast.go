@@ -8,19 +8,31 @@ import (
 
 func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, serviceArea byte,
 	action ifs.Action, any interface{}) error {
+	return this.unicast(destination, serviceName, serviceArea, action, any, ifs.P8, ifs.M_All)
+}
+
+func (this *VirtualNetworkInterface) unicast(destination, serviceName string, serviceArea byte,
+	action ifs.Action, any interface{}, priority ifs.Priority, multicastMode ifs.MulticastMode) error {
+
 	if destination == "" {
 		destination = ifs.DESTINATION_Single
 	}
+
 	elems, err := createElements(any, this.resources)
 	if err != nil {
 		return err
 	}
-	return this.components.TX().Unicast(destination, serviceName, serviceArea, action, elems, 0,
+	return this.components.TX().Unicast(destination, serviceName, serviceArea, action, elems, priority, multicastMode,
 		false, false, this.protocol.NextMessageNumber(), ifs.Empty, "", "", -1, "")
 }
 
 func (this *VirtualNetworkInterface) Request(destination, serviceName string, serviceArea byte,
 	action ifs.Action, any interface{}, tokens ...string) ifs.IElements {
+	return this.request(destination, serviceName, serviceArea, action, any, ifs.P8, ifs.M_All)
+}
+
+func (this *VirtualNetworkInterface) request(destination, serviceName string, serviceArea byte,
+	action ifs.Action, any interface{}, priority ifs.Priority, multicastMode ifs.MulticastMode, tokens ...string) ifs.IElements {
 
 	if destination == "" {
 		destination = ifs.DESTINATION_Single
@@ -39,7 +51,7 @@ func (this *VirtualNetworkInterface) Request(destination, serviceName string, se
 	if tokens != nil && len(tokens) > 0 {
 		token = tokens[0]
 	}
-	e := this.components.TX().Unicast(destination, serviceName, serviceArea, action, elements, 0,
+	e := this.components.TX().Unicast(destination, serviceName, serviceArea, action, elements, priority, multicastMode,
 		true, false, request.MsgNum(), ifs.Empty, "", "", -1, token)
 	if e != nil {
 		return object.NewError(e.Error())

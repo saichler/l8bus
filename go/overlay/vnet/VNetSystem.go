@@ -26,16 +26,21 @@ func (this *VNet) systemMessageReceived(data []byte, vnic ifs.IVNic) {
 
 	systemMessage := pb.Element().(*types.SystemMessage)
 
-	if systemMessage.Action == types.SystemAction_Routes_Add {
-		added := this.switchTable.conns.addRoutes(systemMessage.GetRouteTable().Rows)
+	switch systemMessage.Action {
+	case types.SystemAction_Routes_Add:
+		added := this.switchTable.routeTable.addRoutes(systemMessage.GetRouteTable().Rows)
 		this.requestTop(added)
 		return
+	case types.SystemAction_Service_Add:
+		this.switchTable.services.addService(systemMessage.GetServiceData())
+		return
+	default:
+		panic("unknown system action")
 	}
 }
 
 func (this *VNet) requestTop(added map[string]string) {
 	if len(added) > 0 {
-		this.resources.Logger().Info("Route Table ", this.resources.SysConfig().VnetPort, " Size is:", this.switchTable.conns.RouteTableSize(), " added ", len(added))
 		this.publishRoutes()
 		this.requestHealthSync()
 	}

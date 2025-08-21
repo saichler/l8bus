@@ -1,11 +1,12 @@
 package vnic
 
 import (
+	"reflect"
+
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
 	"google.golang.org/protobuf/proto"
-	"reflect"
 )
 
 func (this *VirtualNetworkInterface) Forward(msg *ifs.Message, destination string) ifs.IElements {
@@ -19,7 +20,7 @@ func (this *VirtualNetworkInterface) Forward(msg *ifs.Message, destination strin
 	defer request.Unlock()
 
 	e := this.components.TX().Unicast(destination, msg.ServiceName(), msg.ServiceArea(), msg.Action(),
-		pb, 0, true, false, request.MsgNum(),
+		pb, ifs.P8, ifs.M_All, true, false, request.MsgNum(),
 		msg.Tr_State(), msg.Tr_Id(), msg.Tr_ErrMsg(), msg.Tr_StartTime(), msg.AAAId())
 	if e != nil {
 		return object.NewError(e.Error())

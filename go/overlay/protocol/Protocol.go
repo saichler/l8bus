@@ -2,9 +2,10 @@ package protocol
 
 import (
 	"encoding/base64"
+	"sync/atomic"
+
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
-	"sync/atomic"
 )
 
 var Discovery_Enabled = true
@@ -57,7 +58,7 @@ func DataFor(elems ifs.IElements, security ifs.ISecurityProvider) (string, error
 }
 
 func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceArea byte,
-	priority ifs.Priority, action ifs.Action, source, vnet string, o ifs.IElements,
+	priority ifs.Priority, multicastMode ifs.MulticastMode, action ifs.Action, source, vnet string, o ifs.IElements,
 	isRequest, isReply bool, msgNum uint32,
 	tr_state ifs.TransactionState, tr_id, tr_errMsg string, tr_start int64,
 	token string) ([]byte, error) {
@@ -80,6 +81,7 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 		serviceName,
 		serviceArea,
 		priority,
+		multicastMode,
 		action,
 		source,
 		vnet,

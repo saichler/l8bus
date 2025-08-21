@@ -1,24 +1,24 @@
 package health
 
 import (
-	"github.com/saichler/l8types/go/types"
 	"strings"
 	"sync"
+
+	"github.com/saichler/l8types/go/types"
 )
 
 type Services struct {
-	services    map[string]*ServiceAreas
-	aSide2zSide map[string]string
-	mtx         *sync.RWMutex
+	services    *sync.Map
+	aSide2zSide *sync.Map
 }
 
 type ServiceAreas struct {
 	name  string
-	areas map[byte]*ServiceArea
+	areas *sync.Map
 }
 
 type ServiceArea struct {
-	members map[string]*Member
+	members *sync.Map
 	leader  string
 }
 
@@ -28,66 +28,70 @@ type Member struct {
 
 func newServices() *Services {
 	services := &Services{}
-	services.services = make(map[string]*ServiceAreas)
-	services.aSide2zSide = make(map[string]string)
-	services.mtx = new(sync.RWMutex)
+	services.services = &sync.Map{}
+	services.aSide2zSide = &sync.Map{}
 	return services
 }
 
 func (this *Services) ZUuid(auuid string) string {
-	this.mtx.RLock()
-	defer this.mtx.RUnlock()
-	return this.aSide2zSide[auuid]
+	zuuid, ok := this.aSide2zSide.Load(auuid)
+	if ok {
+		return zuuid.(string)
+	}
+	return ""
 }
 
 func (this *Services) UUIDs(serviceName string, serviceArea byte) map[string]bool {
 	result := make(map[string]bool)
-	this.mtx.RLock()
-	defer this.mtx.RUnlock()
-	serviceAreas, ok := this.services[serviceName]
+	serviceAreas, ok := this.services.Load(serviceName)
 	if !ok {
 		return result
 	}
-	area, ok := serviceAreas.areas[serviceArea]
+	area, ok := serviceAreas.(*ServiceAreas).areas.Load(serviceArea)
 	if !ok {
 		return result
 	}
-	for uuid, _ := range area.members {
-		if uuid == area.leader {
-			result[uuid] = true
+
+	svArea := area.(*ServiceArea)
+	svArea.members.Range(func(key, value interface{}) bool {
+		k := key.(string)
+		if k == svArea.leader {
+			result[k] = true
 		} else {
-			result[uuid] = false
+			result[k] = false
 		}
-	}
+		return true
+	})
 	return result
 }
 
 func (this *Services) Leader(serviceName string, serviceArea byte) string {
-	this.mtx.RLock()
-	defer this.mtx.RUnlock()
-	serviceAreas, ok := this.services[serviceName]
+	serviceAreas, ok := this.services.Load(serviceName)
 	if !ok {
 		return ""
 	}
-	area, ok := serviceAreas.areas[serviceArea]
+	area, ok := serviceAreas.(*ServiceAreas).areas.Load(serviceArea)
 	if !ok {
 		return ""
 	}
-	return area.leader
+	return area.(*ServiceArea).leader
 }
 
 func (this *Services) checkHealthDown(health *types.Health, areasToCalc *[]*ServiceArea) {
 	if health.Status != types.HealthState_Invalid_State &&
 		health.Status != types.HealthState_Up {
-		for _, serviceAreas := range this.services {
-			for _, area := range serviceAreas.areas {
-				_, ok := area.members[health.AUuid]
+		this.services.Range(func(key, value interface{}) bool {
+			value.(*ServiceAreas).areas.Range(func(key, value interface{}) bool {
+				serviceArea := value.(*ServiceArea)
+				_, ok := serviceArea.members.Load(health.AUuid)
 				if ok {
-					*areasToCalc = append(*areasToCalc, area)
-					delete(area.members, health.AUuid)
+					*areasToCalc = append(*areasToCalc, serviceArea)
+					serviceArea.members.Delete(health.AUuid)
 				}
-			}
-		}
+				return true
+			})
+			return true
+		})
 	}
 }
 
@@ -96,30 +100,38 @@ func (this *Services) updateServices(health *types.Health, areasToCalcLeader *[]
 		return
 	}
 	for serviceName, serviceAreas := range health.Services.ServiceToAreas {
-		_, ok := this.services[serviceName]
+		existServiceAreas, ok := this.services.Load(serviceName)
 		if !ok {
-			this.services[serviceName] = &ServiceAreas{}
-			this.services[serviceName].name = serviceName
-			this.services[serviceName].areas = make(map[byte]*ServiceArea)
+			newServiceAreas := &ServiceAreas{}
+			newServiceAreas.name = serviceName
+			newServiceAreas.areas = &sync.Map{}
+			this.services.Store(serviceName, newServiceAreas)
+			existServiceAreas = newServiceAreas
 		}
+
 		for svArea, _ := range serviceAreas.Areas {
 			serviceArea := byte(svArea)
-			_, ok = this.services[serviceName].areas[serviceArea]
+			existServiceArea, ok := existServiceAreas.(*ServiceAreas).areas.Load(serviceArea)
 			if !ok {
-				this.services[serviceName].areas[serviceArea] = &ServiceArea{}
-				this.services[serviceName].areas[serviceArea].members = make(map[string]*Member)
+				newServiceArea := &ServiceArea{}
+				newServiceArea.members = &sync.Map{}
+				existServiceAreas.(*ServiceAreas).areas.Store(serviceArea, newServiceArea)
+				existServiceArea = newServiceArea
 			}
 			if health.Status != types.HealthState_Up {
-				delete(this.services[serviceName].areas[serviceArea].members, health.AUuid)
+				existServiceArea.(*ServiceArea).members.Delete(health.AUuid)
 				continue
 			}
-			if this.services[serviceName].areas[serviceArea].members[health.AUuid] == nil {
-				this.services[serviceName].areas[serviceArea].members[health.AUuid] = &Member{}
+			existMember, ok := existServiceArea.(*ServiceArea).members.Load(health.AUuid)
+			if !ok {
+				newMember := &Member{}
+				existServiceArea.(*ServiceArea).members.Store(health.AUuid, newMember)
+				existMember = newMember
 			}
 			if health.StartTime != 0 {
-				this.services[serviceName].areas[serviceArea].members[health.AUuid].t = health.StartTime
+				existMember.(*Member).t = health.StartTime
 			}
-			*areasToCalcLeader = append(*areasToCalcLeader, this.services[serviceName].areas[serviceArea])
+			*areasToCalcLeader = append(*areasToCalcLeader, existServiceArea.(*ServiceArea))
 		}
 	}
 }
@@ -127,11 +139,8 @@ func (this *Services) updateServices(health *types.Health, areasToCalcLeader *[]
 func (this *Services) Update(health *types.Health) {
 	areasToCalcLeader := make([]*ServiceArea, 0)
 
-	this.mtx.Lock()
-	defer this.mtx.Unlock()
-
 	if health.AUuid != "" && health.ZUuid != "" {
-		this.aSide2zSide[health.AUuid] = health.ZUuid
+		this.aSide2zSide.Store(health.AUuid, health.ZUuid)
 	}
 	this.checkHealthDown(health, &areasToCalcLeader)
 	this.updateServices(health, &areasToCalcLeader)
@@ -143,7 +152,9 @@ func (this *Services) Update(health *types.Health) {
 func calcLeader(serviceArea *ServiceArea) {
 	var minTime int64 = -1
 	serviceArea.leader = ""
-	for uuid, member := range serviceArea.members {
+	serviceArea.members.Range(func(key, value interface{}) bool {
+		uuid := key.(string)
+		member := value.(*Member)
 		if minTime == -1 || member.t < minTime {
 			minTime = member.t
 			serviceArea.leader = uuid
@@ -152,21 +163,24 @@ func calcLeader(serviceArea *ServiceArea) {
 				serviceArea.leader = uuid
 			}
 		}
-	}
+		return true
+	})
 }
 
 func (this *Services) AllServices() *types.Services {
-	this.mtx.RLock()
-	defer this.mtx.RUnlock()
 	result := &types.Services{}
 	result.ServiceToAreas = make(map[string]*types.ServiceAreas)
-	for name, serviceNames := range this.services {
+	this.services.Range(func(key, value interface{}) bool {
+		name := key.(string)
+		serviceNames := value.(*ServiceAreas)
 		result.ServiceToAreas[name] = &types.ServiceAreas{}
 		result.ServiceToAreas[name].Areas = make(map[int32]bool)
-		for svArea, _ := range serviceNames.areas {
-			serviceArea := int32(svArea)
+		serviceNames.areas.Range(func(key, value interface{}) bool {
+			serviceArea := int32(key.(byte))
 			result.ServiceToAreas[name].Areas[serviceArea] = true
-		}
-	}
+			return true
+		})
+		return true
+	})
 	return result
 }

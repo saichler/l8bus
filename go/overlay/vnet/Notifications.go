@@ -13,7 +13,7 @@ func (this *VNet) PropertyChangeNotification(set *types.NotificationSet) {
 	protocol.AddPropertyChangeCalled(set, this.resources.SysConfig().LocalAlias)
 	vnetUuid := this.resources.SysConfig().LocalUuid
 	nextId := this.protocol.NextMessageNumber()
-	syncData, _ := this.protocol.CreateMessageFor("", set.ServiceName, byte(set.ServiceArea), ifs.P1,
+	syncData, _ := this.protocol.CreateMessageFor("", set.ServiceName, byte(set.ServiceArea), ifs.P1, ifs.M_All,
 		ifs.Notify, vnetUuid, vnetUuid, object.New(nil, set), false, false,
 		nextId, ifs.Empty, "", "", -1, "")
 
@@ -28,7 +28,7 @@ func (this *VNet) publishRoutes() {
 	data := &types.SystemMessage_RouteTable{RouteTable: routeTable}
 	routes := &types.SystemMessage{Action: types.SystemAction_Routes_Add, Data: data}
 
-	routesData, _ := this.protocol.CreateMessageFor("", internalS, internalA, ifs.P1,
+	routesData, _ := this.protocol.CreateMessageFor("", ifs.SysMsg, ifs.SysArea, ifs.P1, ifs.M_All,
 		ifs.POST, vnetUuid, vnetUuid, object.New(nil, routes), false, false,
 		nextId, ifs.Empty, "", "", -1, "")
 
