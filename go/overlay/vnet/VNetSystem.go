@@ -33,6 +33,9 @@ func (this *VNet) systemMessageReceived(data []byte, vnic ifs.IVNic) {
 		return
 	case types.SystemAction_Service_Add:
 		this.switchTable.services.addService(systemMessage.GetServiceData())
+		if systemMessage.Publish {
+			this.publishSystemMessage(systemMessage)
+		}
 		return
 	default:
 		panic("unknown system action")

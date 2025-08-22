@@ -37,3 +37,19 @@ func (this *VNet) publishRoutes() {
 		external.SendMessage(routesData)
 	}
 }
+
+func (this *VNet) publishSystemMessage(sysmsg *types.SystemMessage) {
+	vnetUuid := this.resources.SysConfig().LocalUuid
+	nextId := this.protocol.NextMessageNumber()
+
+	sysmsg.Publish = false
+
+	sysmsgData, _ := this.protocol.CreateMessageFor("", ifs.SysMsg, ifs.SysArea, ifs.P1, ifs.M_All,
+		ifs.POST, vnetUuid, vnetUuid, object.New(nil, sysmsg), false, false,
+		nextId, ifs.Empty, "", "", -1, "")
+
+	allExternal := this.switchTable.conns.allExternals()
+	for _, external := range allExternal {
+		external.SendMessage(sysmsgData)
+	}
+}

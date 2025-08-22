@@ -1,11 +1,12 @@
 package health
 
 import (
+	"sync"
+
 	"github.com/saichler/l8services/go/services/dcache"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
 	"github.com/saichler/reflect/go/reflect/introspecting"
-	"sync"
 )
 
 type HealthCenter struct {
@@ -154,7 +155,10 @@ func (this *HealthCenter) All() map[string]*types.Health {
 	uuids := this.healths.Collect(health)
 	result := make(map[string]*types.Health)
 	for k, v := range uuids {
-		result[k] = v.(*types.Health)
+		hp := v.(*types.Health)
+		if hp.Status != types.HealthState_Down {
+			result[k] = v.(*types.Health)
+		}
 	}
 	return result
 }
