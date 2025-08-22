@@ -88,11 +88,10 @@ func (this *SwitchTable) newHealth(config *types.SysConfig) *types.Health {
 		hp.StartTime = time.Now().UnixMilli()
 		hp.ZUuid = config.LocalUuid
 	}
-	sd := &types.ServiceData{ServiceName: health.ServiceName, ServiceArea: 0, ServiceUuid: hp.AUuid}
-	this.services.addService(sd)
+
 	for k, v := range hp.Services.ServiceToAreas {
 		for k2, _ := range v.Areas {
-			sd = &types.ServiceData{ServiceName: k, ServiceArea: k2, ServiceUuid: hp.AUuid}
+			sd := &types.ServiceData{ServiceName: k, ServiceArea: k2, ServiceUuid: hp.AUuid}
 			this.services.addService(sd)
 		}
 	}

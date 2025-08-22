@@ -2,6 +2,11 @@ package vnic
 
 import (
 	"errors"
+	"net"
+	"os"
+	"sync"
+	"time"
+
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
 	"github.com/saichler/l8utils/go/utils/strings"
@@ -9,10 +14,6 @@ import (
 	"github.com/saichler/layer8/go/overlay/plugins"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	requests2 "github.com/saichler/layer8/go/overlay/vnic/requests"
-	"net"
-	"os"
-	"sync"
-	"time"
 )
 
 type VirtualNetworkInterface struct {
@@ -98,7 +99,6 @@ func (this *VirtualNetworkInterface) connect() error {
 		// via 172.1.1.1
 		subnet := protocol.IpSegment.ExternalSubnet()
 		destination = subnet + ".1"
-
 	}
 	this.resources.Logger().Info("Trying to connect to vnet at IP - ", destination)
 	// Try to dial to the switch
@@ -110,6 +110,7 @@ func (this *VirtualNetworkInterface) connect() error {
 	if this.resources.SysConfig().LocalUuid == "" {
 		panic("Couldn't connect")
 	}
+	this.syncServicesWithConfig()
 	err = this.resources.Security().ValidateConnection(conn, this.resources.SysConfig())
 	if err != nil {
 		return errors.New("Error validating connection: " + err.Error())
@@ -118,6 +119,25 @@ func (this *VirtualNetworkInterface) connect() error {
 	this.resources.SysConfig().Address = conn.LocalAddr().String()
 	this.resources.Logger().Info("Connected!")
 	return nil
+}
+
+func (this *VirtualNetworkInterface) syncServicesWithConfig() {
+	s1 := this.resources.Services().Services()
+	s2 := this.resources.SysConfig().Services
+	if s2 == nil {
+		this.resources.SysConfig().Services = s1
+		return
+	}
+	for k, v := range s1.ServiceToAreas {
+		for k1, _ := range v.Areas {
+			_, ok := s2.ServiceToAreas[k]
+			if !ok {
+				s2.ServiceToAreas[k] = &types.ServiceAreas{}
+				s2.ServiceToAreas[k].Areas = make(map[int32]bool)
+			}
+			s2.ServiceToAreas[k].Areas[k1] = true
+		}
+	}
 }
 
 func (this *VirtualNetworkInterface) receiveConnection() {
