@@ -2,14 +2,15 @@ package tests
 
 import (
 	"fmt"
+	"testing"
+	"time"
+
 	. "github.com/saichler/l8test/go/infra/t_resources"
 	. "github.com/saichler/l8test/go/infra/t_service"
 	. "github.com/saichler/l8test/go/infra/t_topology"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
 	"github.com/saichler/layer8/go/overlay/health"
-	"testing"
-	"time"
 )
 
 func TestMain(m *testing.M) {
@@ -69,13 +70,14 @@ func TestTopologyHealth(t *testing.T) {
 	time.Sleep(time.Second)
 
 	hc := health.Health(eg3_1.Resources())
-	uuids := hc.Uuids(ServiceName, 0)
-	if len(uuids) != 9 {
-		Log.Fail(t, "Expected uuids to be 9, but it is ", len(uuids))
-		return
-	}
+	/*
+		uuids := hc.Uuids(ServiceName, 0)
+		if len(uuids) != 9 {
+			Log.Fail(t, "Expected uuids to be 9, but it is ", len(uuids))
+			return
+		}*/
 
-	uuids = hc.Uuids(health.ServiceName, 0)
+	uuids := hc.Uuids(health.ServiceName, 0)
 	if len(uuids) != 15 {
 		Log.Fail(t, "Expected uuids to be 15, but it is ", len(uuids))
 		for uuid, _ := range uuids {

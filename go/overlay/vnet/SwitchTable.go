@@ -116,8 +116,12 @@ func (this *SwitchTable) connectionsForService(serviceName string, serviceArea b
 	default:
 		uuid := this.services.serviceFor(serviceName, serviceArea, sourceSwitch, mode)
 		if uuid != "" {
-			usedUuid, vnic := this.conns.getConnection(uuid, isHope0)
-			result[usedUuid] = vnic
+			usedUuid, vnic := this.conns.getConnection(uuid, true)
+			if vnic != nil {
+				result[usedUuid] = vnic
+			} else {
+				this.switchService.resources.Logger().Error("Cannot find vnic for uuid:", uuid, ":", usedUuid)
+			}
 			return result
 		}
 	}
