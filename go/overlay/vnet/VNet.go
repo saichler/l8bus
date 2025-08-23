@@ -14,7 +14,6 @@ import (
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
-	"google.golang.org/protobuf/proto"
 )
 
 type VNet struct {
@@ -234,21 +233,13 @@ func (this *VNet) uniCastToPorts(connections map[string]ifs.IVNic, data []byte) 
 	}
 }
 
-func (this *VNet) publish(pb proto.Message) {
-
-}
-
 func (this *VNet) ShutdownVNic(vnic ifs.IVNic) {
-	h := health.Health(this.resources)
 	uuid := vnic.Resources().SysConfig().RemoteUuid
-	hp := h.Health(uuid)
-	if hp.Status != types.HealthState_Down {
-		this.resources.Logger().Info("Update health status to Down")
-		hp.Status = types.HealthState_Down
-		h.Update(hp, true)
-		this.sendHealth(hp)
-	}
-	this.resources.Logger().Info("Shutdown complete ", vnic.Resources().SysConfig().LocalAlias)
+	removed := map[string]string{uuid: ""}
+	this.switchTable.routeTable.removeRoutes(removed)
+	this.switchTable.services.removeService(removed)
+	this.removeHealth(removed)
+	this.publishRemovedRoutes(removed)
 }
 
 func (this *VNet) Resources() ifs.IResources {

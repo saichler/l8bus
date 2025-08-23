@@ -38,6 +38,24 @@ func (this *VNet) publishRoutes() {
 	}
 }
 
+func (this *VNet) publishRemovedRoutes(removed map[string]string) {
+	vnetUuid := this.resources.SysConfig().LocalUuid
+	nextId := this.protocol.NextMessageNumber()
+
+	routeTable := &types.RouteTable{Rows: removed}
+	data := &types.SystemMessage_RouteTable{RouteTable: routeTable}
+	routes := &types.SystemMessage{Action: types.SystemAction_Routes_Remove, Data: data}
+
+	routesData, _ := this.protocol.CreateMessageFor("", ifs.SysMsg, ifs.SysArea, ifs.P1, ifs.M_All,
+		ifs.POST, vnetUuid, vnetUuid, object.New(nil, routes), false, false,
+		nextId, ifs.Empty, "", "", -1, "")
+
+	allExternal := this.switchTable.conns.allExternals()
+	for _, external := range allExternal {
+		external.SendMessage(routesData)
+	}
+}
+
 func (this *VNet) publishSystemMessage(sysmsg *types.SystemMessage) {
 	vnetUuid := this.resources.SysConfig().LocalUuid
 	nextId := this.protocol.NextMessageNumber()

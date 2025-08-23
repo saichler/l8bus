@@ -80,24 +80,6 @@ func (this *Services) Leader(serviceName string, serviceArea byte) string {
 	return area.(*ServiceArea).leader
 }
 
-func (this *Services) checkHealthDown(health *types.Health, areasToCalc *[]*ServiceArea) {
-	if health.Status != types.HealthState_Invalid_State &&
-		health.Status != types.HealthState_Up {
-		this.services.Range(func(key, value interface{}) bool {
-			value.(*ServiceAreas).areas.Range(func(key, value interface{}) bool {
-				serviceArea := value.(*ServiceArea)
-				_, ok := serviceArea.members.Load(health.AUuid)
-				if ok {
-					*areasToCalc = append(*areasToCalc, serviceArea)
-					serviceArea.members.Delete(health.AUuid)
-				}
-				return true
-			})
-			return true
-		})
-	}
-}
-
 func (this *Services) updateServices(health *types.Health, areasToCalcLeader *[]*ServiceArea) {
 	if health.Services == nil {
 		return
@@ -141,15 +123,33 @@ func (this *Services) updateServices(health *types.Health, areasToCalcLeader *[]
 
 func (this *Services) Update(health *types.Health) {
 	areasToCalcLeader := make([]*ServiceArea, 0)
-
+	if health == nil {
+		return
+	}
 	if health.AUuid != "" && health.ZUuid != "" {
 		this.aSide2zSide.Store(health.AUuid, health.ZUuid)
 	}
-	this.checkHealthDown(health, &areasToCalcLeader)
 	this.updateServices(health, &areasToCalcLeader)
 	for _, vlan := range areasToCalcLeader {
 		this.calcLeader(vlan)
 	}
+}
+
+func (this *Services) Remove(uuid string) {
+	this.aSide2zSide.Delete(uuid)
+	this.services.Range(func(key, value interface{}) bool {
+		serviceAreas := value.(*ServiceAreas)
+		serviceAreas.areas.Range(func(key, value interface{}) bool {
+			serviceArea := value.(*ServiceArea)
+			leader := serviceArea.leader
+			serviceArea.members.Delete(uuid)
+			if uuid == leader {
+				this.calcLeader(serviceArea)
+			}
+			return true
+		})
+		return true
+	})
 }
 
 func (this *Services) calcLeader(serviceArea *ServiceArea) {

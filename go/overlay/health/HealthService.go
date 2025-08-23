@@ -47,6 +47,8 @@ func (this *HealthService) Patch(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements
 	return nil
 }
 func (this *HealthService) Delete(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
+	hp := pb.Element().(*types.Health)
+	this.healthCenter.Delete(hp, pb.Notification())
 	return nil
 }
 func (this *HealthService) GetCopy(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {

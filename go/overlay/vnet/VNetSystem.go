@@ -3,6 +3,7 @@ package vnet
 import (
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
+	"github.com/saichler/layer8/go/overlay/health"
 )
 
 func (this *VNet) systemMessageReceived(data []byte, vnic ifs.IVNic) {
@@ -29,7 +30,11 @@ func (this *VNet) systemMessageReceived(data []byte, vnic ifs.IVNic) {
 	switch systemMessage.Action {
 	case types.SystemAction_Routes_Add:
 		added := this.switchTable.routeTable.addRoutes(systemMessage.GetRouteTable().Rows)
-		this.requestTop(added)
+		this.routesAdded(added)
+		return
+	case types.SystemAction_Routes_Remove:
+		removed := this.switchTable.routeTable.removeRoutes(systemMessage.GetRouteTable().Rows)
+		this.routesRemoved(removed)
 		return
 	case types.SystemAction_Service_Add:
 		this.switchTable.services.addService(systemMessage.GetServiceData())
@@ -42,9 +47,27 @@ func (this *VNet) systemMessageReceived(data []byte, vnic ifs.IVNic) {
 	}
 }
 
-func (this *VNet) requestTop(added map[string]string) {
+func (this *VNet) routesAdded(added map[string]string) {
 	if len(added) > 0 {
 		this.publishRoutes()
 		this.requestHealthSync()
+	}
+}
+
+func (this *VNet) routesRemoved(removed map[string]string) {
+	if len(removed) > 0 {
+		this.switchTable.services.removeService(removed)
+		this.publishRemovedRoutes(removed)
+		this.removeHealth(removed)
+	}
+}
+
+func (this *VNet) removeHealth(removed map[string]string) {
+	hc := health.Health(this.resources)
+	for uuid, _ := range removed {
+		hp := hc.Health(uuid)
+		if hp != nil {
+			hc.Delete(hp, false)
+		}
 	}
 }

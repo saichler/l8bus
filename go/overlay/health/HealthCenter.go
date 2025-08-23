@@ -36,6 +36,11 @@ func (this *HealthCenter) Add(health *types.Health, isNotification bool) {
 	this.services.Update(health)
 }
 
+func (this *HealthCenter) Delete(health *types.Health, isNotification bool) {
+	this.healths.Delete(health.AUuid, isNotification)
+	this.services.Remove(health.AUuid)
+}
+
 func (this *HealthCenter) Update(health *types.Health, isNotification bool) {
 	_, err := this.healths.Update(health.AUuid, health, isNotification)
 	if err != nil {

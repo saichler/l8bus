@@ -32,6 +32,21 @@ func (this *Services) addService(data *types.ServiceData) {
 	m2.(*sync.Map).Store(data.ServiceUuid, time.Now().UnixMilli())
 }
 
+func (this *Services) removeService(removed map[string]string) {
+	for uuid, _ := range removed {
+		this.services.Range(func(key, value interface{}) bool {
+			m1 := value.(*sync.Map)
+			m1.Range(func(key, value interface{}) bool {
+				m2 := value.(*sync.Map)
+				m2.Delete(uuid)
+				return true
+			})
+			return true
+		},
+		)
+	}
+}
+
 func (this *Services) serviceUuids(serviceName string, serviceArea byte) map[string]int64 {
 	m1, ok := this.services.Load(serviceName)
 	if !ok {

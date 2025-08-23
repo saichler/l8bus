@@ -23,6 +23,26 @@ func (this *RouteTable) addRoutes(routes map[string]string) map[string]string {
 	return added
 }
 
+func (this *RouteTable) removeRoutes(toRemove map[string]string) map[string]string {
+	removed := make(map[string]string)
+	for uuid, _ := range toRemove {
+		vnetUuid, ok := this.routes.Load(uuid)
+		if ok {
+			removed[uuid] = vnetUuid.(string)
+		}
+		this.routes.Range(func(k, v interface{}) bool {
+			if uuid == v.(string) {
+				removed[k.(string)] = v.(string)
+			}
+			return true
+		})
+	}
+	for k, _ := range removed {
+		this.routes.Delete(k)
+	}
+	return removed
+}
+
 func (this *RouteTable) vnetOf(uuid string) (string, bool) {
 	vnetUuid, ok := this.routes.Load(uuid)
 	if ok {
