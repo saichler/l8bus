@@ -4,6 +4,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
 )
 
@@ -149,22 +150,27 @@ func (this *Services) Update(health *types.Health) {
 	}
 }
 
-func calcLeader(serviceArea *ServiceArea) {
+func calcLeader(serviceArea *ServiceArea, logger ifs.ILogger) {
+	if serviceArea == nil {
+		logger.Error("service area is nil, disregarding")
+		return
+	}
 	var minTime int64 = -1
-	serviceArea.leader = ""
+	newLeader := ""
 	serviceArea.members.Range(func(key, value interface{}) bool {
 		uuid := key.(string)
 		member := value.(*Member)
 		if minTime == -1 || member.t < minTime {
 			minTime = member.t
-			serviceArea.leader = uuid
+			newLeader = uuid
 		} else if member.t == minTime {
-			if strings.Compare(uuid, serviceArea.leader) == -1 {
-				serviceArea.leader = uuid
+			if strings.Compare(uuid, newLeader) == -1 {
+				newLeader = uuid
 			}
 		}
 		return true
 	})
+	serviceArea.leader = newLeader
 }
 
 func (this *Services) AllServices() *types.Services {
