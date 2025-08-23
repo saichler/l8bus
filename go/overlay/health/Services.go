@@ -11,6 +11,7 @@ import (
 type Services struct {
 	services    *sync.Map
 	aSide2zSide *sync.Map
+	logger      ifs.ILogger
 }
 
 type ServiceAreas struct {
@@ -27,10 +28,11 @@ type Member struct {
 	t int64
 }
 
-func newServices() *Services {
+func newServices(logger ifs.ILogger) *Services {
 	services := &Services{}
 	services.services = &sync.Map{}
 	services.aSide2zSide = &sync.Map{}
+	services.logger = logger
 	return services
 }
 
@@ -146,13 +148,13 @@ func (this *Services) Update(health *types.Health) {
 	this.checkHealthDown(health, &areasToCalcLeader)
 	this.updateServices(health, &areasToCalcLeader)
 	for _, vlan := range areasToCalcLeader {
-		calcLeader(vlan)
+		this.calcLeader(vlan)
 	}
 }
 
-func calcLeader(serviceArea *ServiceArea, logger ifs.ILogger) {
+func (this *Services) calcLeader(serviceArea *ServiceArea) {
 	if serviceArea == nil {
-		logger.Error("service area is nil, disregarding")
+		this.logger.Error("service area is nil, disregarding")
 		return
 	}
 	var minTime int64 = -1
