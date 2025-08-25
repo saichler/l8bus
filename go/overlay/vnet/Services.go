@@ -1,6 +1,8 @@
 package vnet
 
 import (
+	"math"
+	"strings"
 	"sync"
 	"time"
 
@@ -11,10 +13,11 @@ import (
 type Services struct {
 	services   *sync.Map
 	routeTable *RouteTable
+	roundrobin *sync.Map
 }
 
 func newServices(routeTable *RouteTable) *Services {
-	return &Services{services: &sync.Map{}, routeTable: routeTable}
+	return &Services{services: &sync.Map{}, routeTable: routeTable, roundrobin: &sync.Map{}}
 }
 
 func (this *Services) addService(data *types.ServiceData) {
@@ -100,27 +103,43 @@ func (this *Services) serviceFor(serviceName string, serviceArea byte, source st
 			return true
 		})
 	case ifs.M_Leader:
-		//@TODO - implement leader
+		minTime := int64(math.MaxInt64)
 		m2.(*sync.Map).Range(func(key, value interface{}) bool {
 			k := key.(string)
-			result = k // make sure if there is a service,use it anyway
-			if k == source {
+			v := value.(int64)
+			if v < minTime {
 				result = k
-				return false
+				minTime = v
+			} else if v == minTime {
+				if strings.Compare(result, k) == -1 {
+					result = k
+				}
 			}
 			return true
 		})
 	case ifs.M_RoundRobin:
-		//@TODO - implement roundrobin
+		svR, ok := this.roundrobin.Load(serviceName)
+		if !ok {
+			svR = &sync.Map{}
+			this.roundrobin.Store(serviceName, svR)
+		}
+		rrS := svR.(*sync.Map)
+		found := false
 		m2.(*sync.Map).Range(func(key, value interface{}) bool {
 			k := key.(string)
-			result = k // make sure if there is a service,use it anyway
-			if k == source {
-				result = k
+			result = k // make sure we have a result in anyway
+			_, ok = rrS.Load(k)
+			if !ok {
+				rrS.Store(k, true)
+				found = true
 				return false
 			}
 			return true
 		})
+		if !found {
+			rrS.Clear()
+			rrS.Store(result, true)
+		}
 	case ifs.M_All:
 		fallthrough
 	default:
