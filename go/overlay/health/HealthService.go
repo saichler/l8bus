@@ -31,12 +31,18 @@ func (this *HealthService) DeActivate() error {
 }
 
 func (this *HealthService) Post(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	hp := pb.Element().(*types.Health)
+	hp, ok := pb.Element().(*types.Health)
+	if !ok {
+		return nil
+	}
 	this.healthCenter.Add(hp, pb.Notification())
 	return nil
 }
 func (this *HealthService) Put(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	hp := pb.Element().(*types.Health)
+	hp, ok := pb.Element().(*types.Health)
+	if !ok {
+		return nil
+	}
 	this.healthCenter.Add(hp, pb.Notification())
 	this.healthCenter.healths.Sync()
 	return nil
