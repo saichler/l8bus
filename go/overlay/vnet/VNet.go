@@ -195,6 +195,9 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 		}
 		if destination == ifs.DESTINATION_Single {
 			destination = this.switchTable.services.serviceFor(serviceName, serviceArea, source, multicastMode)
+			if destination == "" {
+				this.resources.Logger().Error("Destination Service Not Found")
+			}
 		}
 		//The destination is a single port
 		_, p := this.switchTable.conns.getConnection(destination, true)

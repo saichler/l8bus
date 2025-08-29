@@ -122,6 +122,8 @@ func (this *SwitchTable) connectionsForService(serviceName string, serviceArea b
 				this.switchService.resources.Logger().Error("Cannot find vnic for uuid:", uuid, ":", usedUuid)
 			}
 			return result
+		} else {
+			this.switchService.resources.Logger().Error("Cannot find uuid for service ", serviceName, ":", serviceArea)
 		}
 	}
 	return this.connectionsForService(serviceName, serviceArea, sourceSwitch, ifs.M_All)

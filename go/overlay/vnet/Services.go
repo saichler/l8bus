@@ -153,6 +153,5 @@ func (this *Services) serviceFor(serviceName string, serviceArea byte, source st
 			return true
 		})
 	}
-
 	return result
 }
