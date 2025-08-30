@@ -1,7 +1,6 @@
 package protocol
 
 import (
-	"encoding/base64"
 	"sync/atomic"
 
 	"github.com/saichler/l8srlz/go/serialize/object"
@@ -44,12 +43,12 @@ func (this *Protocol) NextMessageNumber() uint32 {
 	return this.sequence.Add(1)
 }
 
-func DataFor(elems ifs.IElements, security ifs.ISecurityProvider) (string, error) {
+func DataFor(elems ifs.IElements, security ifs.ISecurityProvider) ([]byte, error) {
 	var data []byte
 	var err error
 
 	data, err = elems.Serialize()
-	return base64.StdEncoding.EncodeToString(data), err
+	return data, err
 }
 
 func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceArea byte,
