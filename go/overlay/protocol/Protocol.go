@@ -32,13 +32,8 @@ func (this *Protocol) ElementsOf(msg *ifs.Message) (ifs.IElements, error) {
 }
 
 func ElementsOf(msg *ifs.Message, resourcs ifs.IResources) (ifs.IElements, error) {
-
-	data, err := base64.StdEncoding.DecodeString(msg.Data())
-	if err != nil {
-		return nil, err
-	}
 	result := &object.Elements{}
-	err = result.Deserialize(data, resourcs.Registry())
+	err := result.Deserialize(msg.Data(), resourcs.Registry())
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +80,7 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 		action,
 		source,
 		vnet,
-		base64.StdEncoding.EncodeToString(data),
+		data,
 		isRequest,
 		isReply,
 		msgNum,
@@ -107,6 +102,6 @@ func (this *Protocol) CreateMessageForm(msg *ifs.Message, o ifs.IElements) ([]by
 	}
 
 	//create the wrapping message for the destination
-	msg.SetData(base64.StdEncoding.EncodeToString(data))
+	msg.SetData(data)
 	return msg.Marshal(nil, this.resources)
 }
