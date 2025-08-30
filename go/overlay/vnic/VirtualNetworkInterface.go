@@ -11,6 +11,7 @@ import (
 	"github.com/saichler/l8types/go/types"
 	"github.com/saichler/l8utils/go/utils/strings"
 	"github.com/saichler/layer8/go/overlay/health"
+	"github.com/saichler/layer8/go/overlay/metrics"
 	"github.com/saichler/layer8/go/overlay/plugins"
 	"github.com/saichler/layer8/go/overlay/protocol"
 	requests2 "github.com/saichler/layer8/go/overlay/vnic/requests"
@@ -38,8 +39,11 @@ type VirtualNetworkInterface struct {
 
 	requests *requests2.Requests
 
-	healthStatistics *HealthStatistics
-	connected        bool
+	healthStatistics  *HealthStatistics
+	connectionMetrics *metrics.ConnectionMetrics
+	circuitBreaker    *metrics.CircuitBreaker
+	metricsRegistry   *metrics.MetricsRegistry
+	connected         bool
 }
 
 func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *VirtualNetworkInterface {
@@ -54,6 +58,22 @@ func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *Virtua
 	vnic.components.addComponent(newKeepAlive(vnic))
 	vnic.requests = requests2.NewRequests()
 	vnic.healthStatistics = &HealthStatistics{}
+	
+	// Initialize metrics system
+	vnic.metricsRegistry = metrics.GetGlobalRegistry(resources.Logger())
+	
+	// Initialize connection metrics if we have a connection
+	if conn != nil {
+		remoteAddr := conn.RemoteAddr().String()
+		connectionID := ifs.NewUuid()
+		vnic.connectionMetrics = metrics.NewConnectionMetrics(connectionID, remoteAddr)
+		
+		// Initialize circuit breaker for this connection
+		cbManager := metrics.NewCircuitBreakerManager(vnic.metricsRegistry, resources.Logger())
+		cbConfig := metrics.DefaultCircuitBreakerConfig()
+		vnic.circuitBreaker = cbManager.GetOrCreate("vnic_"+connectionID, cbConfig)
+	}
+	
 	if vnic.resources.SysConfig().LocalUuid == "" {
 		vnic.resources.SysConfig().LocalUuid = ifs.NewUuid()
 	}
@@ -218,4 +238,88 @@ func (this *VirtualNetworkInterface) WaitForConnection() {
 
 func (this *VirtualNetworkInterface) Running() bool {
 	return this.running
+}
+
+// RecordMessageSent records metrics for an outgoing message
+func (this *VirtualNetworkInterface) RecordMessageSent(bytes int64) {
+	if this.connectionMetrics != nil {
+		this.connectionMetrics.RecordMessageSent(bytes)
+	}
+	
+	// Update global metrics
+	if this.metricsRegistry != nil {
+		sentCounter := this.metricsRegistry.Counter("layer8_messages_sent_total", 
+			map[string]string{"vnic_id": this.resources.SysConfig().LocalUuid})
+		sentCounter.Inc()
+		
+		bytesCounter := this.metricsRegistry.Counter("layer8_bytes_sent_total",
+			map[string]string{"vnic_id": this.resources.SysConfig().LocalUuid})
+		bytesCounter.Add(bytes)
+	}
+}
+
+// RecordMessageReceived records metrics for an incoming message
+func (this *VirtualNetworkInterface) RecordMessageReceived(bytes int64) {
+	if this.connectionMetrics != nil {
+		this.connectionMetrics.RecordMessageReceived(bytes)
+	}
+	
+	// Update global metrics
+	if this.metricsRegistry != nil {
+		receivedCounter := this.metricsRegistry.Counter("layer8_messages_received_total",
+			map[string]string{"vnic_id": this.resources.SysConfig().LocalUuid})
+		receivedCounter.Inc()
+		
+		bytesCounter := this.metricsRegistry.Counter("layer8_bytes_received_total",
+			map[string]string{"vnic_id": this.resources.SysConfig().LocalUuid})
+		bytesCounter.Add(bytes)
+	}
+}
+
+// RecordError records a connection error
+func (this *VirtualNetworkInterface) RecordError() {
+	if this.connectionMetrics != nil {
+		this.connectionMetrics.RecordError()
+	}
+	
+	if this.metricsRegistry != nil {
+		errorCounter := this.metricsRegistry.Counter("layer8_connection_errors_total",
+			map[string]string{"vnic_id": this.resources.SysConfig().LocalUuid})
+		errorCounter.Inc()
+	}
+}
+
+// RecordLatency records a latency measurement
+func (this *VirtualNetworkInterface) RecordLatency(latencyMs int64) {
+	if this.connectionMetrics != nil {
+		this.connectionMetrics.RecordLatency(latencyMs)
+	}
+	
+	if this.metricsRegistry != nil {
+		latencyHistogram := this.metricsRegistry.Histogram("layer8_message_latency_ms",
+			map[string]string{"vnic_id": this.resources.SysConfig().LocalUuid})
+		latencyHistogram.Observe(latencyMs)
+	}
+}
+
+// GetConnectionHealth returns the current connection health score
+func (this *VirtualNetworkInterface) GetConnectionHealth() int64 {
+	if this.connectionMetrics != nil {
+		return this.connectionMetrics.GetHealthScore()
+	}
+	return 100 // Default to healthy if no metrics
+}
+
+// GetCircuitBreaker returns the circuit breaker for this connection
+func (this *VirtualNetworkInterface) GetCircuitBreaker() *metrics.CircuitBreaker {
+	return this.circuitBreaker
+}
+
+// ExecuteWithCircuitBreaker executes a function with circuit breaker protection
+func (this *VirtualNetworkInterface) ExecuteWithCircuitBreaker(fn func() (interface{}, error)) (interface{}, error) {
+	if this.circuitBreaker != nil {
+		return this.circuitBreaker.Execute(fn)
+	}
+	// Fallback to direct execution if no circuit breaker
+	return fn()
 }
