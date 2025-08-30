@@ -23,8 +23,18 @@ func (egComponents *SubComponents) start() {
 }
 
 func (egComponents *SubComponents) shutdown() {
-	for _, component := range egComponents.components {
-		component.shutdown()
+	// Shutdown in specific order: TX first, then RX, then others
+	if tx := egComponents.components["TX"]; tx != nil {
+		tx.shutdown()
+	}
+	if rx := egComponents.components["RX"]; rx != nil {
+		rx.shutdown()
+	}
+	// Then shutdown remaining components
+	for name, component := range egComponents.components {
+		if name != "TX" && name != "RX" {
+			component.shutdown()
+		}
 	}
 }
 
