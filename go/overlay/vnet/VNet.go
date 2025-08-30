@@ -173,14 +173,7 @@ func (this *VNet) Failed(data []byte, vnic ifs.IVNic, failMsg string) {
 
 func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 	protocol.AddHandleData()
-	this.resources.Logger().Trace("********** Swith Service - HandleData **********")
 	source, sourceVnet, destination, serviceName, serviceArea, _, multicastMode := ifs.HeaderOf(data)
-	this.resources.Logger().Trace("** Switch       : ", this.resources.SysConfig().LocalUuid)
-	this.resources.Logger().Trace("** Source       : ", source)
-	this.resources.Logger().Trace("** SourceVnet   : ", sourceVnet)
-	this.resources.Logger().Trace("** Destination  : ", destination)
-	this.resources.Logger().Trace("** Service Name : ", serviceName)
-	this.resources.Logger().Trace("** Service Area : ", serviceArea)
 
 	if serviceName == ifs.SysMsg && serviceArea == ifs.SysArea {
 		go this.systemMessageReceived(data, vnic)
