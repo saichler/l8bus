@@ -80,8 +80,7 @@ func (this *RX) notifyRawDataListener() {
 		data := this.rx.Next()
 		// If data is not nil
 		if data != nil {
-			this.vnic.stats.RxMsgCount++
-			this.vnic.stats.RxDataCont += int64(len(data))
+			this.vnic.healthStatistics.IncrementRx(data)
 			// if there is a dataListener, this is a switch
 			if this.vnic.resources.DataListener() != nil {
 				this.vnic.resources.DataListener().HandleData(data, this.vnic)

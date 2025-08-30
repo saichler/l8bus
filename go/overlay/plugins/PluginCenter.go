@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
+	"github.com/saichler/l8utils/go/utils/strings"
 	"os"
 	"plugin"
 	"sync"
@@ -29,7 +30,7 @@ func loadPluginFile(p *types.Plugin) (*plugin.Plugin, error) {
 	if err != nil {
 		return nil, err
 	}
-	name := ifs.NewUuid() + ".so"
+	name := strings.New(ifs.NewUuid(), ".so").String()
 	err = os.WriteFile(name, data, 0777)
 	if err != nil {
 		return nil, err

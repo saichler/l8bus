@@ -5,6 +5,7 @@ import (
 
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
+	"github.com/saichler/l8utils/go/utils/strings"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
 )
@@ -24,7 +25,7 @@ func newSwitchTable(switchService *VNet) *SwitchTable {
 	switchTable.conns = newConnections(vnetUuid, switchTable.routeTable, switchService.resources.Logger())
 	switchTable.services = newServices(switchTable.routeTable)
 	switchTable.switchService = switchService
-	switchTable.desc = "SwitchTable (" + switchService.resources.SysConfig().LocalUuid + ") - "
+	switchTable.desc = strings.New("SwitchTable (", switchService.resources.SysConfig().LocalUuid, ") - ").String()
 	go switchTable.monitor()
 	return switchTable
 }

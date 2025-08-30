@@ -38,8 +38,8 @@ type VirtualNetworkInterface struct {
 
 	requests *requests2.Requests
 
-	stats     *types.HealthStats
-	connected bool
+	healthStatistics *HealthStatistics
+	connected        bool
 }
 
 func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *VirtualNetworkInterface {
@@ -53,7 +53,7 @@ func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *Virtua
 	vnic.components.addComponent(newTX(vnic))
 	vnic.components.addComponent(newKeepAlive(vnic))
 	vnic.requests = requests2.NewRequests()
-	vnic.stats = &types.HealthStats{}
+	vnic.healthStatistics = &HealthStatistics{}
 	if vnic.resources.SysConfig().LocalUuid == "" {
 		vnic.resources.SysConfig().LocalUuid = ifs.NewUuid()
 	}
@@ -76,7 +76,7 @@ func (this *VirtualNetworkInterface) Start() {
 	} else {
 		this.receiveConnection()
 	}
-	this.name = this.resources.SysConfig().LocalAlias + " -->> " + this.resources.SysConfig().RemoteAlias
+	this.name = strings.New(this.resources.SysConfig().LocalAlias, " -->> ", this.resources.SysConfig().RemoteAlias).String()
 }
 
 func (this *VirtualNetworkInterface) connectToSwitch() {
@@ -98,7 +98,7 @@ func (this *VirtualNetworkInterface) connect() error {
 		// for example if the address of the container is 172.1.1.112, the switch will be accessible
 		// via 172.1.1.1
 		subnet := protocol.IpSegment.ExternalSubnet()
-		destination = subnet + ".1"
+		destination = strings.New(subnet, ".1").String()
 	}
 	this.resources.Logger().Info("Trying to connect to vnet at IP - ", destination)
 	// Try to dial to the switch
@@ -180,11 +180,11 @@ func (this *VirtualNetworkInterface) Resources() ifs.IResources {
 }
 
 func (this *VirtualNetworkInterface) reconnect() {
+	this.connMtx.Lock()
+	defer this.connMtx.Unlock()
 	if !this.running {
 		return
 	}
-	this.connMtx.Lock()
-	defer this.connMtx.Unlock()
 	if time.Now().Unix()-this.last_reconnect_attempt < 5 {
 		return
 	}
@@ -202,10 +202,6 @@ func (this *VirtualNetworkInterface) reconnect() {
 	} else {
 		this.resources.Logger().Info("***** Reconnected to ", this.resources.SysConfig().RemoteAlias, " *****")
 	}
-}
-
-func (this *VirtualNetworkInterface) Stats() *types.HealthStats {
-	return this.stats
 }
 
 func (this *VirtualNetworkInterface) WaitForConnection() {

@@ -3,11 +3,11 @@ package vnic
 import (
 	"errors"
 	"strconv"
-	"time"
 
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/nets"
 	"github.com/saichler/l8utils/go/utils/queues"
+	"github.com/saichler/l8utils/go/utils/strings"
 )
 
 type TX struct {
@@ -63,9 +63,8 @@ func (this *TX) writeToSocket() {
 					break
 				}
 			}
-			this.vnic.stats.LastMsgTime = time.Now().UnixMilli()
-			this.vnic.stats.TxMsgCount++
-			this.vnic.stats.TxDataCount += int64(len(data))
+			this.vnic.healthStatistics.Stamp()
+			this.vnic.healthStatistics.IncrementTX(data)
 		} else {
 			// if the data is nil, break and cleanup
 			break
@@ -92,7 +91,7 @@ func (this *TX) Unicast(destination, serviceName string, serviceArea byte, actio
 	p ifs.Priority, m ifs.MulticastMode, isRequest, isReply bool, msgNum uint32,
 	tr_state ifs.TransactionState, tr_id, tr_errMsg string, tr_start int64, token string) error {
 	if len(destination) != 36 {
-		return errors.New("Invalid destination address " + destination + " size " + strconv.Itoa(len(destination)))
+		return errors.New(strings.New("Invalid destination address ", destination, " size ", strconv.Itoa(len(destination))).String())
 	}
 	return this.Multicast(destination, serviceName, serviceArea, action, any, p, m,
 		isRequest, isReply, msgNum, tr_state, tr_id, tr_errMsg, tr_start, token)

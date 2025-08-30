@@ -1,23 +1,36 @@
 package vnic
 
 import (
-	"github.com/saichler/l8types/go/ifs"
-	"github.com/saichler/l8types/go/types"
-	"github.com/saichler/layer8/go/overlay/health"
 	"os"
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
+
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types"
+	"github.com/saichler/layer8/go/overlay/health"
 )
 
+type CPUTracker struct {
+	lastProcCPU uint64
+	lastSysCPU  uint64
+	lastSample  time.Time
+	mu          sync.Mutex
+}
+
 type KeepAlive struct {
-	vnic      *VirtualNetworkInterface
-	startTime int64
+	vnic       *VirtualNetworkInterface
+	startTime  int64
+	cpuTracker *CPUTracker
 }
 
 func newKeepAlive(vnic *VirtualNetworkInterface) *KeepAlive {
-	return &KeepAlive{vnic: vnic}
+	return &KeepAlive{
+		vnic:       vnic,
+		cpuTracker: &CPUTracker{},
+	}
 }
 
 func (this *KeepAlive) start() {
@@ -45,13 +58,13 @@ func (this *KeepAlive) run() {
 
 func (this *KeepAlive) sendState() {
 	stats := &types.HealthStats{}
-	stats.TxMsgCount = this.vnic.stats.TxMsgCount
-	stats.TxDataCount = this.vnic.stats.TxDataCount
-	stats.RxMsgCount = this.vnic.stats.RxMsgCount
-	stats.RxDataCont = this.vnic.stats.RxDataCont
-	stats.LastMsgTime = time.Now().UnixMilli()
+	stats.TxMsgCount = this.vnic.healthStatistics.TxMsgCount.Load()
+	stats.TxDataCount = this.vnic.healthStatistics.TxDataCount.Load()
+	stats.RxMsgCount = this.vnic.healthStatistics.RxMsgCount.Load()
+	stats.RxDataCont = this.vnic.healthStatistics.RxDataCont.Load()
+	stats.LastMsgTime = this.vnic.healthStatistics.LastMsgTime.Load()
 	stats.MemoryUsage = memoryUsage()
-	stats.CpuUsage = cpuUsage()
+	stats.CpuUsage = this.cpuTracker.GetCPUUsage()
 
 	hp := &types.Health{}
 	hp.AUuid = this.vnic.resources.SysConfig().LocalUuid
@@ -69,7 +82,17 @@ func memoryUsage() uint64 {
 	return memStats.Alloc
 }
 
-func cpuUsage() float64 {
+func (c *CPUTracker) GetCPUUsage() float64 {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	now := time.Now()
+	// Only update CPU stats every 30 seconds to reduce syscall overhead
+	if now.Sub(c.lastSample) < 30*time.Second && c.lastSample.Unix() > 0 {
+		// Return cached calculation or 0 if no previous sample
+		return 0
+	}
+
 	procStatData, err := os.ReadFile("/proc/self/stat")
 	if err != nil {
 		return 0
@@ -82,6 +105,7 @@ func cpuUsage() float64 {
 
 	utime, _ := strconv.ParseUint(statFields[13], 10, 64)
 	stime, _ := strconv.ParseUint(statFields[14], 10, 64)
+	currentProcCPU := utime + stime
 
 	systemStatData, err := os.ReadFile("/proc/stat")
 	if err != nil {
@@ -95,18 +119,27 @@ func cpuUsage() float64 {
 		return 0
 	}
 
-	var totalCPU uint64
+	var currentSysCPU uint64
 	for i := 1; i < len(cpuFields); i++ {
 		val, _ := strconv.ParseUint(cpuFields[i], 10, 64)
-		totalCPU += val
+		currentSysCPU += val
 	}
 
-	processCPU := float64(utime + stime)
-	totalCPUFloat := float64(totalCPU)
+	var cpuPercent float64
+	// Calculate differential if we have previous values
+	if c.lastSample.Unix() > 0 {
+		procDelta := float64(currentProcCPU - c.lastProcCPU)
+		sysDelta := float64(currentSysCPU - c.lastSysCPU)
 
-	if totalCPUFloat == 0 {
-		return 0
+		if sysDelta > 0 {
+			cpuPercent = (procDelta / sysDelta) * 100.0
+		}
 	}
 
-	return (processCPU / totalCPUFloat) * 100.0
+	// Update cached values
+	c.lastProcCPU = currentProcCPU
+	c.lastSysCPU = currentSysCPU
+	c.lastSample = now
+
+	return cpuPercent
 }
