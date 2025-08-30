@@ -365,6 +365,7 @@
                 <li><a href="#architecture">Architecture</a></li>
                 <li><a href="#components">Components</a></li>
                 <li><a href="#features">Features</a></li>
+                <li><a href="#metrics">Metrics & Performance</a></li>
                 <li><a href="#topology">Network Topology</a></li>
                 <li><a href="#usage">Usage</a></li>
             </ul>
@@ -434,6 +435,14 @@
                             <li><strong>PluginCenter</strong> - Plugin management</li>
                             <li><strong>PluginService</strong> - Dynamic loading</li>
                             <li><strong>Extensions</strong> - .so file support</li>
+                        </ul>
+                    </div>
+                    <div class="component-card" style="border-top-color: #9b59b6;">
+                        <h4>Metrics System</h4>
+                        <ul>
+                            <li><strong>MetricsRegistry</strong> - Performance tracking</li>
+                            <li><strong>CircuitBreaker</strong> - Failure isolation</li>
+                            <li><strong>ConnectionHealth</strong> - Link monitoring</li>
                         </ul>
                     </div>
                 </div>
@@ -515,6 +524,100 @@
                         <h4>Health Monitoring</h4>
                         <p>Distributed health monitoring system with real-time status tracking and automatic failover capabilities.</p>
                     </div>
+
+                    <div class="feature-item">
+                        <h4>Performance Metrics</h4>
+                        <p>Comprehensive metrics collection with counters, gauges, and histograms for monitoring system performance.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <h4>Circuit Breaker</h4>
+                        <p>Advanced failure isolation with configurable thresholds and automatic recovery for resilient operations.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="metrics">
+                <h2>Metrics & Performance</h2>
+                
+                <div class="card">
+                    <h3>Advanced Monitoring System</h3>
+                    <p>Layer8 includes a comprehensive metrics collection system designed for production monitoring and performance optimization:</p>
+                </div>
+
+                <div class="card-grid">
+                    <div class="card">
+                        <h4>Health Statistics</h4>
+                        <p><strong>Location:</strong> <code>vnic/HealthStatistics.go</code></p>
+                        <p>Real-time connection statistics with atomic counters:</p>
+                        <ul>
+                            <li>TX/RX message counts</li>
+                            <li>Data throughput tracking</li>
+                            <li>Last message timestamps</li>
+                            <li>Thread-safe atomic operations</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h4>Metrics Registry</h4>
+                        <p><strong>Location:</strong> <code>metrics/MetricsCollector.go</code></p>
+                        <p>Global metrics collection with multiple metric types:</p>
+                        <ul>
+                            <li>Counters for event counting</li>
+                            <li>Gauges for current values</li>
+                            <li>Histograms for latency tracking</li>
+                            <li>Label-based metric categorization</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h4>Circuit Breaker</h4>
+                        <p><strong>Location:</strong> <code>metrics/CircuitBreaker.go</code></p>
+                        <p>Intelligent failure isolation system:</p>
+                        <ul>
+                            <li>Configurable failure thresholds</li>
+                            <li>Automatic recovery mechanisms</li>
+                            <li>Half-open state testing</li>
+                            <li>Performance-based switching</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h4>Connection Health</h4>
+                        <p><strong>Location:</strong> <code>metrics/ConnectionHealth.go</code></p>
+                        <p>Advanced connection monitoring:</p>
+                        <ul>
+                            <li>Health scoring algorithms</li>
+                            <li>Latency measurements</li>
+                            <li>Connection quality assessment</li>
+                            <li>Automated failover decisions</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Recent Performance Optimizations</h3>
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <h4>Statistics Integration</h4>
+                            <p>Added comprehensive metrics collection and health statistics for better observability and performance monitoring.</p>
+                        </div>
+
+                        <div class="feature-item">
+                            <h4>Memory Efficiency</h4>
+                            <p>Switched to []byte for better memory efficiency and reduced garbage collection overhead in message processing.</p>
+                        </div>
+
+                        <div class="feature-item">
+                            <h4>Shutdown Optimization</h4>
+                            <p>Implemented proper component shutdown ordering (TX→RX→Others) to prevent message loss during graceful shutdowns.</p>
+                        </div>
+
+                        <div class="feature-item">
+                            <h4>Leader Election</h4>
+                            <p>Enhanced service discovery with leader selection and round-robin algorithms for load balancing and high availability.</p>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -549,7 +652,8 @@
                     
                     <button class="demo-button" onclick="simulateDiscovery()">Network Discovery</button>
                     <button class="demo-button" onclick="simulateRouting()">Message Routing</button>
-                    <button class="demo-button" onclick="simulateFailover()">Health Check</button>
+                    <button class="demo-button" onclick="simulateFailover()">Health & Metrics</button>
+                    <button class="demo-button" onclick="simulateMetrics()">Performance Stats</button>
                     <button class="demo-button" onclick="clearDemo()">Clear</button>
                     
                     <div class="status-display" id="demo-status">
@@ -615,10 +719,13 @@ resources.Services().Activate("health", "HealthService", 0, resources, vnic)
                 <div class="card">
                     <h3>Dependencies</h3>
                     <div class="code-block">
+// Go 1.23.8 implementation with latest dependencies
 github.com/saichler/l8types      // Type definitions and interfaces
 github.com/saichler/l8utils      // Utility functions and resources  
 github.com/saichler/l8services   // Service framework
 github.com/saichler/l8srlz       // Serialization library
+github.com/saichler/reflect      // Model analysis tools
+github.com/google/uuid           // UUID generation
 google.golang.org/protobuf       // Protocol buffer support
                     </div>
                 </div>
@@ -661,12 +768,24 @@ google.golang.org/protobuf       // Protocol buffer support
         function simulateFailover() {
             const status = document.getElementById('demo-status');
             status.innerHTML = `
-<strong>Health Check Simulation:</strong><br>
-1. Performing health check on all registered services...<br>
-2. HealthService: UP (3 instances)<br>
-3. PluginService: UP (1 instance)<br>
-4. CustomService: DOWN (connection timeout)<br>
-5. ✓ Failed service removed from routing table
+<strong>Health Check & Metrics Simulation:</strong><br>
+1. Collecting health statistics from all VNic connections...<br>
+2. HealthService: UP (3 instances) - 1250 msgs/sec<br>
+3. PluginService: UP (1 instance) - 45 msgs/sec<br>
+4. CustomService: Circuit Breaker OPEN (5 failures)<br>
+5. ✓ Metrics updated, failed service isolated
+            `;
+        }
+
+        function simulateMetrics() {
+            const status = document.getElementById('demo-status');
+            status.innerHTML = `
+<strong>Performance Metrics Simulation:</strong><br>
+1. TX Messages: 125,847 (↑ 1,250/sec)<br>
+2. RX Messages: 125,843 (↑ 1,248/sec)<br>
+3. Data Throughput: 45.2 MB/sec<br>
+4. Connection Health Score: 98.5%<br>
+5. Circuit Breaker Status: CLOSED (healthy)
             `;
         }
 

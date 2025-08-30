@@ -102,6 +102,40 @@ Example Application
 Step by Step Application Development Guide
 TBD - work in progress.
 
+## Go Implementation
+
+This repository now includes a comprehensive Go implementation of the Layer8 overlay network in the `/go` directory. The Go implementation provides:
+
+### Core Features
+- **Virtual Network Overlay**: Complete TCP-based virtual networking layer with VNet switches and VNic interfaces
+- **Service Discovery**: UDP-based automatic peer discovery and service registration
+- **Health Monitoring**: Comprehensive health scoring system with circuit breaker patterns
+- **Metrics Collection**: Advanced performance monitoring with counters, gauges, and histograms
+- **Connection Management**: Automatic reconnection, connection pooling, and lifecycle management
+- **Message Routing**: Intelligent service-based routing with multicast and leader election support
+
+### Architecture Components
+- **VNet (Virtual Network)**: Central network switch managing connections between nodes
+- **VNic (Virtual Network Interface)**: Network interface for nodes to connect to the overlay
+- **Protocol System**: Message serialization/deserialization with sequence management
+- **Health Center**: Distributed health monitoring with service availability tracking
+- **Plugin System**: Dynamic plugin loading for extensibility
+- **Metrics System**: Real-time performance monitoring and statistics
+
+### Recent Optimizations (Latest Commits)
+- **Statistics Integration**: Added comprehensive metrics collection and health statistics
+- **Performance Improvements**: Switched to []byte for better memory efficiency
+- **Shutdown Ordering**: Improved component shutdown sequence for reliability
+- **Leader Election**: Implemented leader selection and round-robin algorithms
+
+### Dependencies
+- Go 1.23.8
+- Layer8 ecosystem libraries (l8types, l8utils, l8services, etc.)
+- Google UUID for unique identifiers
+- Protocol Buffers for serialization
+
+The Go implementation demonstrates production-ready distributed systems patterns with proper error handling, resource management, and concurrent processing.
+
 Total current codebase: 25,719 lines of code
 
 # Detail documenting is WIP...
