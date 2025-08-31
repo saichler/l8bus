@@ -39,7 +39,8 @@ func (this *VirtualNetworkInterface) request(destination, serviceName string, se
 	}
 
 	request := this.requests.NewRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid, 5, this.resources.Logger())
-
+	defer this.requests.DelRequest(request.MsgNum(), request.MsgSource())
+	
 	request.Lock()
 	defer request.Unlock()
 

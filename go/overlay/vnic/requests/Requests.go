@@ -2,11 +2,12 @@ package requests
 
 import (
 	"bytes"
-	"github.com/saichler/l8srlz/go/serialize/object"
-	"github.com/saichler/l8types/go/ifs"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/saichler/l8srlz/go/serialize/object"
+	"github.com/saichler/l8types/go/ifs"
 )
 
 type Requests struct {
@@ -56,8 +57,14 @@ func (this *Requests) GetRequest(msgNum uint32, msgSource string) *Request {
 	this.mtx.Lock()
 	defer this.mtx.Unlock()
 	request := this.pending[key]
-	delete(this.pending, key)
 	return request
+}
+
+func (this *Requests) DelRequest(msgNum uint32, msgSource string) {
+	key := requestKey(msgSource, msgNum)
+	this.mtx.Lock()
+	defer this.mtx.Unlock()
+	delete(this.pending, key)
 }
 
 func (this *Request) Lock() {
@@ -70,6 +77,10 @@ func (this *Request) Unlock() {
 
 func (this *Request) MsgNum() uint32 {
 	return this.msgNum
+}
+
+func (this *Request) MsgSource() string {
+	return this.msgSource
 }
 
 func (this *Request) Response() ifs.IElements {
