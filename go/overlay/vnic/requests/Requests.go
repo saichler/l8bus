@@ -106,6 +106,10 @@ func (this *Request) timeoutCheck() {
 }
 
 func (this *Request) SetResponse(resp ifs.IElements) {
+	//The request timeout, so do nothing
+	if this == nil {
+		return
+	}
 	this.response = resp
 	this.cond.Broadcast()
 }
