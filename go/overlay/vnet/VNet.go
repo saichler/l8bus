@@ -65,7 +65,7 @@ func (this *VNet) Start() error {
 }
 
 func (this *VNet) start(err *error) {
-	this.resources.Logger().Info("*** VNET Start Ver 1.0")
+	this.resources.Logger().Info("VNet.start: Starting VNet ")
 	if this.resources.SysConfig().VnetPort == 0 {
 		er := errors.New("Switch Port does not have a port defined")
 		err = &er
@@ -79,7 +79,6 @@ func (this *VNet) start(err *error) {
 	}
 
 	for this.running {
-		this.resources.Logger().Info("Waiting for connections...")
 		this.ready = true
 		conn, e := this.socket.Accept()
 		if e != nil && this.running {
@@ -156,7 +155,6 @@ func (this *VNet) Shutdown() {
 
 func (this *VNet) Failed(data []byte, vnic ifs.IVNic, failMsg string) {
 	msg, err := this.protocol.MessageOf(data, this.resources)
-	this.resources.Logger().Error("Failed Message ", msg.Action, ":", failMsg)
 	if err != nil {
 		this.resources.Logger().Error(err)
 		return
@@ -166,9 +164,6 @@ func (this *VNet) Failed(data []byte, vnic ifs.IVNic, failMsg string) {
 	data, _ = failMessage.Marshal(nil, this.resources)
 
 	err = vnic.SendMessage(data)
-	if err != nil {
-		this.resources.Logger().Error(err)
-	}
 }
 
 func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
@@ -188,14 +183,10 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 		}
 		if destination == ifs.DESTINATION_Single {
 			destination = this.switchTable.services.serviceFor(serviceName, serviceArea, source, multicastMode)
-			if destination == "" {
-				this.resources.Logger().Error("Destination Service Not Found")
-			}
 		}
 		//The destination is a single port
 		_, p := this.switchTable.conns.getConnection(destination, true)
 		if p == nil {
-			this.resources.Logger().Error("Unknown destination '", destination, "'")
 			this.Failed(data, vnic, strings.New("Cannot find destination port for ", destination).String())
 			return
 		}
@@ -208,7 +199,6 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 				hp := h.Health(uuid)
 				this.sendHealth(hp)
 			}
-			this.resources.Logger().Error("Unable to send to destination ", destination)
 			this.Failed(data, vnic, strings.New("Error sending data:", err.Error()).String())
 			return
 		}
@@ -223,8 +213,7 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 }
 
 func (this *VNet) uniCastToPorts(connections map[string]ifs.IVNic, data []byte) {
-	for vnicUuid, port := range connections {
-		this.resources.Logger().Trace("Sending from ", this.resources.SysConfig().LocalUuid, " to ", vnicUuid)
+	for _, port := range connections {
 		port.SendMessage(data)
 	}
 }
