@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/saichler/l8srlz/go/serialize/object"
@@ -214,15 +213,9 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 }
 
 func (this *VNet) uniCastToPorts(connections map[string]ifs.IVNic, data []byte) {
-	var wg sync.WaitGroup
-	for key, port := range connections {
-		wg.Add(1)
-		go func(key string) {
-			defer wg.Done()
-			port.SendMessage(data)
-		}(key)
+	for _, port := range connections {
+		go port.SendMessage(data)
 	}
-	wg.Wait()
 }
 
 func (this *VNet) ShutdownVNic(vnic ifs.IVNic) {
