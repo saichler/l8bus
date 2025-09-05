@@ -214,7 +214,7 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 
 func (this *VNet) uniCastToPorts(connections map[string]ifs.IVNic, data []byte) {
 	for _, port := range connections {
-		go port.SendMessage(data)
+		port.SendMessage(data)
 	}
 }
 
