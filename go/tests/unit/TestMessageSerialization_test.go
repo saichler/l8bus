@@ -25,7 +25,7 @@ func testMessageSerialization(t *testing.T) {
 		pb.MyInt32 = int32(i)
 		obj := object.New(nil, pb)
 		d, _ := p.CreateMessageFor(uuid, "HelloWorld", 1, ifs.P1, ifs.M_All, ifs.POST, uuid, uuid, obj, false, false, 120,
-			ifs.Empty, "", "", -1, "")
+			ifs.Empty, "", "", -1, -1, "")
 		msg, _ := p.MessageOf(d, res)
 		p.ElementsOf(msg)
 	}
