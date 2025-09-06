@@ -20,7 +20,7 @@ func (this *VirtualNetworkInterface) multicast(priority ifs.Priority, multicastM
 		return err
 	}
 	return this.components.TX().Multicast("", serviceName, serviceArea, action, elems, priority, multicastMode,
-		false, false, this.protocol.NextMessageNumber(), ifs.Empty, "", "", -1, "")
+		false, false, this.protocol.NextMessageNumber(), ifs.Empty, "", "", -1, -1, "")
 }
 
 func (this *VirtualNetworkInterface) multicastBatch(priority ifs.Priority, multicastMode ifs.MulticastMode, serviceName string, serviceArea byte, action ifs.Action, any interface{}) error {
@@ -29,5 +29,5 @@ func (this *VirtualNetworkInterface) multicastBatch(priority ifs.Priority, multi
 		return err
 	}
 	return this.components.TX().Multicast("", serviceName, serviceArea, action, elems, priority, multicastMode,
-		false, false, this.protocol.NextMessageNumber(), ifs.Empty, "", "", -1, "")
+		false, false, this.protocol.NextMessageNumber(), ifs.Empty, "", "", -1, -1, "")
 }

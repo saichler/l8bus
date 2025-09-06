@@ -23,24 +23,24 @@ func (this *VirtualNetworkInterface) unicast(destination, serviceName string, se
 		return err
 	}
 	return this.components.TX().Unicast(destination, serviceName, serviceArea, action, elems, priority, multicastMode,
-		false, false, this.protocol.NextMessageNumber(), ifs.Empty, "", "", -1, "")
+		false, false, this.protocol.NextMessageNumber(), ifs.Empty, "", "", -1, -1, "")
 }
 
 func (this *VirtualNetworkInterface) Request(destination, serviceName string, serviceArea byte,
-	action ifs.Action, any interface{}, tokens ...string) ifs.IElements {
-	return this.request(destination, serviceName, serviceArea, action, any, ifs.P8, ifs.M_All)
+	action ifs.Action, any interface{}, timeoutSeconds int, tokens ...string) ifs.IElements {
+	return this.request(destination, serviceName, serviceArea, action, any, ifs.P8, ifs.M_All, timeoutSeconds, tokens...)
 }
 
 func (this *VirtualNetworkInterface) request(destination, serviceName string, serviceArea byte,
-	action ifs.Action, any interface{}, priority ifs.Priority, multicastMode ifs.MulticastMode, tokens ...string) ifs.IElements {
+	action ifs.Action, any interface{}, priority ifs.Priority, multicastMode ifs.MulticastMode, timeoutInSeconds int, tokens ...string) ifs.IElements {
 
 	if destination == "" {
 		destination = ifs.DESTINATION_Single
 	}
 
-	request := this.requests.NewRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid, 5, this.resources.Logger())
+	request := this.requests.NewRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid, timeoutInSeconds, this.resources.Logger())
 	defer this.requests.DelRequest(request.MsgNum(), request.MsgSource())
-	
+
 	request.Lock()
 	defer request.Unlock()
 
@@ -53,7 +53,7 @@ func (this *VirtualNetworkInterface) request(destination, serviceName string, se
 		token = tokens[0]
 	}
 	e := this.components.TX().Unicast(destination, serviceName, serviceArea, action, elements, priority, multicastMode,
-		true, false, request.MsgNum(), ifs.Empty, "", "", -1, token)
+		true, false, request.MsgNum(), ifs.Empty, "", "", -1, int64(timeoutInSeconds), token)
 	if e != nil {
 		return object.NewError(e.Error())
 	}

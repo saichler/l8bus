@@ -235,7 +235,7 @@ func (this *VNet) requestHealthSync() {
 	nextId := this.protocol.NextMessageNumber()
 	sync, _ := this.protocol.CreateMessageFor("", health.ServiceName, 0, ifs.P1, ifs.M_All,
 		ifs.Sync, vnetUuid, vnetUuid, object.New(nil, nil), false, false,
-		nextId, ifs.Empty, "", "", -1, "")
+		nextId, ifs.Empty, "", "", -1, -1, "")
 	go this.HandleData(sync, nil)
 }
 
@@ -244,6 +244,6 @@ func (this *VNet) sendHealth(hp *types.Health) {
 	nextId := this.protocol.NextMessageNumber()
 	h, _ := this.protocol.CreateMessageFor("", health.ServiceName, 0, ifs.P1, ifs.M_All,
 		ifs.POST, vnetUuid, vnetUuid, object.New(nil, hp), false, false,
-		nextId, ifs.Empty, "", "", -1, "")
+		nextId, ifs.Empty, "", "", -1, -1, "")
 	go this.HandleData(h, nil)
 }

@@ -16,7 +16,12 @@ func (this *VirtualNetworkInterface) Forward(msg *ifs.Message, destination strin
 		return object.NewError(err.Error())
 	}
 
-	request := this.requests.NewRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid, 5, this.resources.Logger())
+	timeout := 15
+	if msg.Tr_Timeout() > 0 {
+		timeout = int(msg.Tr_Timeout())
+	}
+
+	request := this.requests.NewRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid, timeout, this.resources.Logger())
 	defer this.requests.DelRequest(request.MsgNum(), request.MsgSource())
 
 	request.Lock()
@@ -24,7 +29,7 @@ func (this *VirtualNetworkInterface) Forward(msg *ifs.Message, destination strin
 
 	e := this.components.TX().Unicast(destination, msg.ServiceName(), msg.ServiceArea(), msg.Action(),
 		pb, ifs.P8, ifs.M_All, true, false, request.MsgNum(),
-		msg.Tr_State(), msg.Tr_Id(), msg.Tr_ErrMsg(), msg.Tr_StartTime(), msg.AAAId())
+		msg.Tr_State(), msg.Tr_Id(), msg.Tr_ErrMsg(), msg.Tr_StartTime(), msg.Tr_Timeout(), msg.AAAId())
 	if e != nil {
 		return object.NewError(e.Error())
 	}

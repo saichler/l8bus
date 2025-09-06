@@ -67,7 +67,7 @@ func (this *HealthService) Failed(pb ifs.IElements, vnic ifs.IVNic, msg *ifs.Mes
 	return nil
 }
 
-func (this *HealthService) TransactionMethod() ifs.ITransactionMethod {
+func (this *HealthService) TransactionConfig() ifs.ITransactionConfig {
 	return nil
 }
 

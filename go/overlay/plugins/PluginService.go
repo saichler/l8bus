@@ -51,7 +51,7 @@ func (this *PluginService) Failed(pb ifs.IElements, vnic ifs.IVNic, msg *ifs.Mes
 	return nil
 }
 
-func (this *PluginService) TransactionMethod() ifs.ITransactionMethod {
+func (this *PluginService) TransactionConfig() ifs.ITransactionConfig {
 	return nil
 }
 

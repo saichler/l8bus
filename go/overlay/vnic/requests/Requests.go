@@ -18,7 +18,7 @@ type Request struct {
 	cond           *sync.Cond
 	msgSource      string
 	msgNum         uint32
-	timeout        int64
+	timeout        time.Duration
 	timeoutReached bool
 	response       ifs.IElements
 	log            ifs.ILogger
@@ -31,11 +31,11 @@ func NewRequests() *Requests {
 	return this
 }
 
-func (this *Requests) NewRequest(msgNum uint32, msgSource string, timeout int64, log ifs.ILogger) *Request {
+func (this *Requests) NewRequest(msgNum uint32, msgSource string, timeoutInSeconds int, log ifs.ILogger) *Request {
 	request := &Request{}
 	request.msgNum = msgNum
 	request.msgSource = msgSource
-	request.timeout = timeout
+	request.timeout = time.Duration(timeoutInSeconds)
 	request.cond = sync.NewCond(&sync.Mutex{})
 	request.log = log
 
@@ -95,7 +95,7 @@ func (this *Request) Wait() {
 }
 
 func (this *Request) timeoutCheck() {
-	time.Sleep(time.Second * time.Duration(this.timeout))
+	time.Sleep(time.Second * this.timeout)
 	this.Lock()
 	defer this.Unlock()
 	if this.response == nil {
