@@ -44,6 +44,7 @@ type VirtualNetworkInterface struct {
 	circuitBreaker    *metrics.CircuitBreaker
 	metricsRegistry   *metrics.MetricsRegistry
 	connected         bool
+	serviceBatchs     *sync.Map
 }
 
 func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *VirtualNetworkInterface {
@@ -58,22 +59,22 @@ func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *Virtua
 	vnic.components.addComponent(newKeepAlive(vnic))
 	vnic.requests = requests2.NewRequests()
 	vnic.healthStatistics = &HealthStatistics{}
-	
+
 	// Initialize metrics system
 	vnic.metricsRegistry = metrics.GetGlobalRegistry(resources.Logger())
-	
+
 	// Initialize connection metrics if we have a connection
 	if conn != nil {
 		remoteAddr := conn.RemoteAddr().String()
 		connectionID := ifs.NewUuid()
 		vnic.connectionMetrics = metrics.NewConnectionMetrics(connectionID, remoteAddr)
-		
+
 		// Initialize circuit breaker for this connection
 		cbManager := metrics.NewCircuitBreakerManager(vnic.metricsRegistry, resources.Logger())
 		cbConfig := metrics.DefaultCircuitBreakerConfig()
 		vnic.circuitBreaker = cbManager.GetOrCreate(strings.New("vnic_", connectionID).String(), cbConfig)
 	}
-	
+
 	if vnic.resources.SysConfig().LocalUuid == "" {
 		vnic.resources.SysConfig().LocalUuid = ifs.NewUuid()
 	}
@@ -245,13 +246,13 @@ func (this *VirtualNetworkInterface) RecordMessageSent(bytes int64) {
 	if this.connectionMetrics != nil {
 		this.connectionMetrics.RecordMessageSent(bytes)
 	}
-	
+
 	// Update global metrics
 	if this.metricsRegistry != nil {
-		sentCounter := this.metricsRegistry.Counter("layer8_messages_sent_total", 
+		sentCounter := this.metricsRegistry.Counter("layer8_messages_sent_total",
 			map[string]string{"vnic_id": this.resources.SysConfig().LocalUuid})
 		sentCounter.Inc()
-		
+
 		bytesCounter := this.metricsRegistry.Counter("layer8_bytes_sent_total",
 			map[string]string{"vnic_id": this.resources.SysConfig().LocalUuid})
 		bytesCounter.Add(bytes)
@@ -263,13 +264,13 @@ func (this *VirtualNetworkInterface) RecordMessageReceived(bytes int64) {
 	if this.connectionMetrics != nil {
 		this.connectionMetrics.RecordMessageReceived(bytes)
 	}
-	
+
 	// Update global metrics
 	if this.metricsRegistry != nil {
 		receivedCounter := this.metricsRegistry.Counter("layer8_messages_received_total",
 			map[string]string{"vnic_id": this.resources.SysConfig().LocalUuid})
 		receivedCounter.Inc()
-		
+
 		bytesCounter := this.metricsRegistry.Counter("layer8_bytes_received_total",
 			map[string]string{"vnic_id": this.resources.SysConfig().LocalUuid})
 		bytesCounter.Add(bytes)
@@ -281,7 +282,7 @@ func (this *VirtualNetworkInterface) RecordError() {
 	if this.connectionMetrics != nil {
 		this.connectionMetrics.RecordError()
 	}
-	
+
 	if this.metricsRegistry != nil {
 		errorCounter := this.metricsRegistry.Counter("layer8_connection_errors_total",
 			map[string]string{"vnic_id": this.resources.SysConfig().LocalUuid})
@@ -294,7 +295,7 @@ func (this *VirtualNetworkInterface) RecordLatency(latencyMs int64) {
 	if this.connectionMetrics != nil {
 		this.connectionMetrics.RecordLatency(latencyMs)
 	}
-	
+
 	if this.metricsRegistry != nil {
 		latencyHistogram := this.metricsRegistry.Histogram("layer8_message_latency_ms",
 			map[string]string{"vnic_id": this.resources.SysConfig().LocalUuid})
@@ -322,4 +323,12 @@ func (this *VirtualNetworkInterface) ExecuteWithCircuitBreaker(fn func() (interf
 	}
 	// Fallback to direct execution if no circuit breaker
 	return fn()
+}
+
+func (this *VirtualNetworkInterface) RegisterServiceBatch(serviceName string, serviceArea byte, mode ifs.MulticastMode, interval int) {
+	if this.serviceBatchs == nil {
+		this.serviceBatchs = &sync.Map{}
+	}
+	key := BatchKey(serviceName, serviceArea, mode)
+	this.serviceBatchs.Store(key, newTxServiceBatch(serviceName, serviceArea, mode, interval, this))
 }

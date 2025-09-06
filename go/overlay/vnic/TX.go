@@ -2,7 +2,6 @@ package vnic
 
 import (
 	"errors"
-	"sync"
 
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/nets"
@@ -14,8 +13,7 @@ type TX struct {
 	vnic         *VirtualNetworkInterface
 	shuttingDown bool
 	// The incoming data queue
-	tx      *queues.ByteQueue
-	buffers *sync.Map
+	tx *queues.ByteQueue
 }
 
 func newTX(vnic *VirtualNetworkInterface) *TX {

@@ -15,7 +15,7 @@ type txServiceBatch struct {
 	queue       []*txServiceBatchEntry
 	interval    time.Duration
 	mode        ifs.MulticastMode
-	vnic        ifs.IVNic
+	vnic        *VirtualNetworkInterface
 }
 
 type txServiceBatchEntry struct {
@@ -23,13 +23,16 @@ type txServiceBatchEntry struct {
 	action  ifs.Action
 }
 
-func newTxServiceBatch(serviceName string, serviceArea byte, mode ifs.MulticastMode, interval int) *txServiceBatch {
+func newTxServiceBatch(serviceName string, serviceArea byte, mode ifs.MulticastMode, interval int, vnic *VirtualNetworkInterface) *txServiceBatch {
 	tsb := &txServiceBatch{}
 	tsb.mtx = &sync.Mutex{}
 	tsb.queue = make([]*txServiceBatchEntry, 0)
 	tsb.serviceName = serviceName
 	tsb.serviceArea = serviceArea
+	tsb.mode = mode
+	tsb.vnic = vnic
 	tsb.interval = time.Duration(interval)
+	go tsb.watch()
 	return tsb
 }
 
@@ -51,7 +54,7 @@ func (this *txServiceBatch) flush() {
 	items := this.queue
 	this.queue = make([]*txServiceBatchEntry, 0)
 	defer this.mtx.Unlock()
-	if len(this.queue) > 0 {
+	if len(items) > 0 {
 		var list []interface{}
 		lastAction := -1
 		for _, item := range items {
@@ -71,22 +74,9 @@ func (this *txServiceBatch) flush() {
 }
 
 func (this *txServiceBatch) send(action ifs.Action, elements []interface{}) {
-	switch this.mode {
-	case ifs.M_Leader:
-		this.vnic.Leader(this.serviceName, this.serviceArea, action, elements)
-	case ifs.M_Proximity:
-		this.vnic.Proximity(this.serviceName, this.serviceArea, action, elements)
-	case ifs.M_RoundRobin:
-		this.vnic.RoundRobin(this.serviceName, this.serviceArea, action, elements)
-	case ifs.M_Local:
-		this.vnic.Local(this.serviceName, this.serviceArea, action, elements)
-	case ifs.M_All:
-		this.vnic.Multicast(this.serviceName, this.serviceArea, action, elements)
-	default:
-		panic("Unsupported mode")
-	}
+	this.vnic.multicastBatch(ifs.P7, this.mode, this.serviceName, this.serviceArea, action, elements)
 }
 
-func BufferKey(serviceName string, serviceArea byte, mode ifs.MulticastMode) string {
+func BatchKey(serviceName string, serviceArea byte, mode ifs.MulticastMode) string {
 	return strings.New(serviceName, serviceArea, mode).String()
 }
