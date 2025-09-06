@@ -39,7 +39,7 @@ func loadPluginFile(p *types.Plugin) (*plugin.Plugin, error) {
 
 	pluginFile, err = plugin.Open(name)
 	if err != nil {
-		return nil, errors.New("failed to load plugin #1 " + err.Error())
+		return nil, errors.New(strings.New("failed to load plugin #1 ", err.Error()).String())
 	}
 
 	loadedPlugins[md5Hash] = pluginFile

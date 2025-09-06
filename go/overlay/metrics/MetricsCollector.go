@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8utils/go/utils/strings"
 )
 
 // MetricType represents different types of metrics
@@ -133,7 +134,7 @@ func (r *MetricsRegistry) GetAllMetrics() map[string]*Metric {
 func (r *MetricsRegistry) buildKey(name string, labels map[string]string) string {
 	key := name
 	for k, v := range labels {
-		key += "_" + k + "_" + v
+		key = strings.New(key, "_", k, "_", v).String()
 	}
 	return key
 }

@@ -7,8 +7,10 @@ import (
 	"net/http"
 	"regexp"
 	"runtime"
-	"strings"
+	stdstrings "strings"
 	"time"
+
+	"github.com/saichler/l8utils/go/utils/strings"
 )
 
 var IpSegment = newIpAddressSegment()
@@ -77,7 +79,7 @@ func (ias *IPSegment) ExternalSubnet() string {
 // substr the subnet from an ip
 // @TODO - add support for ipv6
 func Subnet(ip string) string {
-	index2 := strings.LastIndex(ip, ".")
+	index2 := stdstrings.LastIndex(ip, ".")
 	if index2 != -1 {
 		return ip[0:index2]
 	}
@@ -85,11 +87,11 @@ func Subnet(ip string) string {
 }
 
 func IP(ip string) string {
-	index := strings.Index(ip, "/")
+	index := stdstrings.Index(ip, "/")
 	if index != -1 {
 		return ip[0:index]
 	}
-	index = strings.LastIndex(ip, ":")
+	index = stdstrings.LastIndex(ip, ":")
 	if index != -1 {
 		return ip[0:index]
 	}
@@ -104,7 +106,7 @@ func LocalIps() (map[string]string, error) {
 
 	netIfs, err := net.Interfaces()
 	if err != nil {
-		return nil, errors.New("Could not fetch local interfaces: " + err.Error())
+		return nil, errors.New(strings.New("Could not fetch local interfaces: ", err.Error()).String())
 	}
 	result := make(map[string]string)
 	for _, netIf := range netIfs {
@@ -115,7 +117,7 @@ func LocalIps() (map[string]string, error) {
 		}
 		for _, addr := range addrs {
 			addrString := addr.String()
-			index := strings.Index(addrString, "/")
+			index := stdstrings.Index(addrString, "/")
 			result[addrString[0:index]] = netIf.Name
 		}
 	}
@@ -201,7 +203,7 @@ func (ias *IPSegment) queryExternalIPService(serviceURL string) (string, error) 
 	}
 
 	// Clean and validate IP address
-	ip := strings.TrimSpace(string(body))
+	ip := stdstrings.TrimSpace(string(body))
 	if ias.isValidIP(ip) {
 		return ip, nil
 	}
@@ -268,7 +270,7 @@ func (ias *IPSegment) isPhysicalInterface(name string) bool {
 	}
 
 	for _, prefix := range physicalPrefixes {
-		if strings.HasPrefix(name, prefix) {
+		if stdstrings.HasPrefix(name, prefix) {
 			return true
 		}
 	}
@@ -337,7 +339,7 @@ func (ias *IPSegment) isValidIP(ip string) bool {
 // reconstructIPFromSubnet reconstructs a full IP from subnet (fallback method)
 func (ias *IPSegment) reconstructIPFromSubnet(subnet string) (string, error) {
 	for ip := range ias.ip2IfName {
-		if strings.HasPrefix(ip, subnet) {
+		if stdstrings.HasPrefix(ip, subnet) {
 			return IP(ip), nil
 		}
 	}

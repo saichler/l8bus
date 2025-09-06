@@ -2,7 +2,7 @@ package vnic
 
 import (
 	"errors"
-	"strconv"
+	"sync"
 
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/nets"
@@ -14,7 +14,8 @@ type TX struct {
 	vnic         *VirtualNetworkInterface
 	shuttingDown bool
 	// The incoming data queue
-	tx *queues.ByteQueue
+	tx      *queues.ByteQueue
+	buffers *sync.Map
 }
 
 func newTX(vnic *VirtualNetworkInterface) *TX {
@@ -91,7 +92,7 @@ func (this *TX) Unicast(destination, serviceName string, serviceArea byte, actio
 	p ifs.Priority, m ifs.MulticastMode, isRequest, isReply bool, msgNum uint32,
 	tr_state ifs.TransactionState, tr_id, tr_errMsg string, tr_start int64, token string) error {
 	if len(destination) != 36 {
-		return errors.New(strings.New("Invalid destination address ", destination, " size ", strconv.Itoa(len(destination))).String())
+		return errors.New(strings.New("Invalid destination address ", destination, " size ", len(destination)).String())
 	}
 	return this.Multicast(destination, serviceName, serviceArea, action, any, p, m,
 		isRequest, isReply, msgNum, tr_state, tr_id, tr_errMsg, tr_start, token)

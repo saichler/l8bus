@@ -71,7 +71,7 @@ func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *Virtua
 		// Initialize circuit breaker for this connection
 		cbManager := metrics.NewCircuitBreakerManager(vnic.metricsRegistry, resources.Logger())
 		cbConfig := metrics.DefaultCircuitBreakerConfig()
-		vnic.circuitBreaker = cbManager.GetOrCreate("vnic_"+connectionID, cbConfig)
+		vnic.circuitBreaker = cbManager.GetOrCreate(strings.New("vnic_", connectionID).String(), cbConfig)
 	}
 	
 	if vnic.resources.SysConfig().LocalUuid == "" {
@@ -124,7 +124,7 @@ func (this *VirtualNetworkInterface) connect() error {
 	// Try to dial to the switch
 	conn, err := this.resources.Security().CanDial(destination, this.resources.SysConfig().VnetPort)
 	if err != nil {
-		return errors.New("Error connecting to the vnet: " + err.Error())
+		return errors.New(strings.New("Error connecting to the vnet: ", err.Error()).String())
 	}
 	// Verify that the switch accepts this connection
 	if this.resources.SysConfig().LocalUuid == "" {
@@ -133,7 +133,7 @@ func (this *VirtualNetworkInterface) connect() error {
 	this.syncServicesWithConfig()
 	err = this.resources.Security().ValidateConnection(conn, this.resources.SysConfig())
 	if err != nil {
-		return errors.New("Error validating connection: " + err.Error())
+		return errors.New(strings.New("Error validating connection: ", err.Error()).String())
 	}
 	this.conn = conn
 	this.resources.SysConfig().Address = conn.LocalAddr().String()

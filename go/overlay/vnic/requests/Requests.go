@@ -1,13 +1,12 @@
 package requests
 
 import (
-	"bytes"
-	"strconv"
 	"sync"
 	"time"
 
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8utils/go/utils/strings"
 )
 
 type Requests struct {
@@ -115,8 +114,5 @@ func (this *Request) SetResponse(resp ifs.IElements) {
 }
 
 func requestKey(msgSource string, msgNum uint32) string {
-	key := bytes.Buffer{}
-	key.WriteString(msgSource)
-	key.WriteString(strconv.Itoa(int(msgNum)))
-	return key.String()
+	return strings.New(msgSource, int(msgNum)).String()
 }

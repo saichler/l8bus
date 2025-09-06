@@ -3,7 +3,6 @@ package vnet
 import (
 	"errors"
 	"net"
-	"strconv"
 	"time"
 
 	"github.com/saichler/l8srlz/go/serialize/object"
@@ -94,7 +93,7 @@ func (this *VNet) start(err *error) {
 }
 
 func (this *VNet) bind() error {
-	socket, e := net.Listen("tcp", ":"+strconv.Itoa(int(this.resources.SysConfig().VnetPort)))
+	socket, e := net.Listen("tcp", strings.New(":", int(this.resources.SysConfig().VnetPort)).String())
 	if e != nil {
 		return this.resources.Logger().Error("Unable to bind to port ",
 			this.resources.SysConfig().VnetPort, e.Error())

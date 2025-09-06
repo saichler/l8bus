@@ -1,11 +1,12 @@
 package vnet
 
 import (
-	"github.com/saichler/layer8/go/overlay/protocol"
 	"net"
-	"strconv"
-	"strings"
 	"time"
+	stdstrings "strings"
+
+	"github.com/saichler/layer8/go/overlay/protocol"
+	"github.com/saichler/l8utils/go/utils/strings"
 )
 
 type Discovery struct {
@@ -26,7 +27,7 @@ func (this *Discovery) Discover() {
 		this.vnet.resources.Logger().Info("Discovery is disabled, machine IP is ", protocol.MachineIP)
 		return
 	}
-	addr, err := net.ResolveUDPAddr("udp", ":"+strconv.Itoa(int(this.vnet.resources.SysConfig().VnetPort-2)))
+	addr, err := net.ResolveUDPAddr("udp", strings.New(":", int(this.vnet.resources.SysConfig().VnetPort-2)).String())
 	if err != nil {
 		this.vnet.resources.Logger().Error("Discovery: ", err.Error())
 		return
@@ -60,7 +61,7 @@ func (this *Discovery) discoveryRx() {
 		if n == 3 {
 			if ip != protocol.MachineIP && ip != "127.0.0.1" {
 				_, ok := this.discovered[ip]
-				if strings.Compare(ip, protocol.MachineIP) == -1 && !ok {
+				if stdstrings.Compare(ip, protocol.MachineIP) == -1 && !ok {
 					this.vnet.resources.Logger().Info("Trying to connect to peer at ", ip)
 					err = this.vnet.ConnectNetworks(ip, this.vnet.resources.SysConfig().VnetPort)
 					if err != nil {
@@ -75,8 +76,7 @@ func (this *Discovery) discoveryRx() {
 
 func (this *Discovery) Broadcast() {
 	this.vnet.resources.Logger().Debug("Sending discovery broadcast")
-	addr, err := net.ResolveUDPAddr("udp", "255.255.255.255:"+
-		strconv.Itoa(int(this.vnet.resources.SysConfig().VnetPort-2)))
+	addr, err := net.ResolveUDPAddr("udp", strings.New("255.255.255.255:", int(this.vnet.resources.SysConfig().VnetPort-2)).String())
 	if err != nil {
 		this.vnet.resources.Logger().Error("Failed to resolve broadcast:", err.Error())
 		return

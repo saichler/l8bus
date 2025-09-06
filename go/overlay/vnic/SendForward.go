@@ -6,6 +6,7 @@ import (
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types"
+	"github.com/saichler/l8utils/go/utils/strings"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -65,10 +66,10 @@ func createElements(any interface{}, resources ifs.IResources) (ifs.IElements, e
 			if ok {
 				pbs[i] = pb
 			} else {
-				panic("Uknown input type " + reflect.ValueOf(pb).String())
+				panic(strings.New("Uknown input type ", reflect.ValueOf(pb).String()).String())
 			}
 		}
 		return object.New(nil, pbs), nil
 	}
-	panic("Uknown input type " + reflect.ValueOf(any).String())
+	panic(strings.New("Uknown input type ", reflect.ValueOf(any).String()).String())
 }
