@@ -534,6 +534,16 @@
                         <h4>Circuit Breaker</h4>
                         <p>Advanced failure isolation with configurable thresholds and automatic recovery for resilient operations.</p>
                     </div>
+
+                    <div class="feature-item">
+                        <h4>Service Batching</h4>
+                        <p>Intelligent service batch processing that groups related operations for improved throughput and reduced latency.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <h4>Transaction Management</h4>
+                        <p>Configurable transaction timeout mechanisms with automatic cleanup and recovery for reliable distributed operations.</p>
+                    </div>
                 </div>
             </section>
 
@@ -599,6 +609,26 @@
                     <h3>Recent Performance Optimizations</h3>
                     <div class="features-list">
                         <div class="feature-item">
+                            <h4>Test Stability & Coverage</h4>
+                            <p>Enhanced test reliability with improved test coverage reporting and comprehensive unit test validation across all components.</p>
+                        </div>
+
+                        <div class="feature-item">
+                            <h4>Transaction Timeout</h4>
+                            <p>Added configurable transaction timeout mechanisms for improved reliability and automatic recovery from stuck transactions.</p>
+                        </div>
+
+                        <div class="feature-item">
+                            <h4>Service Batching</h4>
+                            <p>Implemented service batch processing for enhanced throughput and efficiency in message handling and service operations.</p>
+                        </div>
+
+                        <div class="feature-item">
+                            <h4>String Optimization</h4>
+                            <p>Replaced string concatenation with efficient buffer operations, reducing memory allocations and improving performance.</p>
+                        </div>
+
+                        <div class="feature-item">
                             <h4>Statistics Integration</h4>
                             <p>Added comprehensive metrics collection and health statistics for better observability and performance monitoring.</p>
                         </div>
@@ -652,6 +682,7 @@
                     
                     <button class="demo-button" onclick="simulateDiscovery()">Network Discovery</button>
                     <button class="demo-button" onclick="simulateRouting()">Message Routing</button>
+                    <button class="demo-button" onclick="simulateBatching()">Service Batching</button>
                     <button class="demo-button" onclick="simulateFailover()">Health & Metrics</button>
                     <button class="demo-button" onclick="simulateMetrics()">Performance Stats</button>
                     <button class="demo-button" onclick="clearDemo()">Clear</button>
@@ -735,7 +766,7 @@ google.golang.org/protobuf       // Protocol buffer support
 
     <footer>
         <div class="container">
-            <p>&copy; 2024 Layer8 Overlay Network. A comprehensive virtual networking solution for distributed systems.</p>
+            <p>&copy; 2025 Layer8 Overlay Network. A comprehensive virtual networking solution for distributed systems.</p>
         </div>
     </footer>
 
@@ -762,6 +793,18 @@ google.golang.org/protobuf       // Protocol buffer support
 3. Found 3 healthy instances: [uuid1, uuid2, uuid3]<br>
 4. Selecting leader instance: uuid2<br>
 5. ✓ Message routed to destination successfully
+            `;
+        }
+
+        function simulateBatching() {
+            const status = document.getElementById('demo-status');
+            status.innerHTML = `
+<strong>Service Batching Simulation:</strong><br>
+1. Collecting 15 individual service requests...<br>
+2. Grouping requests by service type and destination<br>
+3. Batch 1: HealthService requests [5 items] → Node A<br>
+4. Batch 2: PluginService requests [3 items] → Node B<br>
+5. ✓ Processed 15 requests in 2 batches (75% reduction)
             `;
         }
 

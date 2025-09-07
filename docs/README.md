@@ -44,6 +44,14 @@ and extremely reduce the **Time to Market**.
 21. [Distributed Model Agnostic Parsing](#parse)
 22. [Distributed Model Agnostic Inventory](#inventory)
 23. [Traffic Generator](#generator)
+24. [Probler - K8s Observability](#probler)
+25. [L8 Collector](#l8collector)
+26. [L8 ORM](#l8orm)
+27. [L8 Parser](#l8parser)  
+28. [L8 Inventory](#l8inventory)
+29. [L8 Secure](#l8secure)
+30. [L8 Pollaris](#l8pollaris)
+31. [OpenSim](#opensim)
 
 ## Security Provider <a name="security"></a>
 
@@ -107,7 +115,7 @@ from the target. As it is waiting for a reply, there is a timeout mechanism to a
 
 # Service Points - Standard API Sharing <a name="servicepoints"></a>
 
-Project Home: https://github.com/saichler/servicepoints
+Project Home: https://github.com/saichler/l8services
 
 ## Overview
 
@@ -155,7 +163,7 @@ to ensure concurrent between the stateful instances.
 ![alt text](https://github.com/saichler/layer8/blob/main/docs/transaction.png)
 
 # Model Agnostic Distributed Cache <a name="cache"></a>
-https://github.com/saichler/servicepoints/tree/main/go/points/cache
+https://github.com/saichler/l8services/tree/main/go/points/cache
 
 One of the big challenges of multi instance **stateful** service is synchronizing the **State**
 between the instances. The **State** is usually some structured model in a singleton cache, where
@@ -181,7 +189,7 @@ https://github.com/saichler/gsql
 
 # From String <a name="fromstring"></a>
 
-https://github.com/saichler/shared/tree/main/go/share/strings
+https://github.com/saichler/l8utils/tree/main/go/share/strings
 
 # Introspector <a name="introspector"></a>
 
@@ -189,7 +197,7 @@ https://github.com/saichler/reflect/tree/main/go/reflect/inspect
 
 # Protobuf Object <a name="object"></a>
 
-https://github.com/saichler/serializer/tree/main/go/serialize/object
+https://github.com/saichler/l8srlz/tree/main/go/serialize/object
 
 # Meta Data Driven Property & Dynamic Instantiation <a name="property"></a>
 
@@ -209,19 +217,73 @@ https://github.com/saichler/collect/tree/main/go/collection/control
 
 # Distributed Model Agnostic Parsing <a name="parse"></a>
 
-https://github.com/saichler/collect/tree/main/go/collection/parsing
+https://github.com/saichler/l8parser/tree/main/go/collection/parsing
 
 # Distributed Model Agnostic Inventory <a name="inventory"></a>
 
-https://github.com/saichler/collect/tree/main/go/collection/inventory
+https://github.com/saichler/l8inventory/tree/main/go/collection/inventory
 
 # Traffic Generator <a name="generator"></a>
 
 https://github.com/saichler/traffic
 
-# Kubernetes Observer <a name="k8sobserve">
+# Probler - K8s Observability <a name="probler"></a>
 
-https://github.com/saichler/k8s_observer
+https://github.com/saichler/probler
+
+**Probler** is a Kubernetes observability and problem detection service that monitors cluster health,
+detects issues, and provides alerting capabilities for microservices deployments.
+
+# L8 Ecosystem Projects
+
+## L8 Collector <a name="l8collector"></a>
+
+https://github.com/saichler/l8collector
+
+**L8Collector** is a distributed data collection service that gathers data from various sources,
+processes it through the parsing pipeline, and stores it in the inventory system.
+
+## L8 ORM <a name="l8orm"></a>
+
+https://github.com/saichler/l8orm
+
+**L8ORM** provides object-relational mapping capabilities with type introspection and
+automatic schema generation for the Layer8 ecosystem.
+
+## L8 Parser <a name="l8parser"></a>
+
+https://github.com/saichler/l8parser
+
+**L8Parser** is a distributed, model-agnostic parsing service that processes various data formats
+and transforms them into structured objects for the Layer8 ecosystem.
+
+## L8 Inventory <a name="l8inventory"></a>
+
+https://github.com/saichler/l8inventory
+
+**L8Inventory** manages distributed inventory systems with GSQL query support for
+complex data relationships and efficient data retrieval.
+
+## L8 Secure <a name="l8secure"></a>
+
+https://github.com/saichler/l8secure
+
+**L8Secure** provides security abstractions and implementations including authentication,
+authorization, and encryption for Layer8 microservices communication.
+
+## L8 Pollaris <a name="l8pollaris"></a>
+
+https://github.com/saichler/l8pollaris
+
+**L8Pollaris** is a service discovery system that enables automatic service registration,
+discovery, and health monitoring within the Layer8 ecosystem.
+
+## OpenSim <a name="opensim"></a>
+
+https://github.com/saichler/opensim
+
+**OpenSim** is a network simulation framework for testing and validating Layer8
+microservices architectures in simulated network environments.
 
 
 
