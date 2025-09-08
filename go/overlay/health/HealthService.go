@@ -35,7 +35,7 @@ func (this *HealthService) Post(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements 
 	if !ok {
 		return nil
 	}
-	this.healthCenter.Add(hp, pb.Notification())
+	this.healthCenter.Put(hp, pb.Notification())
 	return nil
 }
 func (this *HealthService) Put(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
@@ -43,13 +43,13 @@ func (this *HealthService) Put(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	if !ok {
 		return nil
 	}
-	this.healthCenter.Add(hp, pb.Notification())
+	this.healthCenter.Put(hp, pb.Notification())
 	this.healthCenter.healths.Sync()
 	return nil
 }
 func (this *HealthService) Patch(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	hp := pb.Element().(*types.Health)
-	this.healthCenter.Update(hp, pb.Notification())
+	this.healthCenter.Patch(hp, pb.Notification())
 	return nil
 }
 func (this *HealthService) Delete(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {

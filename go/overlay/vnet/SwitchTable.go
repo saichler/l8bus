@@ -46,10 +46,10 @@ func (this *SwitchTable) addVNic(vnic ifs.IVNic) {
 	hp := hc.Health(config.RemoteUuid)
 	if hp == nil {
 		hp = this.newHealth(config)
-		hc.Add(hp, false)
+		hc.Put(hp, false)
 	} else {
 		this.mergeServices(hp, config)
-		hc.Update(hp, false)
+		hc.Patch(hp, false)
 	}
 
 	this.switchService.publishRoutes()
@@ -154,7 +154,7 @@ func (this *SwitchTable) monitor() {
 			if hp.Status != types.HealthState_Down {
 				this.switchService.resources.Logger().Info("Update health status to Down")
 				hp.Status = types.HealthState_Down
-				hc.Update(hp, false)
+				hc.Patch(hp, false)
 			}
 		}
 	}

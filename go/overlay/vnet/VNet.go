@@ -48,7 +48,7 @@ func NewVNet(resources ifs.IResources) *VNet {
 	hp.AUuid = net.resources.SysConfig().LocalUuid
 	hp.IsVnet = true
 	hp.Services = net.resources.SysConfig().Services
-	hc.Add(hp, true)
+	hc.Put(hp, true)
 	return net
 }
 

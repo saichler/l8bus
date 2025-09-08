@@ -31,7 +31,7 @@ func newHealthCenter(resources ifs.IResources, listener ifs.IServiceCacheListene
 	return hc
 }
 
-func (this *HealthCenter) Add(health *types.Health, isNotification bool) {
+func (this *HealthCenter) Put(health *types.Health, isNotification bool) {
 	this.healths.Put(health.AUuid, health, isNotification)
 	this.services.Update(health)
 }
@@ -41,8 +41,8 @@ func (this *HealthCenter) Delete(health *types.Health, isNotification bool) {
 	this.services.Remove(health.AUuid)
 }
 
-func (this *HealthCenter) Update(health *types.Health, isNotification bool) {
-	_, err := this.healths.Update(health.AUuid, health, isNotification)
+func (this *HealthCenter) Patch(health *types.Health, isNotification bool) {
+	_, err := this.healths.Patch(health.AUuid, health, isNotification)
 	if err != nil {
 		this.resources.Logger().Error("Error updating health point ", err)
 		return
