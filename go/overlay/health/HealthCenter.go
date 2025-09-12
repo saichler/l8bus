@@ -37,7 +37,7 @@ func (this *HealthCenter) Put(health *types.Health, isNotification bool) {
 }
 
 func (this *HealthCenter) Delete(health *types.Health, isNotification bool) {
-	this.healths.Delete(health.AUuid, isNotification)
+	this.healths.Delete(health, isNotification)
 	this.services.Remove(health.AUuid)
 }
 
