@@ -21,8 +21,8 @@ func newHealthCenter(resources ifs.IResources, listener ifs.IServiceCacheListene
 	hc := &HealthCenter{}
 	rnode, _ := resources.Introspector().Inspect(&types.Health{})
 	introspecting.AddPrimaryKeyDecorator(rnode, "AUuid")
-	hc.healths = dcache.NewDistributedCache(ServiceName, 0, "Health",
-		resources.SysConfig().LocalUuid, listener, resources)
+	hc.healths = dcache.NewDistributedCache(ServiceName, 0, &types.Health{}, nil,
+		listener, resources)
 	hc.services = newServices(resources.Logger())
 	hc.resources = resources
 	hc.roundRobin = make(map[string]map[byte]map[string]bool)
@@ -32,7 +32,7 @@ func newHealthCenter(resources ifs.IResources, listener ifs.IServiceCacheListene
 }
 
 func (this *HealthCenter) Put(health *types.Health, isNotification bool) {
-	this.healths.Put(health.AUuid, health, isNotification)
+	this.healths.Put(health, isNotification)
 	this.services.Update(health)
 }
 
@@ -42,7 +42,7 @@ func (this *HealthCenter) Delete(health *types.Health, isNotification bool) {
 }
 
 func (this *HealthCenter) Patch(health *types.Health, isNotification bool) {
-	_, err := this.healths.Patch(health.AUuid, health, isNotification)
+	_, err := this.healths.Patch(health, isNotification)
 	if err != nil {
 		this.resources.Logger().Error("Error updating health point ", err)
 		return
@@ -52,7 +52,13 @@ func (this *HealthCenter) Patch(health *types.Health, isNotification bool) {
 }
 
 func (this *HealthCenter) ZSide(uuid string) string {
-	hp, ok := this.healths.Get(uuid).(*types.Health)
+	filter := &types.Health{}
+	filter.AUuid = uuid
+	h, err := this.healths.Get(filter)
+	if err != nil {
+		return ""
+	}
+	hp, ok := h.(*types.Health)
 	if ok {
 		return hp.ZUuid
 	}
@@ -60,7 +66,10 @@ func (this *HealthCenter) ZSide(uuid string) string {
 }
 
 func (this *HealthCenter) Health(uuid string) *types.Health {
-	hp, _ := this.healths.Get(uuid).(*types.Health)
+	filter := &types.Health{}
+	filter.AUuid = uuid
+	h, _ := this.healths.Get(filter)
+	hp, _ := h.(*types.Health)
 	return hp
 }
 
