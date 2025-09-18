@@ -3,6 +3,8 @@ package health
 import (
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8health"
+	"github.com/saichler/l8types/go/types/l8web"
 	"github.com/saichler/l8utils/go/utils/web"
 )
 
@@ -72,5 +74,5 @@ func (this *HealthService) TransactionConfig() ifs.ITransactionConfig {
 
 func (this *HealthService) WebService() ifs.IWebService {
 	return web.New(ServiceName, 0, nil, nil, nil, nil, nil, nil, nil, nil,
-		&types.Empty{}, &types.Top{})
+		&l8web.L8Empty{}, &l8health.L8Top{})
 }

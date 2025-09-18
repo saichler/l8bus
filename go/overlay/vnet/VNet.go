@@ -7,6 +7,11 @@ import (
 
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8health"
+	"github.com/saichler/l8types/go/types/l8services"
+	"github.com/saichler/l8types/go/types/l8sysconfig"
+	"github.com/saichler/l8types/go/types/l8system"
+	"github.com/saichler/l8types/go/types/l8web"
 	resources2 "github.com/saichler/l8utils/go/utils/resources"
 	"github.com/saichler/l8utils/go/utils/strings"
 	"github.com/saichler/layer8/go/overlay/health"
@@ -25,9 +30,9 @@ type VNet struct {
 }
 
 func NewVNet(resources ifs.IResources) *VNet {
-	resources.Registry().Register(&types.SystemMessage{})
-	resources.Registry().Register(&types.Empty{})
-	resources.Registry().Register(&types.Top{})
+	resources.Registry().Register(&l8system.L8SystemMessage{})
+	resources.Registry().Register(&l8web.L8Empty{})
+	resources.Registry().Register(&l8health.L8Top{})
 	net := &VNet{}
 	net.resources = resources
 	net.resources.Set(net)
@@ -42,7 +47,7 @@ func NewVNet(resources ifs.IResources) *VNet {
 	net.discovery = NewDiscovery(net)
 
 	hc := health.Health(net.resources)
-	hp := &types.Health{}
+	hp := &l8health.L8Health{}
 	hp.Alias = net.resources.SysConfig().LocalAlias
 	hp.AUuid = net.resources.SysConfig().LocalUuid
 	hp.IsVnet = true
@@ -111,13 +116,13 @@ func (this *VNet) connect(conn net.Conn) {
 		return
 	}
 
-	config := &types.SysConfig{MaxDataSize: resources2.DEFAULT_MAX_DATA_SIZE,
+	config := &l8sysconfig.L8SysConfig{MaxDataSize: resources2.DEFAULT_MAX_DATA_SIZE,
 		RxQueueSize: resources2.DEFAULT_QUEUE_SIZE,
 		TxQueueSize: resources2.DEFAULT_QUEUE_SIZE,
 		LocalAlias:  this.resources.SysConfig().LocalAlias,
 		LocalUuid:   this.resources.SysConfig().LocalUuid,
-		Services: &types.Services{ServiceToAreas: map[string]*types.ServiceAreas{
-			health.ServiceName: &types.ServiceAreas{
+		Services: &l8services.L8Services{ServiceToAreas: map[string]*l8services.L8ServiceAreas{
+			health.ServiceName: &l8services.L8ServiceAreas{
 				Areas: map[int32]bool{0: true},
 			}}},
 	}
@@ -238,7 +243,7 @@ func (this *VNet) requestHealthSync() {
 	go this.HandleData(sync, nil)
 }
 
-func (this *VNet) sendHealth(hp *types.Health) {
+func (this *VNet) sendHealth(hp *l8health.L8Health) {
 	vnetUuid := this.resources.SysConfig().LocalUuid
 	nextId := this.protocol.NextMessageNumber()
 	h, _ := this.protocol.CreateMessageFor("", health.ServiceName, 0, ifs.P1, ifs.M_All,

@@ -5,6 +5,9 @@ import (
 
 	"github.com/saichler/l8services/go/services/dcache"
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8health"
+	"github.com/saichler/l8types/go/types/l8services"
+	"github.com/saichler/l8types/go/types/l8web"
 	"github.com/saichler/reflect/go/reflect/introspecting"
 )
 
@@ -26,7 +29,7 @@ func newHealthCenter(resources ifs.IResources, listener ifs.IServiceCacheListene
 	hc.resources = resources
 	hc.roundRobin = make(map[string]map[byte]map[string]bool)
 	hc.roundRobinMtx = &sync.Mutex{}
-	resources.Registry().Register(&types.Empty{})
+	resources.Registry().Register(&l8web.L8Empty{})
 	return hc
 }
 
@@ -176,7 +179,7 @@ func (this *HealthCenter) All() map[string]*l8health.L8Health {
 	return result
 }
 
-func (this *HealthCenter) AllServices() *types.Services {
+func (this *HealthCenter) AllServices() *l8services.L8Services {
 	return this.services.AllServices()
 }
 
@@ -184,9 +187,9 @@ func (this *HealthCenter) Uuids(serviceName string, serviceArea byte) map[string
 	return this.services.UUIDs(serviceName, serviceArea)
 }
 
-func (this *HealthCenter) Top() *types.Top {
+func (this *HealthCenter) Top() *l8health.L8Top {
 	all := this.All()
-	top := &types.Top{Healths: make(map[string]*l8health.L8Health)}
+	top := &l8health.L8Top{Healths: make(map[string]*l8health.L8Health)}
 	for k, v := range all {
 		top.Healths[k] = v
 	}

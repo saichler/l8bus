@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8health"
 	"github.com/saichler/layer8/go/overlay/health"
 )
 
@@ -56,7 +57,7 @@ func (this *KeepAlive) run() {
 }
 
 func (this *KeepAlive) sendState() {
-	stats := &types.HealthStats{}
+	stats := &l8health.L8HealthStats{}
 	stats.TxMsgCount = this.vnic.healthStatistics.TxMsgCount.Load()
 	stats.TxDataCount = this.vnic.healthStatistics.TxDataCount.Load()
 	stats.RxMsgCount = this.vnic.healthStatistics.RxMsgCount.Load()
@@ -65,9 +66,9 @@ func (this *KeepAlive) sendState() {
 	stats.MemoryUsage = memoryUsage()
 	stats.CpuUsage = this.cpuTracker.GetCPUUsage()
 
-	hp := &types.Health{}
+	hp := &l8health.L8Health{}
 	hp.AUuid = this.vnic.resources.SysConfig().LocalUuid
-	hp.Status = types.HealthState_Up
+	hp.Status = l8health.L8HealthState_Up
 	hp.Stats = stats
 	hp.StartTime = this.startTime
 	//this.vnic.resources.Logger().Debug("Sending Keep Alive for ", this.vnic.resources.SysConfig().LocalUuid, " ", this.vnic.resources.SysConfig().LocalAlias)

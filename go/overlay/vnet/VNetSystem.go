@@ -2,6 +2,7 @@ package vnet
 
 import (
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8system"
 	"github.com/saichler/layer8/go/overlay/health"
 )
 
@@ -15,7 +16,7 @@ func (this *VNet) systemMessageReceived(data []byte, vnic ifs.IVNic) {
 	pb, err := this.protocol.ElementsOf(msg)
 	if err != nil {
 		if msg.Tr_State() != ifs.Empty {
-			h //This message should not be processed and we should just
+			//This message should not be processed and we should just
 			//reply with nil to unblock the transaction
 			vnic.Reply(msg, nil)
 			return
@@ -24,18 +25,18 @@ func (this *VNet) systemMessageReceived(data []byte, vnic ifs.IVNic) {
 		return
 	}
 
-	systemMessage := pb.Element().(*types.SystemMessage)
+	systemMessage := pb.Element().(*l8system.L8SystemMessage)
 
 	switch systemMessage.Action {
-	case types.SystemAction_Routes_Add:
+	case l8system.L8SystemAction_Routes_Add:
 		added := this.switchTable.routeTable.addRoutes(systemMessage.GetRouteTable().Rows)
 		this.routesAdded(added)
 		return
-	case types.SystemAction_Routes_Remove:
+	case l8system.L8SystemAction_Routes_Remove:
 		removed := this.switchTable.routeTable.removeRoutes(systemMessage.GetRouteTable().Rows)
 		this.routesRemoved(removed)
 		return
-	case types.SystemAction_Service_Add:
+	case l8system.L8SystemAction_Service_Add:
 		this.switchTable.services.addService(systemMessage.GetServiceData())
 		if systemMessage.Publish {
 			this.publishSystemMessage(systemMessage)

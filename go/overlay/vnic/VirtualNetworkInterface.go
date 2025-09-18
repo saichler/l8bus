@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8services"
 	"github.com/saichler/l8utils/go/utils/strings"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/metrics"
@@ -152,7 +153,7 @@ func (this *VirtualNetworkInterface) syncServicesWithConfig() {
 		for k1, _ := range v.Areas {
 			_, ok := s2.ServiceToAreas[k]
 			if !ok {
-				s2.ServiceToAreas[k] = &types.ServiceAreas{}
+				s2.ServiceToAreas[k] = &l8services.L8ServiceAreas{}
 				s2.ServiceToAreas[k].Areas = make(map[int32]bool)
 			}
 			s2.ServiceToAreas[k].Areas[k1] = true

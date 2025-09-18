@@ -1,17 +1,21 @@
 package vnic
 
 import (
+	"time"
+
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8health"
+	"github.com/saichler/l8types/go/types/l8notify"
+	"github.com/saichler/l8types/go/types/l8services"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
-	"time"
 )
 
 func (this *VirtualNetworkInterface) NotifyServiceAdded(serviceNames []string, serviceArea byte) error {
 	hc := health.Health(this.resources)
 	curr := hc.Health(this.resources.SysConfig().LocalUuid)
-	hp := &types.Health{}
+	hp := &l8health.L8Health{}
 	hp.AUuid = curr.AUuid
 	hp.Services = curr.Services
 	mergeServices(hp, this.resources.SysConfig().Services)
@@ -36,7 +40,7 @@ func (this *VirtualNetworkInterface) requestCacheSync(serviceName string, servic
 func (this *VirtualNetworkInterface) NotifyServiceRemoved(serviceName string, serviceArea byte) error {
 	hc := health.Health(this.resources)
 	curr := hc.Health(this.resources.SysConfig().LocalUuid)
-	hp := &types.Health{}
+	hp := &l8health.L8Health{}
 	hp.AUuid = curr.AUuid
 	hp.Services = curr.Services
 	mergeServices(hp, this.resources.SysConfig().Services)
@@ -44,12 +48,12 @@ func (this *VirtualNetworkInterface) NotifyServiceRemoved(serviceName string, se
 	return this.Unicast(this.resources.SysConfig().RemoteUuid, health.ServiceName, serviceArea, ifs.PATCH, hp)
 }
 
-func (this *VirtualNetworkInterface) PropertyChangeNotification(set *types.NotificationSet) {
+func (this *VirtualNetworkInterface) PropertyChangeNotification(set *l8notify.L8NotificationSet) {
 	protocol.AddPropertyChangeCalled(set, this.resources.SysConfig().LocalAlias)
 	this.Multicast(set.ServiceName, byte(set.ServiceArea), ifs.Notify, set)
 }
 
-func mergeServices(hp *types.Health, services *types.Services) {
+func mergeServices(hp *l8health.L8Health, services *l8services.L8Services) {
 	if hp.Services == nil {
 		hp.Services = services
 		return

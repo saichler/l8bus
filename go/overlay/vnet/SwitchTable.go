@@ -4,6 +4,9 @@ import (
 	"time"
 
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8health"
+	"github.com/saichler/l8types/go/types/l8sysconfig"
+	"github.com/saichler/l8types/go/types/l8system"
 	"github.com/saichler/l8utils/go/utils/strings"
 	"github.com/saichler/layer8/go/overlay/health"
 	"github.com/saichler/layer8/go/overlay/protocol"
@@ -54,7 +57,7 @@ func (this *SwitchTable) addVNic(vnic ifs.IVNic) {
 	this.switchService.publishRoutes()
 }
 
-func (this *SwitchTable) mergeServices(hp *types.Health, config *types.SysConfig) {
+func (this *SwitchTable) mergeServices(hp *l8health.L8Health, config *l8sysconfig.L8SysConfig) {
 	if hp.Services == nil {
 		hp.Services = config.Services
 		return
@@ -75,11 +78,11 @@ func (this *SwitchTable) mergeServices(hp *types.Health, config *types.SysConfig
 	}
 }
 
-func (this *SwitchTable) newHealth(config *types.SysConfig) *types.Health {
-	hp := &types.Health{}
+func (this *SwitchTable) newHealth(config *l8sysconfig.L8SysConfig) *l8health.L8Health {
+	hp := &l8health.L8Health{}
 	hp.Alias = config.RemoteAlias
 	hp.AUuid = config.RemoteUuid
-	hp.Status = types.HealthState_Up
+	hp.Status = l8health.L8HealthState_Up
 	hp.Services = config.Services
 	isLocal := protocol.IpSegment.IsLocal(config.Address)
 	hp.IsVnet = config.ForceExternal || !isLocal
@@ -91,7 +94,7 @@ func (this *SwitchTable) newHealth(config *types.SysConfig) *types.Health {
 
 	for k, v := range hp.Services.ServiceToAreas {
 		for k2, _ := range v.Areas {
-			sd := &types.ServiceData{ServiceName: k, ServiceArea: k2, ServiceUuid: hp.AUuid}
+			sd := &l8system.L8ServiceData{ServiceName: k, ServiceArea: k2, ServiceUuid: hp.AUuid}
 			this.services.addService(sd)
 		}
 	}
@@ -150,9 +153,9 @@ func (this *SwitchTable) monitor() {
 		for uuid, _ := range allDown {
 			this.conns.shutdownConnection(uuid)
 			hp := hc.Health(uuid)
-			if hp.Status != types.HealthState_Down {
+			if hp.Status != l8health.L8HealthState_Down {
 				this.switchService.resources.Logger().Info("Update health status to Down")
-				hp.Status = types.HealthState_Down
+				hp.Status = l8health.L8HealthState_Down
 				hc.Patch(hp, false)
 			}
 		}

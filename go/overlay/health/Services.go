@@ -5,6 +5,8 @@ import (
 	"sync"
 
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8health"
+	"github.com/saichler/l8types/go/types/l8services"
 )
 
 type Services struct {
@@ -174,13 +176,13 @@ func (this *Services) calcLeader(serviceArea *ServiceArea) {
 	serviceArea.leader = newLeader
 }
 
-func (this *Services) AllServices() *types.Services {
-	result := &types.Services{}
-	result.ServiceToAreas = make(map[string]*types.ServiceAreas)
+func (this *Services) AllServices() *l8services.L8Services {
+	result := &l8services.L8Services{}
+	result.ServiceToAreas = make(map[string]*l8services.L8ServiceAreas)
 	this.services.Range(func(key, value interface{}) bool {
 		name := key.(string)
 		serviceNames := value.(*ServiceAreas)
-		result.ServiceToAreas[name] = &types.ServiceAreas{}
+		result.ServiceToAreas[name] = &l8services.L8ServiceAreas{}
 		result.ServiceToAreas[name].Areas = make(map[int32]bool)
 		serviceNames.areas.Range(func(key, value interface{}) bool {
 			serviceArea := int32(key.(byte))

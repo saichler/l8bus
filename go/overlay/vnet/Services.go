@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8system"
 )
 
 type Services struct {
@@ -19,7 +20,7 @@ func newServices(routeTable *RouteTable) *Services {
 	return &Services{services: &sync.Map{}, routeTable: routeTable, roundrobin: &sync.Map{}}
 }
 
-func (this *Services) addService(data *types.ServiceData) {
+func (this *Services) addService(data *l8system.L8ServiceData) {
 	m1, ok := this.services.Load(data.ServiceName)
 	if !ok {
 		m1 = &sync.Map{}

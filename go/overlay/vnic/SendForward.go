@@ -5,6 +5,7 @@ import (
 
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8api"
 	"github.com/saichler/l8utils/go/utils/strings"
 	"google.golang.org/protobuf/proto"
 )
@@ -40,7 +41,7 @@ func createElements(any interface{}, resources ifs.IResources) (ifs.IElements, e
 	if any == nil {
 		return object.New(nil, nil), nil
 	}
-	pq, ok := any.(*types.Query)
+	pq, ok := any.(*l8api.L8Query)
 	if ok {
 		return object.NewQuery(pq.Text, resources)
 	}
