@@ -4,17 +4,19 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"errors"
-	"github.com/saichler/l8types/go/ifs"
-	"github.com/saichler/l8utils/go/utils/strings"
 	"os"
 	"plugin"
 	"sync"
+
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8web"
+	"github.com/saichler/l8utils/go/utils/strings"
 )
 
 var loadedPlugins = make(map[string]*plugin.Plugin)
 var mtx = &sync.Mutex{}
 
-func loadPluginFile(p *types.Plugin) (*plugin.Plugin, error) {
+func loadPluginFile(p *l8web.L8Plugin) (*plugin.Plugin, error) {
 
 	md5 := md5.New()
 	md5Hash := base64.StdEncoding.EncodeToString(md5.Sum([]byte(p.Data)))
@@ -46,7 +48,7 @@ func loadPluginFile(p *types.Plugin) (*plugin.Plugin, error) {
 	return pluginFile, nil
 }
 
-func LoadPlugin(p *types.Plugin, vnic ifs.IVNic) error {
+func LoadPlugin(p *l8web.L8Plugin, vnic ifs.IVNic) error {
 	pluginFile, err := loadPluginFile(p)
 	if err != nil {
 		return err

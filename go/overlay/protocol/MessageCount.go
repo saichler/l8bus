@@ -2,8 +2,10 @@ package protocol
 
 import (
 	"bytes"
-	"github.com/saichler/l8utils/go/utils/logger"
 	"sync/atomic"
+
+	"github.com/saichler/l8types/go/types/l8notify"
+	"github.com/saichler/l8utils/go/utils/logger"
 )
 
 var CountMessages = false
@@ -18,11 +20,11 @@ func AddMessageCreated() {
 	}
 }
 
-func AddPropertyChangeCalled(set *types.NotificationSet, alias string) {
+func AddPropertyChangeCalled(set *l8notify.L8NotificationSet, alias string) {
 	if CountMessages {
 		propertyChangeCalled.Add(1)
 		props := ""
-		if set.Type == types.NotificationType_Update {
+		if set.Type == l8notify.L8NotificationType_Update {
 			buff := bytes.Buffer{}
 			buff.WriteString(" - ")
 			for _, chg := range set.NotificationList {

@@ -3,6 +3,7 @@ package plugins
 import (
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8web"
 )
 
 const (
@@ -15,7 +16,7 @@ type PluginService struct {
 
 func (this *PluginService) Activate(serviceName string, serviceArea byte,
 	resources ifs.IResources, listener ifs.IServiceCacheListener, args ...interface{}) error {
-	resources.Registry().Register(&types.Plugin{})
+	resources.Registry().Register(&l8web.L8Plugin{})
 	return nil
 }
 
@@ -24,7 +25,7 @@ func (this *PluginService) DeActivate() error {
 }
 
 func (this *PluginService) Post(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	plugin := pb.Element().(*types.Plugin)
+	plugin := pb.Element().(*l8web.L8Plugin)
 	err := LoadPlugin(plugin, vnic)
 	if err != nil {
 		vnic.Resources().Logger().Error(err.Error())

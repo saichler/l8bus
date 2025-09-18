@@ -18,9 +18,9 @@ type HealthCenter struct {
 
 func newHealthCenter(resources ifs.IResources, listener ifs.IServiceCacheListener) *HealthCenter {
 	hc := &HealthCenter{}
-	rnode, _ := resources.Introspector().Inspect(&L8Health{})
+	rnode, _ := resources.Introspector().Inspect(&l8health.L8Health{})
 	introspecting.AddPrimaryKeyDecorator(rnode, "AUuid")
-	hc.healths = dcache.NewDistributedCache(ServiceName, 0, &types.Health{}, nil,
+	hc.healths = dcache.NewDistributedCache(ServiceName, 0, &l8health.L8Health{}, nil,
 		listener, resources)
 	hc.services = newServices(resources.Logger())
 	hc.resources = resources
@@ -30,17 +30,17 @@ func newHealthCenter(resources ifs.IResources, listener ifs.IServiceCacheListene
 	return hc
 }
 
-func (this *HealthCenter) Put(health *types.Health, isNotification bool) {
+func (this *HealthCenter) Put(health *l8health.L8Health, isNotification bool) {
 	this.healths.Put(health, isNotification)
 	this.services.Update(health)
 }
 
-func (this *HealthCenter) Delete(health *types.Health, isNotification bool) {
+func (this *HealthCenter) Delete(health *l8health.L8Health, isNotification bool) {
 	this.healths.Delete(health, isNotification)
 	this.services.Remove(health.AUuid)
 }
 
-func (this *HealthCenter) Patch(health *types.Health, isNotification bool) {
+func (this *HealthCenter) Patch(health *l8health.L8Health, isNotification bool) {
 	_, err := this.healths.Patch(health, isNotification)
 	if err != nil {
 		this.resources.Logger().Error("Error updating health point ", err)
@@ -51,24 +51,24 @@ func (this *HealthCenter) Patch(health *types.Health, isNotification bool) {
 }
 
 func (this *HealthCenter) ZSide(uuid string) string {
-	filter := &types.Health{}
+	filter := &l8health.L8Health{}
 	filter.AUuid = uuid
 	h, err := this.healths.Get(filter)
 	if err != nil {
 		return ""
 	}
-	hp, ok := h.(*types.Health)
+	hp, ok := h.(*l8health.L8Health)
 	if ok {
 		return hp.ZUuid
 	}
 	return ""
 }
 
-func (this *HealthCenter) Health(uuid string) *types.Health {
-	filter := &types.Health{}
+func (this *HealthCenter) Health(uuid string) *l8health.L8Health {
+	filter := &l8health.L8Health{}
 	filter.AUuid = uuid
 	h, _ := this.healths.Get(filter)
-	hp, _ := h.(*types.Health)
+	hp, _ := h.(*l8health.L8Health)
 	return hp
 }
 
@@ -160,17 +160,17 @@ func (this *HealthCenter) DestinationFor(serviceName string, serviceArea byte, s
 }
 
 func health(item interface{}) (bool, interface{}) {
-	hp := item.(*types.Health)
+	hp := item.(*l8health.L8Health)
 	return true, hp
 }
 
-func (this *HealthCenter) All() map[string]*types.Health {
+func (this *HealthCenter) All() map[string]*l8health.L8Health {
 	uuids := this.healths.Collect(health)
-	result := make(map[string]*types.Health)
+	result := make(map[string]*l8health.L8Health)
 	for k, v := range uuids {
-		hp := v.(*types.Health)
-		if hp.Status != types.HealthState_Down {
-			result[k] = v.(*types.Health)
+		hp := v.(*l8health.L8Health)
+		if hp.Status != l8health.L8HealthState_Down {
+			result[k] = v.(*l8health.L8Health)
 		}
 	}
 	return result
@@ -186,7 +186,7 @@ func (this *HealthCenter) Uuids(serviceName string, serviceArea byte) map[string
 
 func (this *HealthCenter) Top() *types.Top {
 	all := this.All()
-	top := &types.Top{Healths: make(map[string]*types.Health)}
+	top := &types.Top{Healths: make(map[string]*l8health.L8Health)}
 	for k, v := range all {
 		top.Healths[k] = v
 	}

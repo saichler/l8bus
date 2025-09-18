@@ -79,7 +79,7 @@ func (this *Services) Leader(serviceName string, serviceArea byte) string {
 	return area.(*ServiceArea).leader
 }
 
-func (this *Services) updateServices(health *types.Health, areasToCalcLeader *[]*ServiceArea) {
+func (this *Services) updateServices(health *l8health.L8Health, areasToCalcLeader *[]*ServiceArea) {
 	if health.Services == nil {
 		return
 	}
@@ -102,7 +102,7 @@ func (this *Services) updateServices(health *types.Health, areasToCalcLeader *[]
 				existServiceAreas.(*ServiceAreas).areas.Store(serviceArea, newServiceArea)
 				existServiceArea = newServiceArea
 			}
-			if health.Status != types.HealthState_Up {
+			if health.Status != l8health.L8HealthState_Up {
 				existServiceArea.(*ServiceArea).members.Delete(health.AUuid)
 				continue
 			}
@@ -120,7 +120,7 @@ func (this *Services) updateServices(health *types.Health, areasToCalcLeader *[]
 	}
 }
 
-func (this *Services) Update(health *types.Health) {
+func (this *Services) Update(health *l8health.L8Health) {
 	areasToCalcLeader := make([]*ServiceArea, 0)
 	if health == nil {
 		return

@@ -17,7 +17,7 @@ type HealthService struct {
 
 func (this *HealthService) Activate(serviceName string, serviceArea byte,
 	resources ifs.IResources, listener ifs.IServiceCacheListener, args ...interface{}) error {
-	_, err := resources.Registry().Register(&types.Health{})
+	_, err := resources.Registry().Register(&l8health.L8Health{})
 	if err != nil {
 		return err
 	}
@@ -30,7 +30,7 @@ func (this *HealthService) DeActivate() error {
 }
 
 func (this *HealthService) Post(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	hp, ok := pb.Element().(*types.Health)
+	hp, ok := pb.Element().(*l8health.L8Health)
 	if !ok {
 		return nil
 	}
@@ -38,7 +38,7 @@ func (this *HealthService) Post(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements 
 	return nil
 }
 func (this *HealthService) Put(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	hp, ok := pb.Element().(*types.Health)
+	hp, ok := pb.Element().(*l8health.L8Health)
 	if !ok {
 		return nil
 	}
@@ -47,12 +47,12 @@ func (this *HealthService) Put(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	return nil
 }
 func (this *HealthService) Patch(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	hp := pb.Element().(*types.Health)
+	hp := pb.Element().(*l8health.L8Health)
 	this.healthCenter.Patch(hp, pb.Notification())
 	return nil
 }
 func (this *HealthService) Delete(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	hp := pb.Element().(*types.Health)
+	hp := pb.Element().(*l8health.L8Health)
 	this.healthCenter.Delete(hp, pb.Notification())
 	return nil
 }
