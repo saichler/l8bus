@@ -5,7 +5,6 @@ import (
 
 	"github.com/saichler/l8services/go/services/dcache"
 	"github.com/saichler/l8types/go/ifs"
-	"github.com/saichler/l8types/go/types"
 	"github.com/saichler/reflect/go/reflect/introspecting"
 )
 
@@ -19,7 +18,7 @@ type HealthCenter struct {
 
 func newHealthCenter(resources ifs.IResources, listener ifs.IServiceCacheListener) *HealthCenter {
 	hc := &HealthCenter{}
-	rnode, _ := resources.Introspector().Inspect(&types.Health{})
+	rnode, _ := resources.Introspector().Inspect(&L8Health{})
 	introspecting.AddPrimaryKeyDecorator(rnode, "AUuid")
 	hc.healths = dcache.NewDistributedCache(ServiceName, 0, &types.Health{}, nil,
 		listener, resources)

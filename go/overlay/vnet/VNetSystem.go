@@ -2,7 +2,6 @@ package vnet
 
 import (
 	"github.com/saichler/l8types/go/ifs"
-	"github.com/saichler/l8types/go/types"
 	"github.com/saichler/layer8/go/overlay/health"
 )
 
@@ -16,7 +15,7 @@ func (this *VNet) systemMessageReceived(data []byte, vnic ifs.IVNic) {
 	pb, err := this.protocol.ElementsOf(msg)
 	if err != nil {
 		if msg.Tr_State() != ifs.Empty {
-			//This message should not be processed and we should just
+			h //This message should not be processed and we should just
 			//reply with nil to unblock the transaction
 			vnic.Reply(msg, nil)
 			return

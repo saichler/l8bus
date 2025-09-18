@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"github.com/saichler/l8types/go/ifs"
-	"github.com/saichler/l8types/go/types"
 	"github.com/saichler/l8utils/go/utils/strings"
 	"os"
 	"plugin"

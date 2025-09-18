@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/saichler/l8types/go/ifs"
-	"github.com/saichler/l8types/go/types"
 )
 
 type Services struct {

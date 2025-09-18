@@ -1,7 +1,6 @@
 package vnet
 
 import (
-	"github.com/saichler/l8types/go/types"
 	resources2 "github.com/saichler/l8utils/go/utils/resources"
 	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
 )
