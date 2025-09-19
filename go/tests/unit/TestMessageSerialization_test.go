@@ -10,7 +10,7 @@ import (
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/testtypes"
 	"github.com/saichler/l8utils/go/utils/strings"
-	"github.com/saichler/layer8/go/overlay/protocol"
+	"github.com/saichler/l8bus/go/overlay/protocol"
 )
 
 func testMessageSerialization(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"time"
 	stdstrings "strings"
 
-	"github.com/saichler/layer8/go/overlay/protocol"
+	"github.com/saichler/l8bus/go/overlay/protocol"
 	"github.com/saichler/l8utils/go/utils/strings"
 )
 

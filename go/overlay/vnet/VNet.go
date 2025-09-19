@@ -14,9 +14,9 @@ import (
 	"github.com/saichler/l8types/go/types/l8web"
 	resources2 "github.com/saichler/l8utils/go/utils/resources"
 	"github.com/saichler/l8utils/go/utils/strings"
-	"github.com/saichler/layer8/go/overlay/health"
-	"github.com/saichler/layer8/go/overlay/protocol"
-	vnic2 "github.com/saichler/layer8/go/overlay/vnic"
+	"github.com/saichler/l8bus/go/overlay/health"
+	"github.com/saichler/l8bus/go/overlay/protocol"
+	vnic2 "github.com/saichler/l8bus/go/overlay/vnic"
 )
 
 type VNet struct {

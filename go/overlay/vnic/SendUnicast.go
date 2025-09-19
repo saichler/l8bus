@@ -3,7 +3,7 @@ package vnic
 import (
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
-	"github.com/saichler/layer8/go/overlay/health"
+	"github.com/saichler/l8bus/go/overlay/health"
 )
 
 func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, serviceArea byte,

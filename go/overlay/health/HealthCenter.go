@@ -8,7 +8,7 @@ import (
 	"github.com/saichler/l8types/go/types/l8health"
 	"github.com/saichler/l8types/go/types/l8services"
 	"github.com/saichler/l8types/go/types/l8web"
-	"github.com/saichler/reflect/go/reflect/introspecting"
+	"github.com/saichler/l8reflect/go/reflect/introspecting"
 )
 
 type HealthCenter struct {
