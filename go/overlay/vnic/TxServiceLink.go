@@ -27,7 +27,10 @@ func (this *VirtualNetworkInterface) RegisterServiceLink(link *l8services.L8Serv
 		this.serviceLinks = &sync.Map{}
 	}
 	key := LinkKeyByLink(link)
-	this.serviceLinks.Store(key, newTxServiceLink(link, this))
+	_, ok := this.serviceLinks.Load(key)
+	if !ok {
+		this.serviceLinks.Store(key, newTxServiceLink(link, this))
+	}
 }
 
 func newTxServiceLink(link *l8services.L8ServiceLink, vnic *VirtualNetworkInterface) *txServiceLink {
