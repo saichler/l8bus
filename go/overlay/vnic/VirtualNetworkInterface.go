@@ -44,7 +44,7 @@ type VirtualNetworkInterface struct {
 	circuitBreaker    *metrics.CircuitBreaker
 	metricsRegistry   *metrics.MetricsRegistry
 	connected         bool
-	serviceBatchs     *sync.Map
+	serviceLinks      *sync.Map
 }
 
 func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *VirtualNetworkInterface {
@@ -323,12 +323,4 @@ func (this *VirtualNetworkInterface) ExecuteWithCircuitBreaker(fn func() (interf
 	}
 	// Fallback to direct execution if no circuit breaker
 	return fn()
-}
-
-func (this *VirtualNetworkInterface) RegisterServiceBatch(serviceName string, serviceArea byte, mode ifs.MulticastMode, interval int) {
-	if this.serviceBatchs == nil {
-		this.serviceBatchs = &sync.Map{}
-	}
-	key := BatchKey(serviceName, serviceArea, mode)
-	this.serviceBatchs.Store(key, newTxServiceBatch(serviceName, serviceArea, mode, interval, this))
 }

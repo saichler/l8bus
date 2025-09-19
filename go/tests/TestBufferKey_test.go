@@ -8,8 +8,8 @@ import (
 )
 
 func TestBufferKey(t *testing.T) {
-	key := vnic.BatchKey("Hello", 0, ifs.M_Leader)
-	if key != "Hello04" {
+	key := vnic.LinkKeyByAttr("Hello", 0, ifs.M_Leader, false)
+	if key != "Hello04false" {
 		t.Fail()
 	}
 }

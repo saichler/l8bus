@@ -11,7 +11,8 @@ import (
 
 func TestServiceBatch(t *testing.T) {
 	vnic := topo.VnicByVnetNum(1, 1)
-	vnic.RegisterServiceBatch(t_service.ServiceName, 0, ifs.M_Proximity, 2)
+	link := ifs.NewServiceLink("", t_service.ServiceName, 0, 0, ifs.M_Proximity, 2, false)
+	vnic.RegisterServiceLink(link)
 	vnic.Proximity(t_service.ServiceName, 0, ifs.PATCH, &testtypes.TestProto{MyString: "Hello"})
 	vnic.Proximity(t_service.ServiceName, 0, ifs.PATCH, &testtypes.TestProto{MyString: "Hello"})
 	vnic.Proximity(t_service.ServiceName, 0, ifs.PATCH, &testtypes.TestProto{MyString: "Hello"})
