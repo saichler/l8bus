@@ -67,6 +67,10 @@ func createElements(any interface{}, resources ifs.IResources) (ifs.IElements, e
 		pbs := make([]proto.Message, v.Len())
 		for i := 0; i < v.Len(); i++ {
 			elm := v.Index(i)
+			elements, ok := elm.Interface().(ifs.IElements)
+			if ok {
+				return elements, nil
+			}
 			pb, ok = elm.Interface().(proto.Message)
 			if ok {
 				pbs[i] = pb
