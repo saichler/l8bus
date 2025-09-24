@@ -69,13 +69,21 @@ func createElements(any interface{}, resources ifs.IResources) (ifs.IElements, e
 			elm := v.Index(i)
 			elements, ok := elm.Interface().(ifs.IElements)
 			if ok {
-				return elements, nil
-			}
-			pb, ok = elm.Interface().(proto.Message)
-			if ok {
-				pbs[i] = pb
+				for _, epb := range elements.Elements() {
+					pb, ok = epb.(proto.Message)
+					if ok {
+						pbs[i] = pb
+					} else {
+						panic(strings.New("Uknown input type ", reflect.ValueOf(pb).String()).String())
+					}
+				}
 			} else {
-				panic(strings.New("Uknown input type ", reflect.ValueOf(pb).String()).String())
+				pb, ok = elm.Interface().(proto.Message)
+				if ok {
+					pbs[i] = pb
+				} else {
+					panic(strings.New("Uknown input type ", reflect.ValueOf(pb).String()).String())
+				}
 			}
 		}
 		return object.New(nil, pbs), nil
