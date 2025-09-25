@@ -7,14 +7,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/saichler/l8types/go/ifs"
-	"github.com/saichler/l8types/go/types/l8services"
-	"github.com/saichler/l8utils/go/utils/strings"
 	"github.com/saichler/l8bus/go/overlay/health"
 	"github.com/saichler/l8bus/go/overlay/metrics"
 	"github.com/saichler/l8bus/go/overlay/plugins"
 	"github.com/saichler/l8bus/go/overlay/protocol"
 	requests2 "github.com/saichler/l8bus/go/overlay/vnic/requests"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8services"
+	"github.com/saichler/l8utils/go/utils/strings"
 )
 
 type VirtualNetworkInterface struct {
@@ -234,6 +234,10 @@ func (this *VirtualNetworkInterface) WaitForConnection() {
 	for hp == nil {
 		time.Sleep(time.Millisecond * 100)
 		hp = hc.Health(this.resources.SysConfig().LocalUuid)
+	}
+	secService, ok := this.resources.Security().(ifs.ISecurityProviderActivate)
+	if ok {
+		secService.Activate(this)
 	}
 }
 
