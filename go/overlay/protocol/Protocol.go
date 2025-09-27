@@ -55,7 +55,7 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 	priority ifs.Priority, multicastMode ifs.MulticastMode, action ifs.Action, source, vnet string, o ifs.IElements,
 	isRequest, isReply bool, msgNum uint32,
 	tr_state ifs.TransactionState, tr_id, tr_errMsg string, tr_start, tr_timeout int64,
-	token string) ([]byte, error) {
+	aaaid string) ([]byte, error) {
 
 	AddMessageCreated()
 
@@ -67,7 +67,7 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 		return nil, err
 	}
 
-	msg, err := this.resources.Security().Message(token)
+	msg, err := this.resources.Security().Message(aaaid)
 	if err != nil {
 		return nil, err
 	}

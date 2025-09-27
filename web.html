@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Layer8 - Virtual Overlay Network</title>
+    <title>Layer 8 Network BUS - Virtual Overlay Network</title>
     <style>
         :root {
             --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #e74c3c;
-            --background-color: #ecf0f1;
+            --secondary-color: #27ae60;
+            --accent-color: #e67e22;
+            --background-color: #f8f9fa;
             --text-color: #2c3e50;
             --card-bg: #ffffff;
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             --border-radius: 8px;
+            --parallax-bg: linear-gradient(135deg, #3498db 0%, #2ecc71 100%);
         }
 
         * {
@@ -35,7 +36,90 @@
             padding: 0 20px;
         }
 
-        /* Header */
+        /* Parallax Header */
+        .parallax-header {
+            height: 100vh;
+            background: var(--parallax-bg);
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .parallax-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZGVmcz4KICAgIDxwYXR0ZXJuIGlkPSJncmlkIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8cGF0aCBkPSJNIDEwIDAgTCAwIDAgMCAxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMSkiIHN0cm9rZS13aWR0aD0iMSIvPgogICAgPC9wYXR0ZXJuPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIiAvPgo8L3N2Zz4=') repeat;
+            opacity: 0.1;
+        }
+
+        .parallax-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            padding: 0 2rem;
+        }
+
+        .parallax-header h1 {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            font-weight: 300;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .parallax-header .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .parallax-header .tagline {
+            font-size: 1.1rem;
+            font-style: italic;
+            opacity: 0.8;
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Custom Network Illustration */
+        .network-illustration {
+            position: absolute;
+            top: 50%;
+            right: 10%;
+            transform: translateY(-50%);
+            opacity: 0.2;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(-50%) translateX(0); }
+            50% { transform: translateY(-50%) translateX(10px); }
+        }
+
+        /* Traditional Header for other sections */
         header {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             color: white;
@@ -221,6 +305,81 @@
             opacity: 0.7;
         }
 
+        /* Parallax Sections */
+        .parallax-section {
+            min-height: 60vh;
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .architecture-parallax {
+            background: linear-gradient(45deg, #34495e 0%, #2c3e50 100%);
+        }
+
+        .features-parallax {
+            background: linear-gradient(45deg, #27ae60 0%, #2ecc71 100%);
+        }
+
+        .parallax-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+        }
+
+        .parallax-section .container {
+            position: relative;
+            z-index: 2;
+        }
+
+        .parallax-section h2 {
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* Custom SVG Illustrations */
+        .custom-illustration {
+            display: inline-block;
+            margin: 1rem;
+        }
+
+        .network-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1rem;
+            background: var(--secondary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); }
+        }
+
+        .network-icon::before {
+            content: '🔗';
+            font-size: 24px;
+        }
+
+        .service-icon::before { content: '⚙️'; }
+        .health-icon::before { content: '❤️'; }
+        .metrics-icon::before { content: '📊'; }
+        .routing-icon::before { content: '🔀'; }
+        .security-icon::before { content: '🔒'; }
+
         /* Code blocks */
         .code-block {
             background: #2c3e50;
@@ -351,12 +510,52 @@
     </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1>Layer8</h1>
-            <p>Virtual Overlay Network for Distributed Systems</p>
+    <!-- Full-page parallax header -->
+    <div class="parallax-header">
+        <div class="parallax-content">
+            <h1>Layer 8 Network BUS</h1>
+            <div class="subtitle">Virtual Overlay Network for Distributed Systems</div>
+            <div class="tagline">"Work less, Achieve much more."</div>
         </div>
-    </header>
+
+        <!-- Custom Network Illustration -->
+        <div class="network-illustration">
+            <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+
+                <!-- Central hub -->
+                <circle cx="100" cy="100" r="25" fill="rgba(255,255,255,0.8)" filter="url(#glow)"/>
+                <text x="100" y="105" text-anchor="middle" fill="#2c3e50" font-size="12" font-weight="bold">HUB</text>
+
+                <!-- Connected nodes -->
+                <circle cx="50" cy="50" r="15" fill="rgba(255,255,255,0.6)" filter="url(#glow)"/>
+                <circle cx="150" cy="50" r="15" fill="rgba(255,255,255,0.6)" filter="url(#glow)"/>
+                <circle cx="50" cy="150" r="15" fill="rgba(255,255,255,0.6)" filter="url(#glow)"/>
+                <circle cx="150" cy="150" r="15" fill="rgba(255,255,255,0.6)" filter="url(#glow)"/>
+
+                <!-- Connection lines -->
+                <line x1="100" y1="100" x2="50" y2="50" stroke="rgba(255,255,255,0.5)" stroke-width="2" filter="url(#glow)"/>
+                <line x1="100" y1="100" x2="150" y2="50" stroke="rgba(255,255,255,0.5)" stroke-width="2" filter="url(#glow)"/>
+                <line x1="100" y1="100" x2="50" y2="150" stroke="rgba(255,255,255,0.5)" stroke-width="2" filter="url(#glow)"/>
+                <line x1="100" y1="100" x2="150" y2="150" stroke="rgba(255,255,255,0.5)" stroke-width="2" filter="url(#glow)"/>
+
+                <!-- Data flow animation -->
+                <circle r="3" fill="#f39c12">
+                    <animateMotion dur="3s" repeatCount="indefinite">
+                        <path d="M50,50 L100,100 L150,150"/>
+                    </animateMotion>
+                </circle>
+            </svg>
+        </div>
+    </div>
 
     <nav>
         <div class="container">
@@ -377,28 +576,41 @@
             <section id="overview">
                 <h2>Overview</h2>
                 <p style="font-size: 1.1rem; text-align: center; margin-bottom: 2rem;">
-                    The Layer8 overlay package provides a comprehensive virtual networking layer built on top of TCP connections, 
-                    enabling distributed systems to communicate as if they were on a single network.
+                    The Layer 8 Network BUS provides a comprehensive virtual networking layer built on top of TCP connections,
+                    enabling distributed systems to communicate as if they were on a single network. Latest updates include
+                    enhanced service activation, crash prevention fixes, and distributed cache improvements.
                 </p>
 
                 <div class="card-grid">
                     <div class="card">
-                        <h4><span class="card-icon">V</span>Virtual Networking</h4>
-                        <p>Creates a virtual network layer that abstracts physical network topology, allowing seamless communication between distributed nodes.</p>
+                        <div class="network-icon"></div>
+                        <h4>Virtual Networking</h4>
+                        <p>Creates a virtual network layer that abstracts physical network topology, allowing seamless communication between distributed nodes with enhanced stability and activation.</p>
                     </div>
                     <div class="card">
-                        <h4><span class="card-icon">S</span>Service Discovery</h4>
-                        <p>Automatic service registration and discovery with health monitoring and leader election capabilities.</p>
+                        <div class="network-icon service-icon"></div>
+                        <h4>Service Discovery</h4>
+                        <p>Automatic service registration and discovery with health monitoring, leader election capabilities, and improved service linking.</p>
                     </div>
                     <div class="card">
-                        <h4><span class="card-icon">R</span>Robust Routing</h4>
-                        <p>Intelligent message routing with support for unicast, multicast, and service-based routing patterns.</p>
+                        <div class="network-icon routing-icon"></div>
+                        <h4>Robust Routing</h4>
+                        <p>Intelligent message routing with support for unicast, multicast, service-based routing patterns, and optimized batch processing.</p>
                     </div>
                 </div>
             </section>
 
-            <section id="architecture">
+        <!-- Parallax Architecture Section -->
+        <div class="parallax-section architecture-parallax">
+            <div class="parallax-overlay"></div>
+            <div class="container">
                 <h2>Architecture Overview</h2>
+            </div>
+        </div>
+
+        <div style="background: white; padding: 3rem 0;">
+        <div class="container">
+            <section id="architecture">
                 
                 <div class="network-diagram">
                     <h3>Network Topology</h3>
@@ -437,7 +649,7 @@
                             <li><strong>Extensions</strong> - .so file support</li>
                         </ul>
                     </div>
-                    <div class="component-card" style="border-top-color: #9b59b6;">
+                    <div class="component-card" style="border-top-color: #34495e;">
                         <h4>Metrics System</h4>
                         <ul>
                             <li><strong>MetricsRegistry</strong> - Performance tracking</li>
@@ -491,61 +703,82 @@
                 </div>
             </section>
 
-            <section id="features">
+        <!-- Parallax Features Section -->
+        <div class="parallax-section features-parallax">
+            <div class="parallax-overlay"></div>
+            <div class="container">
                 <h2>Key Features</h2>
+            </div>
+        </div>
+
+        <div style="background: white; padding: 3rem 0;">
+        <div class="container">
+            <section id="features">
                 
                 <div class="features-list">
                     <div class="feature-item">
+                        <div class="network-icon"></div>
+                        <h4>Enhanced Service Activation</h4>
+                        <p>Latest improvements include enhanced service activation and management capabilities with better lifecycle control and activation sequencing.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="network-icon security-icon"></div>
+                        <h4>Crash Prevention & Stability</h4>
+                        <p>Multiple stability fixes addressing system crash scenarios, including improved error handling and graceful failure recovery mechanisms.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="network-icon service-icon"></div>
+                        <h4>Advanced Service Linking</h4>
+                        <p>Improved service interconnection and dependency management with enhanced service discovery and registration capabilities.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="network-icon routing-icon"></div>
+                        <h4>Distributed Cache System</h4>
+                        <p>Major refactoring and updates to distributed cache system with optimized data distribution and cache coherency protocols.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="network-icon metrics-icon"></div>
+                        <h4>Transaction Timeout Management</h4>
+                        <p>Configurable transaction timeout mechanisms with automatic cleanup and recovery for reliable distributed operations.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="network-icon health-icon"></div>
+                        <h4>Intelligent Service Batching</h4>
+                        <p>Advanced service batch processing that groups related operations for improved throughput, reduced latency, and optimal resource utilization.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="network-icon"></div>
                         <h4>Network Discovery</h4>
                         <p>Automatic peer discovery using UDP broadcasts with dynamic network topology building and IP-based routing decisions.</p>
                     </div>
 
                     <div class="feature-item">
+                        <div class="network-icon routing-icon"></div>
                         <h4>Message Routing</h4>
                         <p>Service-based message routing with support for unicast and multicast, plus leader election for service instances.</p>
                     </div>
 
                     <div class="feature-item">
+                        <div class="network-icon"></div>
                         <h4>Connection Management</h4>
                         <p>Internal vs external connection classification, automatic reconnection on failures, and connection pooling.</p>
                     </div>
 
                     <div class="feature-item">
-                        <h4>Service Framework</h4>
-                        <p>Plugin-based architecture with service registration and discovery, health monitoring integration.</p>
-                    </div>
-
-                    <div class="feature-item">
+                        <div class="network-icon security-icon"></div>
                         <h4>Security</h4>
                         <p>Connection validation, security provider integration, and token-based authentication.</p>
                     </div>
-
-                    <div class="feature-item">
-                        <h4>Health Monitoring</h4>
-                        <p>Distributed health monitoring system with real-time status tracking and automatic failover capabilities.</p>
-                    </div>
-
-                    <div class="feature-item">
-                        <h4>Performance Metrics</h4>
-                        <p>Comprehensive metrics collection with counters, gauges, and histograms for monitoring system performance.</p>
-                    </div>
-
-                    <div class="feature-item">
-                        <h4>Circuit Breaker</h4>
-                        <p>Advanced failure isolation with configurable thresholds and automatic recovery for resilient operations.</p>
-                    </div>
-
-                    <div class="feature-item">
-                        <h4>Service Batching</h4>
-                        <p>Intelligent service batch processing that groups related operations for improved throughput and reduced latency.</p>
-                    </div>
-
-                    <div class="feature-item">
-                        <h4>Transaction Management</h4>
-                        <p>Configurable transaction timeout mechanisms with automatic cleanup and recovery for reliable distributed operations.</p>
-                    </div>
                 </div>
             </section>
+        </div>
+        </div>
 
             <section id="metrics">
                 <h2>Metrics & Performance</h2>
@@ -606,46 +839,46 @@
                 </div>
 
                 <div class="card">
-                    <h3>Recent Performance Optimizations</h3>
+                    <h3>Latest Performance Optimizations (2025)</h3>
                     <div class="features-list">
                         <div class="feature-item">
-                            <h4>Test Stability & Coverage</h4>
-                            <p>Enhanced test reliability with improved test coverage reporting and comprehensive unit test validation across all components.</p>
+                            <h4>Service Activation Enhancement (Latest)</h4>
+                            <p>Enhanced service activation and management capabilities with improved lifecycle control and better activation sequencing.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>Transaction Timeout</h4>
+                            <h4>System Stability Improvements</h4>
+                            <p>Multiple crash prevention fixes addressing critical system failure scenarios with improved error handling and graceful recovery.</p>
+                        </div>
+
+                        <div class="feature-item">
+                            <h4>Repository & Interface Optimization</h4>
+                            <p>Cleaned up repository structure, optimized service interfaces for better compatibility, and removed unnecessary imports for improved build performance.</p>
+                        </div>
+
+                        <div class="feature-item">
+                            <h4>Advanced Service Linking</h4>
+                            <p>Improved service interconnection and dependency management with enhanced service discovery and registration mechanisms.</p>
+                        </div>
+
+                        <div class="feature-item">
+                            <h4>Distributed Cache Refactoring</h4>
+                            <p>Major refactoring and updates to distributed cache system with optimized data distribution and improved cache coherency protocols.</p>
+                        </div>
+
+                        <div class="feature-item">
+                            <h4>Transaction Timeout Management</h4>
                             <p>Added configurable transaction timeout mechanisms for improved reliability and automatic recovery from stuck transactions.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>Service Batching</h4>
-                            <p>Implemented service batch processing for enhanced throughput and efficiency in message handling and service operations.</p>
+                            <h4>Intelligent Service Batching</h4>
+                            <p>Implemented advanced service batch processing for enhanced throughput and efficiency in message handling and service operations.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>String Optimization</h4>
-                            <p>Replaced string concatenation with efficient buffer operations, reducing memory allocations and improving performance.</p>
-                        </div>
-
-                        <div class="feature-item">
-                            <h4>Statistics Integration</h4>
-                            <p>Added comprehensive metrics collection and health statistics for better observability and performance monitoring.</p>
-                        </div>
-
-                        <div class="feature-item">
-                            <h4>Memory Efficiency</h4>
-                            <p>Switched to []byte for better memory efficiency and reduced garbage collection overhead in message processing.</p>
-                        </div>
-
-                        <div class="feature-item">
-                            <h4>Shutdown Optimization</h4>
-                            <p>Implemented proper component shutdown ordering (TX→RX→Others) to prevent message loss during graceful shutdowns.</p>
-                        </div>
-
-                        <div class="feature-item">
-                            <h4>Leader Election</h4>
-                            <p>Enhanced service discovery with leader selection and round-robin algorithms for load balancing and high availability.</p>
+                            <h4>Performance String Optimization</h4>
+                            <p>Replaced string concatenation with efficient buffer operations, reducing memory allocations and improving overall system performance.</p>
                         </div>
                     </div>
                 </div>
@@ -766,7 +999,7 @@ google.golang.org/protobuf       // Protocol buffer support
 
     <footer>
         <div class="container">
-            <p>&copy; 2025 Layer8 Overlay Network. A comprehensive virtual networking solution for distributed systems.</p>
+            <p>&copy; 2025 Layer 8 Network BUS. A comprehensive virtual networking solution for distributed systems.</p>
         </div>
     </footer>
 
