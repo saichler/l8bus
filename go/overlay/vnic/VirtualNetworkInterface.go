@@ -2,6 +2,7 @@ package vnic
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"os"
 	"sync"
@@ -238,6 +239,8 @@ func (this *VirtualNetworkInterface) WaitForConnection() {
 	secService, ok := this.resources.Security().(ifs.ISecurityProviderActivate)
 	if ok {
 		secService.Activate(this)
+	} else {
+		fmt.Println("Security provider is not activate!")
 	}
 }
 
