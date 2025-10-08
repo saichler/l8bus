@@ -6,6 +6,7 @@ import (
 
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8services"
 	"github.com/saichler/l8utils/go/utils/strings"
 )
 
@@ -109,7 +110,11 @@ func (this *Request) SetResponse(resp ifs.IElements) {
 	if this == nil {
 		return
 	}
+	tr, ok := resp.Element().(*l8services.L8Transaction)
 	this.response = resp
+	if ok && tr.End == 0 {
+		return
+	}
 	this.cond.Broadcast()
 }
 
