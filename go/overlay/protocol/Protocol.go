@@ -54,7 +54,8 @@ func DataFor(elems ifs.IElements, security ifs.ISecurityProvider) ([]byte, error
 func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceArea byte,
 	priority ifs.Priority, multicastMode ifs.MulticastMode, action ifs.Action, source, vnet string, o ifs.IElements,
 	isRequest, isReply bool, msgNum uint32,
-	tr_state ifs.TransactionState, tr_id, tr_errMsg string, tr_start, tr_timeout int64,
+	tr_state ifs.TransactionState, tr_id, tr_errMsg string,
+	tr_created, tr_queued, tr_running, tr_complete, tr_timeout int64,
 	aaaid string) ([]byte, error) {
 
 	AddMessageCreated()
@@ -86,7 +87,10 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 		tr_state,
 		tr_id,
 		tr_errMsg,
-		tr_start,
+		tr_created,
+		tr_queued,
+		tr_running,
+		tr_complete,
 		tr_timeout)
 
 	return msg.Marshal(nil, this.resources)

@@ -5,6 +5,9 @@ import (
 	"net"
 	"time"
 
+	"github.com/saichler/l8bus/go/overlay/health"
+	"github.com/saichler/l8bus/go/overlay/protocol"
+	vnic2 "github.com/saichler/l8bus/go/overlay/vnic"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8health"
@@ -14,9 +17,6 @@ import (
 	"github.com/saichler/l8types/go/types/l8web"
 	resources2 "github.com/saichler/l8utils/go/utils/resources"
 	"github.com/saichler/l8utils/go/utils/strings"
-	"github.com/saichler/l8bus/go/overlay/health"
-	"github.com/saichler/l8bus/go/overlay/protocol"
-	vnic2 "github.com/saichler/l8bus/go/overlay/vnic"
 )
 
 type VNet struct {
@@ -239,7 +239,8 @@ func (this *VNet) requestHealthSync() {
 	nextId := this.protocol.NextMessageNumber()
 	sync, _ := this.protocol.CreateMessageFor("", health.ServiceName, 0, ifs.P1, ifs.M_All,
 		ifs.Sync, vnetUuid, vnetUuid, object.New(nil, nil), false, false,
-		nextId, ifs.Empty, "", "", -1, -1, "")
+		nextId, ifs.NotATransaction, "", "",
+		-1, -1, -1, -1, -1, "")
 	go this.HandleData(sync, nil)
 }
 
@@ -248,6 +249,7 @@ func (this *VNet) sendHealth(hp *l8health.L8Health) {
 	nextId := this.protocol.NextMessageNumber()
 	h, _ := this.protocol.CreateMessageFor("", health.ServiceName, 0, ifs.P1, ifs.M_All,
 		ifs.POST, vnetUuid, vnetUuid, object.New(nil, hp), false, false,
-		nextId, ifs.Empty, "", "", -1, -1, "")
+		nextId, ifs.NotATransaction, "", "",
+		-1, -1, -1, -1, -1, "")
 	go this.HandleData(h, nil)
 }

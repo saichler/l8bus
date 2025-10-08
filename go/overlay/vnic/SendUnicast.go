@@ -1,9 +1,9 @@
 package vnic
 
 import (
+	"github.com/saichler/l8bus/go/overlay/health"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
-	"github.com/saichler/l8bus/go/overlay/health"
 )
 
 func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, serviceArea byte,
@@ -23,7 +23,8 @@ func (this *VirtualNetworkInterface) unicast(destination, serviceName string, se
 		return err
 	}
 	return this.components.TX().Unicast(destination, serviceName, serviceArea, action, elems, priority, multicastMode,
-		false, false, this.protocol.NextMessageNumber(), ifs.Empty, "", "", -1, -1, "")
+		false, false, this.protocol.NextMessageNumber(), ifs.NotATransaction, "", "",
+		-1, -1, -1, -1, -1, "")
 }
 
 func (this *VirtualNetworkInterface) Request(destination, serviceName string, serviceArea byte,
@@ -53,7 +54,8 @@ func (this *VirtualNetworkInterface) request(destination, serviceName string, se
 		token = tokens[0]
 	}
 	e := this.components.TX().Unicast(destination, serviceName, serviceArea, action, elements, priority, multicastMode,
-		true, false, request.MsgNum(), ifs.Empty, "", "", -1, int64(timeoutInSeconds), token)
+		true, false, request.MsgNum(), ifs.NotATransaction, "", "",
+		-1, -1, -1, -1, int64(timeoutInSeconds), token)
 	if e != nil {
 		return object.NewError(e.Error())
 	}

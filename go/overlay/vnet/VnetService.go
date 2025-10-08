@@ -11,7 +11,7 @@ func (this *VNet) vnetServiceRequest(data []byte, vnic ifs.IVNic) {
 
 	pb, err := this.protocol.ElementsOf(msg)
 	if err != nil {
-		if msg.Tr_State() != ifs.Empty {
+		if msg.Tr_State() != ifs.NotATransaction {
 			//This message should not be processed and we should just
 			//reply with nil to unblock the transaction
 			vnic.Reply(msg, nil)
