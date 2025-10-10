@@ -24,7 +24,7 @@ func (this *VirtualNetworkInterface) unicast(destination, serviceName string, se
 	}
 	return this.components.TX().Unicast(destination, serviceName, serviceArea, action, elems, priority, multicastMode,
 		false, false, this.protocol.NextMessageNumber(), ifs.NotATransaction, "", "",
-		-1, -1, -1, -1, -1, ifs.ReplicationOff, "")
+		-1, -1, -1, -1, -1, 0, false, "")
 }
 
 func (this *VirtualNetworkInterface) Request(destination, serviceName string, serviceArea byte,
@@ -55,7 +55,7 @@ func (this *VirtualNetworkInterface) request(destination, serviceName string, se
 	}
 	e := this.components.TX().Unicast(destination, serviceName, serviceArea, action, elements, priority, multicastMode,
 		true, false, request.MsgNum(), ifs.NotATransaction, "", "",
-		-1, -1, -1, -1, int64(timeoutInSeconds), ifs.ReplicationOff, token)
+		-1, -1, -1, -1, int64(timeoutInSeconds), 0, false, token)
 	if e != nil {
 		return object.NewError(e.Error())
 	}

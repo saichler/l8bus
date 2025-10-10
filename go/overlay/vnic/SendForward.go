@@ -30,7 +30,7 @@ func (this *VirtualNetworkInterface) Forward(msg *ifs.Message, destination strin
 	e := this.components.TX().Unicast(destination, msg.ServiceName(), msg.ServiceArea(), msg.Action(),
 		pb, ifs.P8, ifs.M_All, true, false, request.MsgNum(),
 		msg.Tr_State(), msg.Tr_Id(), msg.Tr_ErrMsg(),
-		msg.Tr_Created(), msg.Tr_Queued(), msg.Tr_Running(), msg.Tr_End(), msg.Tr_Timeout(), msg.Tr_Replica(), msg.AAAId())
+		msg.Tr_Created(), msg.Tr_Queued(), msg.Tr_Running(), msg.Tr_End(), msg.Tr_Timeout(), msg.Tr_Replica(), msg.Tr_IsReplica(), msg.AAAId())
 	if e != nil {
 		return object.NewError(e.Error())
 	}
