@@ -89,26 +89,26 @@ func (this *TX) SendMessage(data []byte) error {
 func (this *TX) Unicast(destination, serviceName string, serviceArea byte, action ifs.Action, any ifs.IElements,
 	p ifs.Priority, m ifs.MulticastMode, isRequest, isReply bool, msgNum uint32,
 	tr_state ifs.TransactionState, tr_id, tr_errMsg string,
-	tr_created, tr_queued, tr_running, tr_completed, tr_timeout int64, token string) error {
+	tr_created, tr_queued, tr_running, tr_completed, tr_timeout int64, tr_replica byte, token string) error {
 	if len(destination) != 36 {
 		return errors.New(strings.New("Invalid destination address ", destination, " size ", len(destination)).String())
 	}
 	return this.Multicast(destination, serviceName, serviceArea, action, any, p, m,
-		isRequest, isReply, msgNum, tr_state, tr_id, tr_errMsg, tr_created, tr_queued, tr_running, tr_completed, tr_timeout, token)
+		isRequest, isReply, msgNum, tr_state, tr_id, tr_errMsg, tr_created, tr_queued, tr_running, tr_completed, tr_timeout, tr_replica, token)
 }
 
 // Multicast is wrapping a protobuf with a secure message and send it to the vnet topic
 func (this *TX) Multicast(destination, serviceName string, serviceArea byte, action ifs.Action, any ifs.IElements,
 	p ifs.Priority, m ifs.MulticastMode, isRequest, isReply bool, msgNum uint32,
 	tr_state ifs.TransactionState, tr_id, tr_errMsg string,
-	tr_created, tr_queued, tr_running, tr_completed, tr_timeout int64,
+	tr_created, tr_queued, tr_running, tr_completed, tr_timeout int64, tr_replica byte,
 	token string) error {
 	// Create message payload
 	data, err := this.vnic.protocol.CreateMessageFor(destination, serviceName, serviceArea, p, m, action,
 		this.vnic.resources.SysConfig().LocalUuid, this.vnic.resources.SysConfig().RemoteUuid, any, isRequest, isReply, msgNum,
 		tr_state, tr_id, tr_errMsg,
 		tr_created, tr_queued, tr_running, tr_completed,
-		tr_timeout, token)
+		tr_timeout, tr_replica, token)
 	if err != nil {
 		this.vnic.resources.Logger().Error("Failed to create message:", err)
 		return err

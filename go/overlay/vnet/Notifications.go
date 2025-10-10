@@ -17,7 +17,7 @@ func (this *VNet) PropertyChangeNotification(set *l8notify.L8NotificationSet) {
 	syncData, _ := this.protocol.CreateMessageFor("", set.ServiceName, byte(set.ServiceArea), ifs.P1, ifs.M_All,
 		ifs.Notify, vnetUuid, vnetUuid, object.New(nil, set), false, false,
 		nextId, ifs.NotATransaction, "", "",
-		-1, -1, -1, -1, -1, "")
+		-1, -1, -1, -1, -1, 0, "")
 
 	go this.HandleData(syncData, nil)
 }
@@ -33,7 +33,7 @@ func (this *VNet) publishRoutes() {
 	routesData, _ := this.protocol.CreateMessageFor("", ifs.SysMsg, ifs.SysArea, ifs.P1, ifs.M_All,
 		ifs.POST, vnetUuid, vnetUuid, object.New(nil, routes), false, false,
 		nextId, ifs.NotATransaction, "", "",
-		-1, -1, -1, -1, -1, "")
+		-1, -1, -1, -1, -1, 0, "")
 
 	allExternal := this.switchTable.conns.allExternals()
 	for _, external := range allExternal {
@@ -52,7 +52,7 @@ func (this *VNet) publishRemovedRoutes(removed map[string]string) {
 	routesData, _ := this.protocol.CreateMessageFor("", ifs.SysMsg, ifs.SysArea, ifs.P1, ifs.M_All,
 		ifs.POST, vnetUuid, vnetUuid, object.New(nil, routes), false, false,
 		nextId, ifs.NotATransaction, "", "",
-		-1, -1, -1, -1, -1, "")
+		-1, -1, -1, -1, -1, 0, "")
 
 	allExternal := this.switchTable.conns.allExternals()
 	for _, external := range allExternal {
@@ -69,7 +69,7 @@ func (this *VNet) publishSystemMessage(sysmsg *l8system.L8SystemMessage) {
 	sysmsgData, _ := this.protocol.CreateMessageFor("", ifs.SysMsg, ifs.SysArea, ifs.P1, ifs.M_All,
 		ifs.POST, vnetUuid, vnetUuid, object.New(nil, sysmsg), false, false,
 		nextId, ifs.NotATransaction, "", "",
-		-1, -1, -1, -1, -1, "")
+		-1, -1, -1, -1, -1, 0, "")
 
 	allExternal := this.switchTable.conns.allExternals()
 	for _, external := range allExternal {

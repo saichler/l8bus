@@ -5,12 +5,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/saichler/l8bus/go/overlay/protocol"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8test/go/infra/t_resources"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/testtypes"
 	"github.com/saichler/l8utils/go/utils/strings"
-	"github.com/saichler/l8bus/go/overlay/protocol"
 )
 
 func testMessageSerialization(t *testing.T) {
@@ -25,7 +25,7 @@ func testMessageSerialization(t *testing.T) {
 		pb.MyInt32 = int32(i)
 		obj := object.New(nil, pb)
 		d, _ := p.CreateMessageFor(uuid, "HelloWorld", 1, ifs.P1, ifs.M_All, ifs.POST, uuid, uuid, obj, false, false, 120,
-			ifs.Empty, "", "", -1, -1, "")
+			ifs.NotATransaction, "", "", -1, -1, -1, -1, -1, 0, "")
 		msg, _ := p.MessageOf(d, res)
 		p.ElementsOf(msg)
 	}
