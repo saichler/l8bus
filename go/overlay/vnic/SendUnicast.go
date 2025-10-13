@@ -70,8 +70,7 @@ func (this *VirtualNetworkInterface) Reply(msg *ifs.Message, response ifs.IEleme
 		this.resources.Logger().Error(e)
 		return e
 	}
-	hc := health.Health(this.resources)
-	hp := hc.Health(msg.Source())
+	hp := health.HealthOf(msg.Source(), this.resources)
 	alias := " No Alias Yet"
 	if hp != nil {
 		alias = hp.Alias

@@ -3,13 +3,13 @@ package vnic
 import (
 	"time"
 
+	"github.com/saichler/l8bus/go/overlay/health"
+	"github.com/saichler/l8bus/go/overlay/protocol"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8health"
 	"github.com/saichler/l8types/go/types/l8notify"
 	"github.com/saichler/l8types/go/types/l8services"
-	"github.com/saichler/l8bus/go/overlay/health"
-	"github.com/saichler/l8bus/go/overlay/protocol"
 )
 
 func (this *VirtualNetworkInterface) NotifyServiceAdded(serviceNames []string, serviceArea byte) error {
@@ -38,8 +38,7 @@ func (this *VirtualNetworkInterface) requestCacheSync(serviceName string, servic
 }
 
 func (this *VirtualNetworkInterface) NotifyServiceRemoved(serviceName string, serviceArea byte) error {
-	hc := health.Health(this.resources)
-	curr := hc.Health(this.resources.SysConfig().LocalUuid)
+	curr := health.HealthOf(this.resources.SysConfig().LocalUuid, this.resources)
 	hp := &l8health.L8Health{}
 	hp.AUuid = curr.AUuid
 	hp.Services = curr.Services

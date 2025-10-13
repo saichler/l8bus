@@ -1,5 +1,6 @@
 package health
 
+/*
 import (
 	"sync"
 
@@ -101,3 +102,4 @@ func Health(r ifs.IResources) *HealthCenter {
 	}
 	return (sp.(*HealthService)).healthCenter
 }
+*/

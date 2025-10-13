@@ -1,16 +1,12 @@
 package health
 
+/*
 import (
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8health"
 	"github.com/saichler/l8types/go/types/l8web"
 	"github.com/saichler/l8utils/go/utils/web"
-)
-
-const (
-	ServiceName     = "Health"
-	ServiceTypeName = "HealthService"
 )
 
 type HealthService struct {
@@ -76,3 +72,4 @@ func (this *HealthService) WebService() ifs.IWebService {
 	return web.New(ServiceName, 0, nil, nil, nil, nil, nil, nil, nil, nil,
 		&l8web.L8Empty{}, &l8health.L8Top{})
 }
+*/

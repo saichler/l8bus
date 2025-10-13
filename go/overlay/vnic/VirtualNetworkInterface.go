@@ -81,9 +81,12 @@ func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *Virtua
 	}
 
 	if conn == nil {
-		// Register the health service
-		vnic.resources.Services().RegisterServiceHandlerType(&health.HealthService{})
-		vnic.resources.Services().Activate(health.ServiceTypeName, health.ServiceName, 0, vnic.resources, nil)
+		health.Activate(vnic)
+		/*
+			// Register the health service
+			vnic.resources.Services().RegisterServiceHandlerType(&health.HealthService{})
+			vnic.resources.Services().Activate(health.ServiceTypeName, health.ServiceName, 0, vnic.resources, nil)
+		*/
 		vnic.resources.Services().RegisterServiceHandlerType(&plugins.PluginService{})
 		vnic.resources.Services().Activate(plugins.ServiceTypeName, plugins.ServiceName, 0, vnic.resources, nil)
 	}
@@ -230,11 +233,10 @@ func (this *VirtualNetworkInterface) WaitForConnection() {
 	for !this.connected {
 		time.Sleep(time.Millisecond * 100)
 	}
-	hc := health.Health(this.resources)
-	hp := hc.Health(this.resources.SysConfig().LocalUuid)
+	hp := health.HealthOf(this.resources.SysConfig().LocalUuid, this.resources)
 	for hp == nil {
 		time.Sleep(time.Millisecond * 100)
-		hp = hc.Health(this.resources.SysConfig().LocalUuid)
+		hp = health.HealthOf(this.resources.SysConfig().LocalUuid, this.resources)
 	}
 	secService, ok := this.resources.Security().(ifs.ISecurityProviderActivate)
 	if ok {
