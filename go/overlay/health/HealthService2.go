@@ -53,3 +53,17 @@ func HealthServiceCache(r ifs.IResources) (ifs.IServiceHandlerCache, bool) {
 	hc, ok := hs.(ifs.IServiceHandlerCache)
 	return hc, ok
 }
+
+func All(r ifs.IResources) []*l8health.L8Health {
+	hc, _ := HealthServiceCache(r)
+	col := hc.Collect(all)
+	result := []*l8health.L8Health{}
+	for _, h := range col {
+		result = append(result, h.(*l8health.L8Health))
+	}
+	return result
+}
+
+func all(i interface{}) (bool, interface{}) {
+	return true, i
+}
