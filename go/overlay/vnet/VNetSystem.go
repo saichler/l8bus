@@ -2,6 +2,7 @@ package vnet
 
 import (
 	"github.com/saichler/l8bus/go/overlay/health"
+	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8system"
 )
@@ -63,11 +64,11 @@ func (this *VNet) routesRemoved(removed map[string]string) {
 }
 
 func (this *VNet) removeHealth(removed map[string]string) {
-	hc := health.Health(this.resources)
+	hs, _ := health.HealthService(this.resources)
 	for uuid, _ := range removed {
-		hp := hc.Health(uuid)
+		hp := health.HealthOf(uuid, this.resources)
 		if hp != nil {
-			hc.Delete(hp, false)
+			hs.Delete(object.New(nil, hp), this.vnic)
 		}
 	}
 }

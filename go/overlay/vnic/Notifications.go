@@ -13,8 +13,7 @@ import (
 )
 
 func (this *VirtualNetworkInterface) NotifyServiceAdded(serviceNames []string, serviceArea byte) error {
-	hc := health.Health(this.resources)
-	curr := hc.Health(this.resources.SysConfig().LocalUuid)
+	curr := health.HealthOf(this.resources.SysConfig().LocalUuid, this.resources)
 	hp := &l8health.L8Health{}
 	hp.AUuid = curr.AUuid
 	hp.Services = curr.Services

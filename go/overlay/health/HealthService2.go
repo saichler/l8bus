@@ -33,7 +33,7 @@ func Activate(vnic ifs.IVNic) {
 }
 
 func HealthOf(uuid string, r ifs.IResources) *l8health.L8Health {
-	sh, ok := r.Services().ServiceHandler(ServiceName, ServiceArea)
+	sh, ok := HealthService(r)
 	if ok {
 		filter := &l8health.L8Health{}
 		filter.AUuid = uuid
@@ -42,4 +42,8 @@ func HealthOf(uuid string, r ifs.IResources) *l8health.L8Health {
 		return result
 	}
 	return nil
+}
+
+func HealthService(r ifs.IResources) (ifs.IServiceHandler, bool) {
+	return r.Services().ServiceHandler(ServiceName, ServiceArea)
 }

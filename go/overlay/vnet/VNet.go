@@ -27,6 +27,7 @@ type VNet struct {
 	switchTable *SwitchTable
 	protocol    *protocol.Protocol
 	discovery   *Discovery
+	vnic        *VnicVnet
 }
 
 func NewVNet(resources ifs.IResources) *VNet {
@@ -36,23 +37,21 @@ func NewVNet(resources ifs.IResources) *VNet {
 	net := &VNet{}
 	net.resources = resources
 	net.resources.Set(net)
-
+	net.vnic = newVnicVnet(net)
 	net.protocol = protocol.New(net.resources)
 	net.running = true
 	net.resources.SysConfig().LocalUuid = ifs.NewUuid()
 	net.switchTable = newSwitchTable(net)
-
-	net.resources.Services().RegisterServiceHandlerType(&health.HealthService{})
-	net.resources.Services().Activate(health.ServiceTypeName, health.ServiceName, 0, net.resources, net)
+	health.Activate(net.vnic)
 	net.discovery = NewDiscovery(net)
 
-	hc := health.Health(net.resources)
 	hp := &l8health.L8Health{}
 	hp.Alias = net.resources.SysConfig().LocalAlias
 	hp.AUuid = net.resources.SysConfig().LocalUuid
 	hp.IsVnet = true
 	hp.Services = net.resources.SysConfig().Services
-	hc.Put(hp, true)
+	hs, _ := health.HealthService(net.resources)
+	hs.Put(object.NewNotify(hp), net.vnic)
 	return net
 }
 
@@ -198,8 +197,7 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 		if err != nil {
 			if !p.Running() {
 				uuid := p.Resources().SysConfig().RemoteUuid
-				h := health.Health(this.resources)
-				hp := h.Health(uuid)
+				hp := health.HealthOf(uuid, this.resources)
 				this.sendHealth(hp)
 			}
 			this.Failed(data, vnic, strings.New("Error sending data:", err.Error()).String())

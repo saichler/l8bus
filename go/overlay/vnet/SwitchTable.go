@@ -3,13 +3,14 @@ package vnet
 import (
 	"time"
 
+	"github.com/saichler/l8bus/go/overlay/health"
+	"github.com/saichler/l8bus/go/overlay/protocol"
+	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8health"
 	"github.com/saichler/l8types/go/types/l8sysconfig"
 	"github.com/saichler/l8types/go/types/l8system"
 	"github.com/saichler/l8utils/go/utils/strings"
-	"github.com/saichler/l8bus/go/overlay/health"
-	"github.com/saichler/l8bus/go/overlay/protocol"
 )
 
 type SwitchTable struct {
@@ -44,14 +45,14 @@ func (this *SwitchTable) addVNic(vnic ifs.IVNic) {
 		this.conns.addExternal(config.RemoteUuid, vnic)
 	}
 
-	hc := health.Health(this.switchService.resources)
-	hp := hc.Health(config.RemoteUuid)
+	hp := health.HealthOf(config.RemoteUuid, this.switchService.resources)
+	hs, _ := health.HealthService(this.switchService.resources)
 	if hp == nil {
 		hp = this.newHealth(config)
-		hc.Put(hp, false)
+		hs.Put(object.New(nil, hp), this.switchService.vnic)
 	} else {
 		this.mergeServices(hp, config)
-		hc.Patch(hp, false)
+		hs.Patch(object.New(nil, hp), this.switchService.vnic)
 	}
 
 	this.switchService.publishRoutes()
@@ -145,18 +146,16 @@ func (this *SwitchTable) monitor() {
 	}
 	for this.switchService.running {
 		time.Sleep(time.Second * 15)
-		hc := health.Health(this.switchService.resources)
-		if hc == nil {
-			continue
-		}
+
 		allDown := this.conns.allDownConnections()
 		for uuid, _ := range allDown {
 			this.conns.shutdownConnection(uuid)
-			hp := hc.Health(uuid)
+			hp := health.HealthOf(uuid, this.switchService.resources)
 			if hp.Status != l8health.L8HealthState_Down {
 				this.switchService.resources.Logger().Info("Update health status to Down")
 				hp.Status = l8health.L8HealthState_Down
-				hc.Patch(hp, false)
+				hs, _ := health.HealthService(this.switchService.resources)
+				hs.Patch(object.New(nil, hp), this.switchService.vnic)
 			}
 		}
 	}
