@@ -1,12 +1,13 @@
 package tests
 
 import (
-	. "github.com/saichler/l8test/go/infra/t_resources"
-	. "github.com/saichler/l8test/go/infra/t_service"
-	"github.com/saichler/l8bus/go/overlay/health"
-	"github.com/saichler/l8types/go/ifs"
 	"testing"
 	"time"
+
+	"github.com/saichler/l8bus/go/overlay/health"
+	. "github.com/saichler/l8test/go/infra/t_resources"
+	. "github.com/saichler/l8test/go/infra/t_service"
+	"github.com/saichler/l8types/go/ifs"
 )
 
 func TestKeepAlive(t *testing.T) {
@@ -31,8 +32,7 @@ func TestKeepAlive(t *testing.T) {
 	}
 
 	time.Sleep(time.Second * time.Duration(eg2_1.Resources().SysConfig().KeepAliveIntervalSeconds+5))
-	hc := health.Health(eg1_2.Resources())
-	hp := hc.Health(eg2_1.Resources().SysConfig().LocalUuid)
+	hp := health.HealthOf(eg2_1.Resources().SysConfig().LocalUuid, eg1_2.Resources())
 	if hp.Stats.TxMsgCount == 0 {
 		Log.Fail(t, "Expected at least one message to be sent for ", eg2_1.Resources().SysConfig().LocalUuid)
 	}

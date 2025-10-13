@@ -1,7 +1,10 @@
 package vnet
 
 import (
+	"github.com/saichler/l8bus/go/overlay/health"
+	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8health"
 	"github.com/saichler/l8types/go/types/l8notify"
 	"github.com/saichler/l8types/go/types/l8services"
 )
@@ -14,122 +17,167 @@ func newVnicVnet(vnet *VNet) *VnicVnet {
 	return &VnicVnet{vnet: vnet}
 }
 
-func (v *VnicVnet) Start() {
+func (this *VnicVnet) Start() {
 	panic("implement me")
 }
 
-func (v *VnicVnet) Shutdown() {
+func (this *VnicVnet) Shutdown() {
 	panic("implement me")
 }
 
-func (v *VnicVnet) Name() string {
+func (this *VnicVnet) Name() string {
 	panic("implement me")
 	return ""
 }
 
-func (v *VnicVnet) SendMessage(data []byte) error {
+func (this *VnicVnet) SendMessage(data []byte) error {
 	panic("implement me")
 	return nil
 }
 
-func (v *VnicVnet) Unicast(destination string, serviceName string, area byte, action ifs.Action, data interface{}) error {
+func (this *VnicVnet) Unicast(destination string, serviceName string, area byte, action ifs.Action, data interface{}) error {
 	panic("implement me")
 	return nil
 }
 
-func (v *VnicVnet) Request(destination string, serviceName string, area byte, action ifs.Action, data interface{}, timeout int, returnAttributes ...string) ifs.IElements {
+func (this *VnicVnet) Request(destination string, serviceName string, area byte, action ifs.Action, data interface{}, timeout int, returnAttributes ...string) ifs.IElements {
 	panic("implement me")
 	return nil
 }
 
-func (v *VnicVnet) Reply(msg *ifs.Message, elements ifs.IElements) error {
+func (this *VnicVnet) Reply(msg *ifs.Message, elements ifs.IElements) error {
 	panic("implement me")
 	return nil
 }
 
-func (v *VnicVnet) Multicast(serviceName string, area byte, action ifs.Action, data interface{}) error {
+func (this *VnicVnet) Multicast(serviceName string, serviceArea byte, action ifs.Action, any interface{}) error {
+	var err error
+	var data []byte
+	myUuid := this.vnet.resources.SysConfig().LocalUuid
+	connections := this.vnet.switchTable.connectionsForService(serviceName, serviceArea, myUuid, ifs.M_All)
+	for uuid, connection := range connections {
+		data, err = this.vnet.protocol.CreateMessageFor(uuid, serviceName, serviceArea, ifs.P1, ifs.M_All, action,
+			myUuid, uuid, object.New(nil, any), false, false, this.vnet.protocol.NextMessageNumber(),
+			ifs.NotATransaction, "", "", -1, -1, -1, -1,
+			-1, 0, false, "")
+		if err != nil {
+			continue
+		}
+		e := connection.SendMessage(data)
+		if e != nil {
+			err = e
+		}
+	}
+	return err
+}
+
+func (this *VnicVnet) RoundRobin(serviceName string, area byte, action ifs.Action, data interface{}) error {
 	panic("implement me")
 	return nil
 }
 
-func (v *VnicVnet) RoundRobin(serviceName string, area byte, action ifs.Action, data interface{}) error {
+func (this *VnicVnet) RoundRobinRequest(serviceName string, area byte, action ifs.Action, data interface{}, timeout int, returnAttributes ...string) ifs.IElements {
 	panic("implement me")
 	return nil
 }
 
-func (v *VnicVnet) RoundRobinRequest(serviceName string, area byte, action ifs.Action, data interface{}, timeout int, returnAttributes ...string) ifs.IElements {
+func (this *VnicVnet) Proximity(serviceName string, area byte, action ifs.Action, data interface{}) error {
 	panic("implement me")
 	return nil
 }
 
-func (v *VnicVnet) Proximity(serviceName string, area byte, action ifs.Action, data interface{}) error {
+func (this *VnicVnet) ProximityRequest(serviceName string, area byte, action ifs.Action, data interface{}, timeout int, returnAttributes ...string) ifs.IElements {
 	panic("implement me")
 	return nil
 }
 
-func (v *VnicVnet) ProximityRequest(serviceName string, area byte, action ifs.Action, data interface{}, timeout int, returnAttributes ...string) ifs.IElements {
+func (this *VnicVnet) Leader(serviceName string, area byte, action ifs.Action, data interface{}) error {
 	panic("implement me")
 	return nil
 }
 
-func (v *VnicVnet) Leader(serviceName string, area byte, action ifs.Action, data interface{}) error {
+func (this *VnicVnet) LeaderRequest(serviceName string, area byte, action ifs.Action, data interface{}, timeout int, returnAttributes ...string) ifs.IElements {
 	panic("implement me")
 	return nil
 }
 
-func (v *VnicVnet) LeaderRequest(serviceName string, area byte, action ifs.Action, data interface{}, timeout int, returnAttributes ...string) ifs.IElements {
+func (this *VnicVnet) Local(serviceName string, area byte, action ifs.Action, data interface{}) error {
 	panic("implement me")
 	return nil
 }
 
-func (v *VnicVnet) Local(serviceName string, area byte, action ifs.Action, data interface{}) error {
+func (this *VnicVnet) LocalRequest(serviceName string, area byte, action ifs.Action, data interface{}, timeout int, returnAttributes ...string) ifs.IElements {
 	panic("implement me")
 	return nil
 }
 
-func (v *VnicVnet) LocalRequest(serviceName string, area byte, action ifs.Action, data interface{}, timeout int, returnAttributes ...string) ifs.IElements {
+func (this *VnicVnet) Forward(msg *ifs.Message, destination string) ifs.IElements {
 	panic("implement me")
 	return nil
 }
 
-func (v *VnicVnet) Forward(msg *ifs.Message, destination string) ifs.IElements {
+func (this *VnicVnet) ServiceAPI(serviceName string, area byte) ifs.ServiceAPI {
 	panic("implement me")
 	return nil
 }
 
-func (v *VnicVnet) ServiceAPI(serviceName string, area byte) ifs.ServiceAPI {
+func (this *VnicVnet) Resources() ifs.IResources {
+	return this.vnet.resources
+}
+
+func (this *VnicVnet) NotifyServiceAdded(serviceNames []string, serviceArea byte) error {
+	curr := health.HealthOf(this.vnet.resources.SysConfig().LocalUuid, this.vnet.resources)
+	hp := &l8health.L8Health{}
+	hp.AUuid = curr.AUuid
+	hp.Services = curr.Services
+	mergeServices(hp, this.vnet.resources.SysConfig().Services)
+	for _, serviceName := range serviceNames {
+		this.Multicast(serviceName, serviceArea, ifs.PATCH, hp)
+	}
+	return nil
+}
+
+func (this *VnicVnet) NotifyServiceRemoved(serviceName string, area byte) error {
 	panic("implement me")
 	return nil
 }
 
-func (v *VnicVnet) Resources() ifs.IResources {
-	panic("implement me")
-	return nil
+func (this *VnicVnet) PropertyChangeNotification(set *l8notify.L8NotificationSet) {
+	this.vnet.PropertyChangeNotification(set)
 }
 
-func (v *VnicVnet) NotifyServiceAdded(serviceNames []string, area byte) error {
-	panic("implement me")
-	return nil
-}
-
-func (v *VnicVnet) NotifyServiceRemoved(serviceName string, area byte) error {
-	panic("implement me")
-	return nil
-}
-
-func (v *VnicVnet) PropertyChangeNotification(set *l8notify.L8NotificationSet) {
+func (this *VnicVnet) WaitForConnection() {
 	panic("implement me")
 }
 
-func (v *VnicVnet) WaitForConnection() {
-	panic("implement me")
-}
-
-func (v *VnicVnet) Running() bool {
+func (this *VnicVnet) Running() bool {
 	panic("implement me")
 	return false
 }
 
-func (v *VnicVnet) RegisterServiceLink(link *l8services.L8ServiceLink) {
+func (this *VnicVnet) RegisterServiceLink(link *l8services.L8ServiceLink) {
 	panic("implement me")
+}
+
+func mergeServices(hp *l8health.L8Health, services *l8services.L8Services) {
+	if hp.Services == nil {
+		hp.Services = services
+		return
+
+	}
+	for serviceName, serviceAreas := range services.ServiceToAreas {
+		_, ok := hp.Services.ServiceToAreas[serviceName]
+		if !ok {
+			hp.Services.ServiceToAreas[serviceName] = serviceAreas
+			continue
+		}
+		if hp.Services.ServiceToAreas[serviceName].Areas == nil {
+			hp.Services.ServiceToAreas[serviceName].Areas = serviceAreas.Areas
+			continue
+		}
+		for svArea, score := range serviceAreas.Areas {
+			serviceArea := svArea
+			hp.Services.ServiceToAreas[serviceName].Areas[serviceArea] = score
+		}
+	}
 }

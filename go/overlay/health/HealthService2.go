@@ -5,6 +5,7 @@ import (
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8health"
+	"github.com/saichler/l8types/go/types/l8services"
 	"github.com/saichler/l8types/go/types/l8web"
 	"github.com/saichler/l8utils/go/utils/web"
 )
@@ -19,8 +20,17 @@ func Activate(vnic ifs.IVNic) {
 	serviceConfig := &ifs.ServiceConfig{}
 	serviceConfig.ServiceName = ServiceName
 	serviceConfig.ServiceArea = ServiceArea
-	serviceConfig.ServiceItem = &l8health.L8Health{}
-	serviceConfig.SendNotifications = false
+
+	services := &l8services.L8Services{}
+	services.ServiceToAreas = make(map[string]*l8services.L8ServiceAreas)
+	services.ServiceToAreas[ServiceName] = &l8services.L8ServiceAreas{}
+	services.ServiceToAreas[ServiceName].Areas = make(map[int32]bool)
+	services.ServiceToAreas[ServiceName].Areas[int32(ServiceArea)] = true
+
+	serviceConfig.ServiceItem = &l8health.L8Health{AUuid: vnic.Resources().SysConfig().LocalUuid, Services: services}
+	serviceConfig.InitItems = []interface{}{serviceConfig.ServiceItem}
+	
+	serviceConfig.SendNotifications = true
 	serviceConfig.Transaction = false
 	serviceConfig.PrimaryKey = []string{"AUuid"}
 	serviceConfig.WebServiceDef = web.New(ServiceName, ServiceArea,
@@ -54,12 +64,13 @@ func HealthServiceCache(r ifs.IResources) (ifs.IServiceHandlerCache, bool) {
 	return hc, ok
 }
 
-func All(r ifs.IResources) []*l8health.L8Health {
+func All(r ifs.IResources) map[string]*l8health.L8Health {
 	hc, _ := HealthServiceCache(r)
 	col := hc.Collect(all)
-	result := []*l8health.L8Health{}
+	result := make(map[string]*l8health.L8Health)
 	for _, h := range col {
-		result = append(result, h.(*l8health.L8Health))
+		hp := h.(*l8health.L8Health)
+		result[hp.AUuid] = hp
 	}
 	return result
 }

@@ -20,8 +20,7 @@ func TestMain(m *testing.M) {
 
 func isVnic1Ready() bool {
 	nic := topo.VnicByVnetNum(1, 1)
-	hc := health.Health(nic.Resources())
-	hp := hc.All()
+	hp := health.All(nic.Resources())
 	if len(hp) != 15 {
 		return false
 	}
@@ -36,8 +35,7 @@ func TestTopologyHealth(t *testing.T) {
 	for vnetNum := 1; vnetNum <= 3; vnetNum++ {
 		for vnicNum := 1; vnicNum <= 4; vnicNum++ {
 			nic := topo.VnicByVnetNum(vnetNum, vnicNum)
-			hc := health.Health(nic.Resources())
-			hp := hc.All()
+			hp := health.All(nic.Resources())
 			if len(hp) < 15 {
 				Log.Fail(t, "Expected ", nic.Resources().SysConfig().LocalAlias,
 					" to have 15 heath points, but it has ", len(hp))
@@ -51,9 +49,9 @@ func TestTopologyHealth(t *testing.T) {
 	eg1_1 := topo.VnicByVnetNum(1, 1)
 	eg2_1 := topo.VnicByVnetNum(2, 1)
 	eg3_1 := topo.VnicByVnetNum(3, 1)
-	eg1_1_s := health.Health(eg1_1.Resources()).All()
-	eg2_1_s := health.Health(eg2_1.Resources()).All()
-	eg3_1_s := health.Health(eg3_1.Resources()).All()
+	eg1_1_s := health.All(eg1_1.Resources())
+	eg2_1_s := health.All(eg2_1.Resources())
+	eg3_1_s := health.All(eg3_1.Resources())
 	if len(eg1_1_s) < 15 || len(eg2_1_s) < 15 || len(eg3_1_s) < 15 {
 		Log.Fail(t, "Expected health points to be equal ", len(eg1_1_s), ":", len(eg2_1_s), ":", len(eg3_1_s))
 		return
@@ -247,8 +245,7 @@ func TestDestinationUnreachable(t *testing.T) {
 		return
 	}
 
-	h := health.Health(eg3_2.Resources())
-	eg4h := h.Health(eg1_1.Resources().SysConfig().LocalUuid)
+	eg4h := health.HealthOf(eg1_1.Resources().SysConfig().LocalUuid, eg3_2.Resources())
 	if eg4h != nil {
 		Log.Fail(t, "eg1_1 state", " Not Down")
 		return
