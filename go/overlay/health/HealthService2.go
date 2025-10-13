@@ -47,3 +47,9 @@ func HealthOf(uuid string, r ifs.IResources) *l8health.L8Health {
 func HealthService(r ifs.IResources) (ifs.IServiceHandler, bool) {
 	return r.Services().ServiceHandler(ServiceName, ServiceArea)
 }
+
+func HealthServiceCache(r ifs.IResources) (ifs.IServiceHandlerCache, bool) {
+	hs, _ := HealthService(r)
+	hc, ok := hs.(ifs.IServiceHandlerCache)
+	return hc, ok
+}
