@@ -42,7 +42,7 @@ func NewVNet(resources ifs.IResources) *VNet {
 	net.running = true
 	net.resources.SysConfig().LocalUuid = ifs.NewUuid()
 	net.switchTable = newSwitchTable(net)
-	health.Activate(net.vnic)
+	health.Activate(net.vnic, true)
 	net.discovery = NewDiscovery(net)
 
 	hp := &l8health.L8Health{}
@@ -230,16 +230,6 @@ func (this *VNet) ShutdownVNic(vnic ifs.IVNic) {
 
 func (this *VNet) Resources() ifs.IResources {
 	return this.resources
-}
-
-func (this *VNet) requestHealthSync() {
-	vnetUuid := this.resources.SysConfig().LocalUuid
-	nextId := this.protocol.NextMessageNumber()
-	sync, _ := this.protocol.CreateMessageFor("", health.ServiceName, 0, ifs.P1, ifs.M_All,
-		ifs.Sync, vnetUuid, vnetUuid, object.New(nil, nil), false, false,
-		nextId, ifs.NotATransaction, "", "",
-		-1, -1, -1, -1, -1, 0, false, "")
-	go this.HandleData(sync, nil)
 }
 
 func (this *VNet) sendHealth(hp *l8health.L8Health) {

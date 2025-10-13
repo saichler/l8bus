@@ -16,7 +16,7 @@ const (
 	ServiceArea     = byte(0)
 )
 
-func Activate(vnic ifs.IVNic) {
+func Activate(vnic ifs.IVNic, isVnet bool) {
 	serviceConfig := &ifs.ServiceConfig{}
 	serviceConfig.ServiceName = ServiceName
 	serviceConfig.ServiceArea = ServiceArea
@@ -30,7 +30,7 @@ func Activate(vnic ifs.IVNic) {
 	serviceConfig.ServiceItem = &l8health.L8Health{AUuid: vnic.Resources().SysConfig().LocalUuid, Services: services}
 	serviceConfig.InitItems = []interface{}{serviceConfig.ServiceItem}
 
-	serviceConfig.SendNotifications = true
+	serviceConfig.SendNotifications = isVnet
 	serviceConfig.Transaction = false
 	serviceConfig.PrimaryKey = []string{"AUuid"}
 	serviceConfig.WebServiceDef = web.New(ServiceName, ServiceArea,

@@ -56,6 +56,7 @@ func (this *SwitchTable) addVNic(vnic ifs.IVNic) {
 	}
 
 	this.switchService.publishRoutes()
+	this.switchService.publisLocalHealth()
 }
 
 func (this *SwitchTable) mergeServices(hp *l8health.L8Health, config *l8sysconfig.L8SysConfig) {

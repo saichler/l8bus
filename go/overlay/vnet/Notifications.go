@@ -1,9 +1,13 @@
 package vnet
 
 import (
+	"fmt"
+
+	"github.com/saichler/l8bus/go/overlay/health"
 	"github.com/saichler/l8bus/go/overlay/protocol"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8health"
 	"github.com/saichler/l8types/go/types/l8notify"
 	"github.com/saichler/l8types/go/types/l8system"
 )
@@ -22,11 +26,54 @@ func (this *VNet) PropertyChangeNotification(set *l8notify.L8NotificationSet) {
 	go this.HandleData(syncData, nil)
 }
 
+func (this *VNet) publisLocalHealth() {
+	vnetUuid := this.resources.SysConfig().LocalUuid
+	vnetName := this.resources.SysConfig().LocalAlias
+	fmt.Println("[Health] - ", vnetName)
+
+	local := this.switchTable.conns.allInternals()
+	ext := this.switchTable.conns.allExternals()
+
+	fmt.Println("Vnet ", vnetName, " publish health ", len(local), " ext ", len(ext))
+
+	if len(local) > 0 {
+		hps := make([]*l8health.L8Health, 0)
+		for uuid, _ := range local {
+			hp := health.HealthOf(uuid, this.resources)
+			hps = append(hps, hp)
+		}
+		localHealth := health.HealthOf(vnetUuid, this.resources)
+		hps = append(hps, localHealth)
+		for extUuid, _ := range ext {
+			extHealth := health.HealthOf(extUuid, this.resources)
+			hps = append(hps, extHealth)
+		}
+
+		nextId := this.protocol.NextMessageNumber()
+		sync, _ := this.protocol.CreateMessageFor("", health.ServiceName, health.ServiceArea, ifs.P1, ifs.M_All,
+			ifs.PATCH, vnetUuid, vnetUuid, object.New(nil, hps), false, false,
+			nextId, ifs.NotATransaction, "", "",
+			-1, -1, -1, -1, -1, 0, false, "")
+		for _, conn := range ext {
+			conn.SendMessage(sync)
+		}
+		for _, conn := range local {
+			conn.SendMessage(sync)
+		}
+	}
+
+}
+
 func (this *VNet) publishRoutes() {
 	vnetUuid := this.resources.SysConfig().LocalUuid
+	vnetName := this.resources.SysConfig().LocalAlias
+	fmt.Println("[Routes] - ", vnetName)
+	defer fmt.Println("[Routes End] - ", vnetName)
 	nextId := this.protocol.NextMessageNumber()
 
 	routeTable := &l8system.L8RouteTable{Rows: this.switchTable.conns.Routes()}
+	fmt.Println("Vnet ", vnetName, " publish routes ", len(routeTable.Rows))
+
 	data := &l8system.L8SystemMessage_RouteTable{RouteTable: routeTable}
 	routes := &l8system.L8SystemMessage{Action: l8system.L8SystemAction_Routes_Add, Data: data}
 

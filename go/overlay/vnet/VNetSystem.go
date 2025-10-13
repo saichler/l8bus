@@ -51,7 +51,7 @@ func (this *VNet) systemMessageReceived(data []byte, vnic ifs.IVNic) {
 func (this *VNet) routesAdded(added map[string]string) {
 	if len(added) > 0 {
 		this.publishRoutes()
-		this.requestHealthSync()
+		this.publisLocalHealth()
 	}
 }
 
