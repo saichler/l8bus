@@ -29,7 +29,7 @@ func Activate(vnic ifs.IVNic) {
 
 	serviceConfig.ServiceItem = &l8health.L8Health{AUuid: vnic.Resources().SysConfig().LocalUuid, Services: services}
 	serviceConfig.InitItems = []interface{}{serviceConfig.ServiceItem}
-	
+
 	serviceConfig.SendNotifications = true
 	serviceConfig.Transaction = false
 	serviceConfig.PrimaryKey = []string{"AUuid"}
