@@ -135,7 +135,13 @@ func (this *VnicVnet) Resources() ifs.IResources {
 }
 
 func (this *VnicVnet) NotifyServiceAdded(serviceNames []string, serviceArea byte) error {
+	if this == nil {
+		return nil
+	}
 	curr := health.HealthOf(this.vnet.resources.SysConfig().LocalUuid, this.vnet.resources)
+	if curr == nil {
+		return nil
+	}
 	hp := &l8health.L8Health{}
 	hp.AUuid = curr.AUuid
 	hp.Services = curr.Services
