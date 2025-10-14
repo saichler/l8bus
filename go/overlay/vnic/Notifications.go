@@ -15,26 +15,10 @@ import (
 func (this *VirtualNetworkInterface) NotifyServiceAdded(serviceNames []string, serviceArea byte) error {
 	curr := health.HealthOf(this.resources.SysConfig().LocalUuid, this.resources)
 	if curr == nil {
-		go this.notifyServiceAdded(serviceNames, serviceArea)
-		return nil
+		curr = &l8health.L8Health{}
+		curr.AUuid = this.resources.SysConfig().LocalUuid
+		curr.Services = this.resources.SysConfig().Services
 	}
-	hp := &l8health.L8Health{}
-	hp.AUuid = curr.AUuid
-	hp.Services = curr.Services
-	mergeServices(hp, this.resources.SysConfig().Services)
-	//send notification for health service
-	err := this.Unicast(this.resources.SysConfig().RemoteUuid, health.ServiceName, 0, ifs.PATCH, hp)
-	for _, serviceName := range serviceNames {
-		{
-			go this.requestCacheSync(serviceName, serviceArea)
-		}
-	}
-	return err
-}
-
-func (this *VirtualNetworkInterface) notifyServiceAdded(serviceNames []string, serviceArea byte) error {
-	time.Sleep(time.Second)
-	curr := health.HealthOf(this.resources.SysConfig().LocalUuid, this.resources)
 	hp := &l8health.L8Health{}
 	hp.AUuid = curr.AUuid
 	hp.Services = curr.Services
