@@ -1,7 +1,7 @@
 package vnet
 
 import (
-	"fmt"
+	"time"
 
 	"github.com/saichler/l8bus/go/overlay/health"
 	"github.com/saichler/l8bus/go/overlay/protocol"
@@ -27,14 +27,14 @@ func (this *VNet) PropertyChangeNotification(set *l8notify.L8NotificationSet) {
 }
 
 func (this *VNet) publisLocalHealth() {
+	time.Sleep(time.Second)
 	vnetUuid := this.resources.SysConfig().LocalUuid
 	vnetName := this.resources.SysConfig().LocalAlias
-	fmt.Println("[Health] - ", vnetName)
 
 	local := this.switchTable.conns.allInternals()
 	ext := this.switchTable.conns.allExternals()
 
-	fmt.Println("Vnet ", vnetName, " publish health ", len(local), " ext ", len(ext))
+	this.resources.Logger().Debug("Vnet ", vnetName, " publish health ", len(local), " ext ", len(ext))
 
 	if len(local) > 0 {
 		hps := make([]*l8health.L8Health, 0)
@@ -57,6 +57,7 @@ func (this *VNet) publisLocalHealth() {
 		for _, conn := range ext {
 			conn.SendMessage(sync)
 		}
+
 		for _, conn := range local {
 			conn.SendMessage(sync)
 		}
@@ -67,12 +68,11 @@ func (this *VNet) publisLocalHealth() {
 func (this *VNet) publishRoutes() {
 	vnetUuid := this.resources.SysConfig().LocalUuid
 	vnetName := this.resources.SysConfig().LocalAlias
-	fmt.Println("[Routes] - ", vnetName)
-	defer fmt.Println("[Routes End] - ", vnetName)
+
 	nextId := this.protocol.NextMessageNumber()
 
 	routeTable := &l8system.L8RouteTable{Rows: this.switchTable.conns.Routes()}
-	fmt.Println("Vnet ", vnetName, " publish routes ", len(routeTable.Rows))
+	this.resources.Logger().Debug("Vnet ", vnetName, " publish routes ", len(routeTable.Rows))
 
 	data := &l8system.L8SystemMessage_RouteTable{RouteTable: routeTable}
 	routes := &l8system.L8SystemMessage{Action: l8system.L8SystemAction_Routes_Add, Data: data}
@@ -86,6 +86,7 @@ func (this *VNet) publishRoutes() {
 	for _, external := range allExternal {
 		external.SendMessage(routesData)
 	}
+	go this.publisLocalHealth()
 }
 
 func (this *VNet) publishRemovedRoutes(removed map[string]string) {

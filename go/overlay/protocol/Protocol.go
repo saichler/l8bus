@@ -58,6 +58,9 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 	tr_created, tr_queued, tr_running, tr_complete, tr_timeout int64, tr_replica byte, tr_isReplica bool,
 	aaaid string) ([]byte, error) {
 
+	//Disable priority for now until i figure out what is causing starvation
+	priority = ifs.P8
+
 	AddMessageCreated()
 
 	var data []byte

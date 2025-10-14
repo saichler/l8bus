@@ -8,8 +8,6 @@ import (
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8health"
-	"github.com/saichler/l8types/go/types/l8sysconfig"
-	"github.com/saichler/l8types/go/types/l8system"
 	"github.com/saichler/l8utils/go/utils/strings"
 )
 
@@ -40,68 +38,12 @@ func (this *SwitchTable) addVNic(vnic ifs.IVNic) {
 	// If it is local, add it to the internal map
 	if isLocal && !config.ForceExternal {
 		this.conns.addInternal(config.RemoteUuid, vnic)
+		go this.switchService.sendHealthReport(config.RemoteUuid)
 	} else {
 		// otherwise, add it to the external connections
 		this.conns.addExternal(config.RemoteUuid, vnic)
 	}
-
-	hp := health.HealthOf(config.RemoteUuid, this.switchService.resources)
-	hs, _ := health.HealthService(this.switchService.resources)
-	if hp == nil {
-		hp = this.newHealth(config)
-		hs.Put(object.New(nil, hp), this.switchService.vnic)
-	} else {
-		this.mergeServices(hp, config)
-		hs.Patch(object.New(nil, hp), this.switchService.vnic)
-	}
-
 	this.switchService.publishRoutes()
-	this.switchService.publisLocalHealth()
-}
-
-func (this *SwitchTable) mergeServices(hp *l8health.L8Health, config *l8sysconfig.L8SysConfig) {
-	if hp.Services == nil {
-		hp.Services = config.Services
-		return
-	}
-	if hp.Services.ServiceToAreas == nil {
-		hp.Services.ServiceToAreas = config.Services.ServiceToAreas
-		return
-	}
-	for k1, v1 := range config.Services.ServiceToAreas {
-		exist, ok := hp.Services.ServiceToAreas[k1]
-		if !ok {
-			hp.Services.ServiceToAreas[k1] = v1
-		} else {
-			for k2, v2 := range v1.Areas {
-				exist.Areas[k2] = v2
-			}
-		}
-	}
-}
-
-func (this *SwitchTable) newHealth(config *l8sysconfig.L8SysConfig) *l8health.L8Health {
-	hp := &l8health.L8Health{}
-	hp.Alias = config.RemoteAlias
-	hp.AUuid = config.RemoteUuid
-	hp.Status = l8health.L8HealthState_Up
-	hp.Services = config.Services
-	isLocal := protocol.IpSegment.IsLocal(config.Address)
-	hp.IsVnet = config.ForceExternal || !isLocal
-
-	if !hp.IsVnet {
-		hp.StartTime = time.Now().UnixMilli()
-		hp.ZUuid = config.LocalUuid
-	}
-
-	for k, v := range hp.Services.ServiceToAreas {
-		for k2, _ := range v.Areas {
-			sd := &l8system.L8ServiceData{ServiceName: k, ServiceArea: k2, ServiceUuid: hp.AUuid}
-			this.services.addService(sd)
-		}
-	}
-
-	return hp
 }
 
 func (this *SwitchTable) connectionsForService(serviceName string, serviceArea byte, sourceSwitch string, mode ifs.MulticastMode) map[string]ifs.IVNic {

@@ -35,8 +35,17 @@ func (this *VnicVnet) SendMessage(data []byte) error {
 	return nil
 }
 
-func (this *VnicVnet) Unicast(destination string, serviceName string, area byte, action ifs.Action, data interface{}) error {
-	panic("implement me")
+func (this *VnicVnet) Unicast(destination string, serviceName string, serviceArea byte, action ifs.Action, data interface{}) error {
+	_, conn := this.vnet.switchTable.conns.getConnection(destination, true)
+	elems := object.New(nil, data)
+	bts, err := this.vnet.protocol.CreateMessageFor(destination, serviceName, serviceArea, ifs.P1, ifs.M_All, action,
+		this.Resources().SysConfig().LocalUuid, this.Resources().SysConfig().LocalUuid, elems,
+		false, false, this.vnet.protocol.NextMessageNumber(), ifs.NotATransaction,
+		"", "", -1, -1, -1, -1, -1, 0, false, "")
+	if err != nil {
+		return err
+	}
+	conn.SendMessage(bts)
 	return nil
 }
 

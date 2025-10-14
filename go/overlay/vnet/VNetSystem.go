@@ -38,9 +38,11 @@ func (this *VNet) systemMessageReceived(data []byte, vnic ifs.IVNic) {
 		this.routesRemoved(removed)
 		return
 	case l8system.L8SystemAction_Service_Add:
-		this.switchTable.services.addService(systemMessage.GetServiceData())
+		serviceData := systemMessage.GetServiceData()
+		this.switchTable.services.addService(serviceData)
 		if systemMessage.Publish {
 			this.publishSystemMessage(systemMessage)
+			//go health.AddServiceToHealth(msg.Source(), serviceData.ServiceName, serviceData.ServiceArea, this.resources)
 		}
 		return
 	default:
@@ -51,7 +53,6 @@ func (this *VNet) systemMessageReceived(data []byte, vnic ifs.IVNic) {
 func (this *VNet) routesAdded(added map[string]string) {
 	if len(added) > 0 {
 		this.publishRoutes()
-		this.publisLocalHealth()
 	}
 }
 

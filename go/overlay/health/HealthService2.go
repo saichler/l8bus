@@ -1,6 +1,8 @@
 package health
 
 import (
+	"time"
+
 	"github.com/saichler/l8services/go/services/generic"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
@@ -77,4 +79,27 @@ func All(r ifs.IResources) map[string]*l8health.L8Health {
 
 func all(i interface{}) (bool, interface{}) {
 	return true, i
+}
+
+func AddServiceToHealth(uuid string, serviceName string, serviceArea int32, r ifs.IResources) {
+	time.Sleep(time.Second)
+	hp := HealthOf(uuid, r)
+	if hp == nil {
+		return
+	}
+	if hp.Services == nil {
+		hp.Services = &l8services.L8Services{}
+	}
+	if hp.Services.ServiceToAreas == nil {
+		hp.Services.ServiceToAreas = make(map[string]*l8services.L8ServiceAreas)
+	}
+	_, ok := hp.Services.ServiceToAreas[serviceName]
+	if !ok {
+		hp.Services.ServiceToAreas[serviceName] = &l8services.L8ServiceAreas{}
+		hp.Services.ServiceToAreas[serviceName].Areas = make(map[int32]bool)
+	}
+	hp.Services.ServiceToAreas[serviceName].Areas[serviceArea] = true
+
+	hs, _ := HealthService(r)
+	hs.Patch(object.New(nil, hp), nil)
 }

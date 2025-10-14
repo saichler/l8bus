@@ -140,6 +140,8 @@ func (this *VNet) connect(conn net.Conn) {
 		return
 	}
 
+	this.addHealthForVNic(vnic.Resources().SysConfig())
+
 	vnic.Start()
 	this.notifyNewVNic(vnic)
 }
