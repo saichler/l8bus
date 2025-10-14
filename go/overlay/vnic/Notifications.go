@@ -14,9 +14,6 @@ import (
 
 func (this *VirtualNetworkInterface) NotifyServiceAdded(serviceNames []string, serviceArea byte) error {
 	curr := health.HealthOf(this.resources.SysConfig().LocalUuid, this.resources)
-	if curr == nil {
-		return nil
-	}
 	hp := &l8health.L8Health{}
 	hp.AUuid = curr.AUuid
 	hp.Services = curr.Services
