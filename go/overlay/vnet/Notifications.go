@@ -57,12 +57,7 @@ func (this *VNet) publisLocalHealth() {
 		for _, conn := range ext {
 			conn.SendMessage(sync)
 		}
-
-		for _, conn := range local {
-			conn.SendMessage(sync)
-		}
 	}
-
 }
 
 func (this *VNet) publishRoutes() {

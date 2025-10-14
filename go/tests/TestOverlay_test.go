@@ -224,6 +224,9 @@ func TestDestinationUnreachable(t *testing.T) {
 		return
 	}
 
+	eg4h := health.HealthOf(eg1_1.Resources().SysConfig().LocalUuid, eg3_2.Resources())
+	fmt.Println(eg4h)
+
 	Log.Info("********* Shutting Down")
 	eg1_1.Shutdown()
 
@@ -236,7 +239,7 @@ func TestDestinationUnreachable(t *testing.T) {
 		return
 	}
 
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 5)
 
 	handler = topo.HandlerByVnetNum(3, 2)
 
@@ -245,7 +248,7 @@ func TestDestinationUnreachable(t *testing.T) {
 		return
 	}
 
-	eg4h := health.HealthOf(eg1_1.Resources().SysConfig().LocalUuid, eg3_2.Resources())
+	eg4h = health.HealthOf(eg1_1.Resources().SysConfig().LocalUuid, eg3_2.Resources())
 	if eg4h != nil {
 		Log.Fail(t, "eg1_1 state", " Not Down")
 		return

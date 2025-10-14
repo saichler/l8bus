@@ -9,9 +9,16 @@ import (
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8health"
 	"github.com/saichler/l8types/go/types/l8sysconfig"
+	"github.com/saichler/l8types/go/types/l8system"
 )
 
 func (this *VNet) addHealthForVNic(config *l8sysconfig.L8SysConfig) {
+	serviceData := &l8system.L8ServiceData{}
+	serviceData.ServiceName = health.ServiceName
+	serviceData.ServiceArea = int32(health.ServiceArea)
+	serviceData.ServiceUuid = config.RemoteUuid
+	this.switchTable.services.addService(serviceData)
+
 	hp := health.HealthOf(config.RemoteUuid, this.resources)
 	hs, _ := health.HealthService(this.resources)
 	if hp == nil {
