@@ -4,9 +4,9 @@ import (
 	"github.com/saichler/l8services/go/services/base"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8api"
 	"github.com/saichler/l8types/go/types/l8health"
 	"github.com/saichler/l8types/go/types/l8services"
-	"github.com/saichler/l8types/go/types/l8web"
 	"github.com/saichler/l8utils/go/utils/web"
 )
 
@@ -28,6 +28,7 @@ func Activate(vnic ifs.IVNic, isVnet bool) {
 	services.ServiceToAreas[ServiceName].Areas[int32(ServiceArea)] = true
 
 	serviceConfig.ServiceItem = &l8health.L8Health{AUuid: vnic.Resources().SysConfig().LocalUuid, Services: services}
+	serviceConfig.ServiceItemList = &l8health.L8HealthList{}
 	serviceConfig.InitItems = []interface{}{serviceConfig.ServiceItem}
 
 	serviceConfig.SendNotifications = isVnet
@@ -38,7 +39,7 @@ func Activate(vnic ifs.IVNic, isVnet bool) {
 		nil, nil,
 		nil, nil,
 		nil, nil,
-		&l8web.L8Empty{}, &l8health.L8Top{})
+		&l8api.L8Query{}, &l8health.L8HealthList{})
 	base.Activate(serviceConfig, vnic)
 }
 
