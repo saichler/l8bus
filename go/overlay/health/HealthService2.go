@@ -3,7 +3,7 @@ package health
 import (
 	"time"
 
-	"github.com/saichler/l8services/go/services/generic"
+	"github.com/saichler/l8services/go/services/base"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8health"
@@ -41,7 +41,7 @@ func Activate(vnic ifs.IVNic, isVnet bool) {
 		nil, nil,
 		nil, nil,
 		&l8web.L8Empty{}, &l8health.L8Top{})
-	generic.Activate(serviceConfig, vnic)
+	base.Activate(serviceConfig, vnic)
 }
 
 func HealthOf(uuid string, r ifs.IResources) *l8health.L8Health {
