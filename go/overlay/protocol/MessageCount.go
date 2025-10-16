@@ -46,6 +46,7 @@ func (this *MessageTypeLog) Print() {
 	for k, v := range this.msgs {
 		fmt.Println(k, " - ", v)
 	}
+	fmt.Println("Total - ", this.total)
 }
 
 func (this *MessageTypeLog) log() {
