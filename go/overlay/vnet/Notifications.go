@@ -15,7 +15,7 @@ import (
 func (this *VNet) PropertyChangeNotification(set *l8notify.L8NotificationSet) {
 	//only health service will call this callback so check if the notification is from a local source
 	//if it is from local source, then just notify local vnics
-	protocol.AddPropertyChangeCalled(set, this.resources.SysConfig().LocalAlias)
+	protocol.MsgLog.AddLog(set.ServiceName, byte(set.ServiceArea), ifs.Notify)
 	vnetUuid := this.resources.SysConfig().LocalUuid
 	nextId := this.protocol.NextMessageNumber()
 	syncData, _ := this.protocol.CreateMessageFor("", set.ServiceName, byte(set.ServiceArea), ifs.P1, ifs.M_All,

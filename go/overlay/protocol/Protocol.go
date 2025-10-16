@@ -61,8 +61,6 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 	//Disable priority for now until i figure out what is causing starvation
 	priority = ifs.P8
 
-	AddMessageCreated()
-
 	var data []byte
 	var err error
 
@@ -72,6 +70,7 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 	}
 
 	msg, err := this.resources.Security().Message(aaaid)
+	defer MsgLog.AddLog(serviceName, serviceArea, action)
 	if err != nil {
 		return nil, err
 	}

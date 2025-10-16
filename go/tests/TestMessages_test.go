@@ -9,9 +9,7 @@ import (
 )
 
 func TestMessages(t *testing.T) {
-	fmt.Println("Message Count 1", protocol.MessagesCreated())
-	time.Sleep(time.Second * 5)
-	fmt.Println("Message Count 2", protocol.MessagesCreated())
-	time.Sleep(time.Second * 5)
-	fmt.Println("Message Count 2", protocol.MessagesCreated())
+	time.Sleep(time.Second * 15)
+	fmt.Println("Message Count 3")
+	protocol.MsgLog.Print()
 }

@@ -171,8 +171,8 @@ func (this *VNet) Failed(data []byte, vnic ifs.IVNic, failMsg string) {
 }
 
 func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
-	protocol.AddHandleData()
 	source, sourceVnet, destination, serviceName, serviceArea, _, multicastMode := ifs.HeaderOf(data)
+	protocol.MsgLog.AddLog(serviceName, serviceArea, ifs.Handle)
 
 	if serviceName == ifs.SysMsg && serviceArea == ifs.SysArea {
 		go this.systemMessageReceived(data, vnic)

@@ -1,56 +1,69 @@
 package protocol
 
 import (
-	"bytes"
-	"sync/atomic"
+	"fmt"
+	"os"
+	"strconv"
+	"sync"
+	"time"
 
-	"github.com/saichler/l8types/go/types/l8notify"
-	"github.com/saichler/l8utils/go/utils/logger"
+	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8utils/go/utils/strings"
 )
 
-var CountMessages = false
-var messagesCreated atomic.Uint64
-var handleData atomic.Uint64
-var propertyChangeCalled atomic.Uint64
-var ExplicitLog = logger.NewLoggerDirectImpl(logger.NewFileLogMethod("/tmp/Explicit.log"))
+var MessageLog bool = false
+var MsgLog = newMessageTypeLog()
+var started bool = false
 
-func AddMessageCreated() {
-	if CountMessages {
-		messagesCreated.Add(1)
+type MessageTypeLog struct {
+	mtx  sync.Mutex
+	msgs map[string]int
+}
+
+func newMessageTypeLog() *MessageTypeLog {
+	return &MessageTypeLog{msgs: make(map[string]int), mtx: sync.Mutex{}}
+}
+
+func (this *MessageTypeLog) AddLog(serviceName string, serviceArea byte, action ifs.Action) {
+	if !MessageLog {
+		return
+	}
+	key := strings.New(serviceName, serviceArea, action).String()
+	this.mtx.Lock()
+	defer this.mtx.Unlock()
+	if !started {
+		started = true
+		go this.log()
+	}
+	this.msgs[key]++
+}
+
+func (this *MessageTypeLog) Print() {
+	this.mtx.Lock()
+	defer this.mtx.Unlock()
+	for k, v := range this.msgs {
+		fmt.Println(k, " - ", v)
 	}
 }
 
-func AddPropertyChangeCalled(set *l8notify.L8NotificationSet, alias string) {
-	if CountMessages {
-		propertyChangeCalled.Add(1)
-		props := ""
-		if set.Type == l8notify.L8NotificationType_Update {
-			buff := bytes.Buffer{}
-			buff.WriteString(" - ")
-			for _, chg := range set.NotificationList {
-				buff.WriteString(chg.PropertyId)
-				buff.WriteString(" ")
-			}
-			props = buff.String()
-		}
-		ExplicitLog.Trace("*** Property Change: ", alias, " ", set.ServiceName, " ", set.Type.String(), ":", props)
+func (this *MessageTypeLog) log() {
+	for {
+		os.WriteFile("/tmp/log.csv", this.CSV(), 0777)
+		time.Sleep(time.Second)
 	}
 }
 
-func MessagesCreated() uint64 {
-	return messagesCreated.Load()
-}
-
-func PropertyChangedCalled() uint64 {
-	return propertyChangeCalled.Load()
-}
-
-func AddHandleData() {
-	if CountMessages {
-		handleData.Add(1)
+func (this *MessageTypeLog) CSV() []byte {
+	str := strings.New()
+	str.Add("\"Key\",\"Count\"\n")
+	this.mtx.Lock()
+	defer this.mtx.Unlock()
+	for k, v := range this.msgs {
+		str.Add("\"")
+		str.Add(k)
+		str.Add("\",")
+		str.Add(strconv.Itoa(v))
+		str.Add("\n")
 	}
-}
-
-func HandleData() uint64 {
-	return handleData.Load()
+	return str.Bytes()
 }

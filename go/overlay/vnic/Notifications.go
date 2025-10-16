@@ -33,7 +33,7 @@ func (this *VirtualNetworkInterface) NotifyServiceRemoved(serviceName string, se
 }
 
 func (this *VirtualNetworkInterface) PropertyChangeNotification(set *l8notify.L8NotificationSet) {
-	protocol.AddPropertyChangeCalled(set, this.resources.SysConfig().LocalAlias)
+	protocol.MsgLog.AddLog(set.ServiceName, byte(set.ServiceArea), ifs.Notify)
 	this.Multicast(set.ServiceName, byte(set.ServiceArea), ifs.Notify, set)
 }
 
