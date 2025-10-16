@@ -16,8 +16,9 @@ var MsgLog = newMessageTypeLog()
 var started bool = false
 
 type MessageTypeLog struct {
-	mtx  sync.Mutex
-	msgs map[string]int
+	mtx   sync.Mutex
+	msgs  map[string]int
+	total int
 }
 
 func newMessageTypeLog() *MessageTypeLog {
@@ -31,6 +32,7 @@ func (this *MessageTypeLog) AddLog(serviceName string, serviceArea byte, action 
 	key := strings.New(serviceName, serviceArea, action).String()
 	this.mtx.Lock()
 	defer this.mtx.Unlock()
+	this.msgs[key]++
 	if !started {
 		started = true
 		go this.log()
@@ -65,5 +67,12 @@ func (this *MessageTypeLog) CSV() []byte {
 		str.Add(strconv.Itoa(v))
 		str.Add("\n")
 	}
+	str.Add("\"Total\",").Add(strconv.Itoa(this.total)).Add("\n")
 	return str.Bytes()
+}
+
+func (this *MessageTypeLog) Total() int {
+	this.mtx.Lock()
+	defer this.mtx.Unlock()
+	return this.total
 }
