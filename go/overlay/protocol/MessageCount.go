@@ -37,7 +37,7 @@ func (this *MessageTypeLog) AddLog(serviceName string, serviceArea byte, action 
 		started = true
 		go this.log()
 	}
-	this.msgs[key]++
+	this.total++
 }
 
 func (this *MessageTypeLog) Print() {
