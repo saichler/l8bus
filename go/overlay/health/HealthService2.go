@@ -31,7 +31,7 @@ func Activate(vnic ifs.IVNic, isVnet bool) {
 	serviceConfig.ServiceItemList = &l8health.L8HealthList{}
 	serviceConfig.InitItems = []interface{}{serviceConfig.ServiceItem}
 
-	serviceConfig.SendNotifications = isVnet
+	serviceConfig.Voter = isVnet
 	serviceConfig.Transaction = false
 	serviceConfig.PrimaryKey = []string{"AUuid"}
 	serviceConfig.WebServiceDef = web.New(ServiceName, ServiceArea,
