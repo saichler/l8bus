@@ -206,7 +206,7 @@ func TestDestinationUnreachable(t *testing.T) {
 	eg3_2 := topo.VnicByVnetNum(3, 2)
 	eg1_1 := topo.VnicByVnetNum(1, 1)
 	defer func() {
-		topo.RenewVnic(eg1_1.Resources().SysConfig().LocalAlias)
+		topo.RenewVnic(1, 1)
 	}()
 
 	err := eg3_2.Unicast(eg1_1.Resources().SysConfig().LocalUuid, ServiceName, 0, ifs.POST, pb)

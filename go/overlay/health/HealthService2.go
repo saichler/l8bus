@@ -17,9 +17,7 @@ const (
 )
 
 func Activate(vnic ifs.IVNic, isVnet bool) {
-	serviceConfig := &ifs.ServiceConfig{}
-	serviceConfig.ServiceName = ServiceName
-	serviceConfig.ServiceArea = ServiceArea
+	serviceConfig := ifs.NewServiceLevelAgreement(&base.BaseService{}, ServiceName, ServiceArea, true, nil)
 
 	services := &l8services.L8Services{}
 	services.ServiceToAreas = make(map[string]*l8services.L8ServiceAreas)
@@ -27,19 +25,19 @@ func Activate(vnic ifs.IVNic, isVnet bool) {
 	services.ServiceToAreas[ServiceName].Areas = make(map[int32]bool)
 	services.ServiceToAreas[ServiceName].Areas[int32(ServiceArea)] = true
 
-	serviceConfig.ServiceItem = &l8health.L8Health{AUuid: vnic.Resources().SysConfig().LocalUuid, Services: services}
-	serviceConfig.ServiceItemList = &l8health.L8HealthList{}
-	serviceConfig.InitItems = []interface{}{serviceConfig.ServiceItem}
+	serviceConfig.SetServiceItem(&l8health.L8Health{AUuid: vnic.Resources().SysConfig().LocalUuid, Services: services})
+	serviceConfig.SetServiceItemList(&l8health.L8HealthList{})
+	serviceConfig.SetInitItems([]interface{}{serviceConfig.ServiceItem()})
 
-	serviceConfig.Voter = isVnet
-	serviceConfig.Transaction = false
-	serviceConfig.PrimaryKey = []string{"AUuid"}
-	serviceConfig.WebServiceDef = web.New(ServiceName, ServiceArea,
+	serviceConfig.SetVoter(isVnet)
+	serviceConfig.SetTransactional(false)
+	serviceConfig.SetPrimaryKeys([]string{"AUuid"})
+	serviceConfig.SetWebServiceDef(web.New(ServiceName, ServiceArea,
 		nil, nil,
 		nil, nil,
 		nil, nil,
 		nil, nil,
-		&l8api.L8Query{}, &l8health.L8HealthList{})
+		&l8api.L8Query{}, &l8health.L8HealthList{}))
 	base.Activate(serviceConfig, vnic)
 }
 
