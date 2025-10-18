@@ -32,8 +32,7 @@ func (this *VNet) vnetServiceRequest(data []byte, vnic ifs.IVNic) {
 	}
 
 	if msg.Reply() {
-		_, conn := this.switchTable.conns.getConnection(msg.Source(), true)
-		conn.SetResponse(msg, pb)
+		this.vnic.SetResponse(msg, pb)
 		return
 	}
 
