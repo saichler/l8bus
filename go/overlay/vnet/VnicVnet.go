@@ -50,8 +50,15 @@ func (this *VnicVnet) Unicast(destination string, serviceName string, serviceAre
 }
 
 func (this *VnicVnet) Request(destination string, serviceName string, area byte, action ifs.Action, data interface{}, timeout int, returnAttributes ...string) ifs.IElements {
-	panic("implement me")
-	return nil
+	if destination == "" {
+		externals := this.vnet.switchTable.conns.allExternals()
+		for uuid, _ := range externals {
+			destination = uuid
+			break
+		}
+	}
+	_, conn := this.vnet.switchTable.conns.getConnection(destination, true)
+	return conn.Request(destination, serviceName, area, action, data, timeout, returnAttributes...)
 }
 
 func (this *VnicVnet) Reply(msg *ifs.Message, elements ifs.IElements) error {
