@@ -31,6 +31,12 @@ func (this *VNet) vnetServiceRequest(data []byte, vnic ifs.IVNic) {
 		return
 	}
 
+	if msg.Reply() {
+		_, conn := this.switchTable.conns.getConnection(msg.Source(), true)
+		conn.SetResponse(msg, pb)
+		return
+	}
+
 	resp := this.resources.Services().Handle(pb, msg.Action(), vnic, msg)
 	if resp != nil && resp.Error() != nil {
 		this.resources.Logger().Error(resp.Error(), " : ", msg.Action())

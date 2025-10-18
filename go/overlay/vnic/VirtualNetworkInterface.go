@@ -328,3 +328,8 @@ func (this *VirtualNetworkInterface) ExecuteWithCircuitBreaker(fn func() (interf
 	// Fallback to direct execution if no circuit breaker
 	return fn()
 }
+
+func (this *VirtualNetworkInterface) SetResponse(msg *ifs.Message, pb ifs.IElements) {
+	request := this.requests.GetRequest(msg.Sequence(), this.resources.SysConfig().LocalUuid)
+	request.SetResponse(pb)
+}
