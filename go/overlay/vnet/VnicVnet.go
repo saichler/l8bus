@@ -58,6 +58,9 @@ func (this *VnicVnet) Request(destination string, serviceName string, area byte,
 		}
 	}
 	_, conn := this.vnet.switchTable.conns.getConnection(destination, true)
+	if conn == nil {
+		return object.New(nil, []interface{}{})
+	}
 	return conn.Request(destination, serviceName, area, action, data, timeout, returnAttributes...)
 }
 
