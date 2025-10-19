@@ -82,8 +82,8 @@ func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *Virtua
 
 	if conn == nil {
 		health.Activate(vnic, false)
-		vnic.resources.Services().RegisterServiceHandlerType(&plugins.PluginService{})
-		vnic.resources.Services().Activate(plugins.ServiceTypeName, plugins.ServiceName, 0, vnic.resources, nil)
+		sla := ifs.NewServiceLevelAgreement(&plugins.PluginService{}, plugins.ServiceName, 0, false, nil)
+		vnic.resources.Services().Activate(sla, vnic)
 	}
 
 	return vnic

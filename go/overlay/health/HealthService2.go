@@ -32,7 +32,7 @@ func Activate(vnic ifs.IVNic, isVnet bool) {
 	serviceConfig.SetVoter(isVnet)
 	serviceConfig.SetTransactional(false)
 	serviceConfig.SetPrimaryKeys([]string{"AUuid"})
-	serviceConfig.SetWebServiceDef(web.New(ServiceName, ServiceArea,
+	serviceConfig.SetWebService(web.New(ServiceName, ServiceArea,
 		nil, nil,
 		nil, nil,
 		nil, nil,

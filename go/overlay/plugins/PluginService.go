@@ -14,9 +14,8 @@ const (
 type PluginService struct {
 }
 
-func (this *PluginService) Activate(serviceName string, serviceArea byte,
-	resources ifs.IResources, listener ifs.IServiceCacheListener, args ...interface{}) error {
-	resources.Registry().Register(&l8web.L8Plugin{})
+func (this *PluginService) Activate(sla *ifs.ServiceLevelAgreement, vnic ifs.IVNic) error {
+	vnic.Resources().Registry().Register(&l8web.L8Plugin{})
 	return nil
 }
 
