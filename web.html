@@ -518,6 +518,7 @@
             <h1>Layer 8 Network BUS</h1>
             <div class="subtitle">Virtual Overlay Network for Distributed Systems</div>
             <div class="tagline">"Work less, Achieve much more."</div>
+            <div style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.7;">Latest Release: October 2025 | v3c2a893</div>
         </div>
 
         <!-- Custom Network Illustration -->
@@ -579,9 +580,24 @@
                 <h2>Overview</h2>
                 <p style="font-size: 1.1rem; text-align: center; margin-bottom: 2rem;">
                     The Layer 8 Network BUS provides a comprehensive virtual networking layer built on top of TCP connections,
-                    enabling distributed systems to communicate as if they were on a single network. Latest updates include
-                    enhanced service activation, crash prevention fixes, and distributed cache improvements.
+                    enabling distributed systems to communicate as if they were on a single network. Latest release (October 2025) features
+                    streamlined health monitoring with SLA-based tracking, enhanced stability fixes, and optimized synchronization mechanisms.
+                    <br><br>
+                    <strong>Project Scale:</strong> 340 Go files | 58,879+ lines of production-ready code
                 </p>
+
+                <!-- Key Improvements Banner -->
+                <div style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 1.5rem; border-radius: 8px; margin: 2rem 0; text-align: center;">
+                    <h3 style="color: white; margin-bottom: 1rem;">🎯 Key Improvements in Latest Release</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; text-align: left;">
+                        <div>✅ Unified HealthService architecture</div>
+                        <div>✅ SLA-based monitoring</div>
+                        <div>✅ VNet/VNic crash prevention</div>
+                        <div>✅ Optimized synchronization</div>
+                        <div>✅ Request/Response improvements</div>
+                        <div>✅ Base component refactoring</div>
+                    </div>
+                </div>
 
                 <div class="card-grid">
                     <div class="card">
@@ -638,9 +654,9 @@
                     <div class="component-card health">
                         <h4>Health System</h4>
                         <ul>
-                            <li><strong>HealthCenter</strong> - Monitoring hub</li>
-                            <li><strong>HealthService</strong> - Status management</li>
-                            <li><strong>Services</strong> - Registry system</li>
+                            <li><strong>HealthService</strong> - Unified health monitoring</li>
+                            <li><strong>SLA Tracking</strong> - Service Level Agreements</li>
+                            <li><strong>Health Lists</strong> - Status aggregation</li>
                         </ul>
                     </div>
                     <div class="component-card plugins">
@@ -720,14 +736,14 @@
                 <div class="features-list">
                     <div class="feature-item">
                         <div class="network-icon"></div>
-                        <h4>Enhanced Service Activation</h4>
-                        <p>Latest improvements include enhanced service activation and management capabilities with better lifecycle control and activation sequencing.</p>
+                        <h4>Streamlined Health Architecture</h4>
+                        <p>Unified health monitoring system with SLA-based tracking, removing redundancy and improving efficiency through consolidated HealthService implementation.</p>
                     </div>
 
                     <div class="feature-item">
                         <div class="network-icon security-icon"></div>
-                        <h4>Crash Prevention & Stability</h4>
-                        <p>Multiple stability fixes addressing system crash scenarios, including improved error handling and graceful failure recovery mechanisms.</p>
+                        <h4>Enhanced Stability & Reliability</h4>
+                        <p>Critical fixes preventing VNet/VNic crashes with improved request/response handling, primary key management, and optimized synchronization mechanisms.</p>
                     </div>
 
                     <div class="feature-item">
@@ -841,46 +857,46 @@
                 </div>
 
                 <div class="card">
-                    <h3>Latest Performance Optimizations (2025)</h3>
+                    <h3>Latest Performance Optimizations (October 2025)</h3>
                     <div class="features-list">
                         <div class="feature-item">
-                            <h4>Service Activation Enhancement (Latest)</h4>
-                            <p>Enhanced service activation and management capabilities with improved lifecycle control and better activation sequencing.</p>
+                            <h4>Health Service Consolidation (3c2a893)</h4>
+                            <p>Complete implementation of unified health service, removing HealthCenter redundancy and streamlining health monitoring into a single, efficient service.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>System Stability Improvements</h4>
-                            <p>Multiple crash prevention fixes addressing critical system failure scenarios with improved error handling and graceful recovery.</p>
+                            <h4>Service Activation Refactor (32007dc)</h4>
+                            <p>Streamlined service activation with cleaner lifecycle management patterns and improved initialization sequencing for better system startup performance.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>Repository & Interface Optimization</h4>
-                            <p>Cleaned up repository structure, optimized service interfaces for better compatibility, and removed unnecessary imports for improved build performance.</p>
+                            <h4>SLA-Based Monitoring (827eb05)</h4>
+                            <p>Implemented Service Level Agreement tracking for improved observability and performance monitoring across distributed services.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>Advanced Service Linking</h4>
-                            <p>Improved service interconnection and dependency management with enhanced service discovery and registration mechanisms.</p>
+                            <h4>VNet/VNic Stability (946331a, 8892f5a)</h4>
+                            <p>Critical crash prevention fixes in network layer with enhanced request/response handling and improved connection stability under load.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>Distributed Cache Refactoring</h4>
-                            <p>Major refactoring and updates to distributed cache system with optimized data distribution and improved cache coherency protocols.</p>
+                            <h4>Protocol Key Management (8892f5a)</h4>
+                            <p>Fixed primary key handling for improved data consistency and reliability in distributed message passing.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>Transaction Timeout Management</h4>
-                            <p>Added configurable transaction timeout mechanisms for improved reliability and automatic recovery from stuck transactions.</p>
+                            <h4>Synchronization Optimization (3dd2952, 907b949)</h4>
+                            <p>Removed unnecessary synchronization overhead, improving performance by reducing lock contention in high-throughput scenarios.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>Intelligent Service Batching</h4>
-                            <p>Implemented advanced service batch processing for enhanced throughput and efficiency in message handling and service operations.</p>
+                            <h4>Base Component Refactoring (c761c88)</h4>
+                            <p>Renamed generic components to base for clearer architecture and better code organization across the codebase.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>Performance String Optimization</h4>
-                            <p>Replaced string concatenation with efficient buffer operations, reducing memory allocations and improving overall system performance.</p>
+                            <h4>Health List Management (559c468)</h4>
+                            <p>Enhanced health status list management with improved aggregation and reporting capabilities for better cluster-wide visibility.</p>
                         </div>
                     </div>
                 </div>
@@ -957,17 +973,18 @@ vnic.WaitForConnection()
                     </div>
 
                     <div class="card">
-                        <h4>Service Registration</h4>
+                        <h4>Service Registration with SLA</h4>
                         <div class="code-block">
-// Services are automatically registered through 
-// the health system and can be discovered by 
-// other nodes in the network.
+// Services now use SLA-based activation for better monitoring
+// Health service provides unified monitoring and discovery
 
-healthService := &health.HealthService{}
-resources.Services().RegisterServiceHandlerType(healthService)
-resources.Services().Activate("health", "HealthService", 0, resources, vnic)
+health.Activate(vnic, isVnet)
+// Service is registered with:
+// - SLA tracking enabled
+// - Primary key on "AUuid"
+// - Automatic health list aggregation
                         </div>
-                        <p>Register services that will be automatically discovered by other nodes in the network.</p>
+                        <p>Register services with SLA tracking for automatic discovery and health monitoring.</p>
                     </div>
                 </div>
 
@@ -985,10 +1002,12 @@ resources.Services().Activate("health", "HealthService", 0, resources, vnic)
                 <div class="card">
                     <h3>Dependencies</h3>
                     <div class="code-block">
-// Go 1.23.8 implementation with latest dependencies
+// Go 1.23.8 implementation (October 2025)
+// 340 files | 58,879+ lines of production code
+
 github.com/saichler/l8types      // Type definitions and interfaces
-github.com/saichler/l8utils      // Utility functions and resources  
-github.com/saichler/l8services   // Service framework
+github.com/saichler/l8utils      // Utility functions and resources
+github.com/saichler/l8services   // Service framework with SLA support
 github.com/saichler/l8srlz       // Serialization library
 github.com/saichler/reflect      // Model analysis tools
 github.com/google/uuid           // UUID generation
@@ -1002,6 +1021,7 @@ google.golang.org/protobuf       // Protocol buffer support
     <footer>
         <div class="container">
             <p>&copy; 2025 Layer 8 Network BUS. A comprehensive virtual networking solution for distributed systems.</p>
+            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem;">Latest Release: October 2025 | 58,879+ lines of Go | Production Ready</p>
         </div>
     </footer>
 
@@ -1046,12 +1066,12 @@ google.golang.org/protobuf       // Protocol buffer support
         function simulateFailover() {
             const status = document.getElementById('demo-status');
             status.innerHTML = `
-<strong>Health Check & Metrics Simulation:</strong><br>
-1. Collecting health statistics from all VNic connections...<br>
-2. HealthService: UP (3 instances) - 1250 msgs/sec<br>
-3. PluginService: UP (1 instance) - 45 msgs/sec<br>
-4. CustomService: Circuit Breaker OPEN (5 failures)<br>
-5. ✓ Metrics updated, failed service isolated
+<strong>Health Check & SLA Monitoring:</strong><br>
+1. HealthService collecting SLA metrics from all nodes...<br>
+2. HealthService: UP (3 instances) - SLA: 99.8% availability<br>
+3. PluginService: UP (1 instance) - SLA: 100% availability<br>
+4. CustomService: Circuit Breaker OPEN - SLA breach (85%)<br>
+5. ✓ SLA tracking updated, service failover initiated
             `;
         }
 

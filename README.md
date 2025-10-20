@@ -115,24 +115,31 @@ This repository now includes a comprehensive Go implementation of the Layer8 ove
 - **Message Routing**: Intelligent service-based routing with multicast and leader election support
 
 ### Architecture Components
-- **VNet (Virtual Network)**: Central network switch managing connections between nodes
-- **VNic (Virtual Network Interface)**: Network interface for nodes to connect to the overlay
-- **Protocol System**: Message serialization/deserialization with sequence management
-- **Health Center**: Distributed health monitoring with service availability tracking
-- **Plugin System**: Dynamic plugin loading for extensibility
-- **Metrics System**: Real-time performance monitoring and statistics
+- **VNet (Virtual Network)**: Central network switch managing connections between nodes with enhanced stability
+- **VNic (Virtual Network Interface)**: Network interface for nodes with improved request/response handling
+- **Protocol System**: Message serialization/deserialization with enhanced primary key management
+- **Health Service**: Streamlined distributed health monitoring with SLA-based tracking
+- **Plugin System**: Dynamic plugin loading with improved service activation
+- **Metrics System**: Real-time performance monitoring with optimized collection methods
+
+### Key Improvements in Latest Release
+- **Consolidated Health Architecture**: Removed redundancy by unifying health monitoring into a single, efficient service
+- **Enhanced Stability**: Multiple crash prevention fixes ensuring robust operation under load
+- **Optimized Synchronization**: Reduced overhead by removing unnecessary synchronization points
+- **Improved Service Management**: Cleaner activation patterns and better lifecycle control
+- **SLA-Based Monitoring**: Transition to Service Level Agreement tracking for better observability
 
 ### Recent Optimizations (Latest Commits)
-- **Service Activation**: Enhanced service activation and management capabilities (Latest: f53c299)
-- **Crash Prevention**: Multiple stability fixes addressing system crash scenarios (a38f9ad, 20b3b84)
-- **Repository Management**: Cleaned up repository structure and naming conventions (9318eab)
-- **Service Linking**: Improved service interconnection and dependency management (d7cad94, 71b8a70)
-- **Interface Refinement**: Fixed and optimized service interfaces for better compatibility (469bf7b, 83b8c4b)
-- **Import Optimization**: Cleaned up unnecessary imports for better build performance (3e224ce)
-- **Distributed Cache**: Major refactoring and updates to distributed cache system (008b318, 8289643)
-- **Transaction Timeout**: Added configurable transaction timeout mechanisms (02a7127)
-- **Service Batching**: Implemented service batch processing for enhanced throughput (f144d31)
-- **Performance Optimizations**: Replaced string concatenation with efficient buffer operations (deaf281)
+- **Health Monitoring System**: Complete implementation of comprehensive health service with improved reliability (3c2a893)
+- **Service Activation Refactor**: Streamlined service activation and lifecycle management (32007dc)
+- **SLA Support**: Switched to Service Level Agreement (SLA) based monitoring for better performance tracking (827eb05)
+- **Request/Response Implementation**: Enhanced VNet/VNic layer with proper request/response handling (91e994c)
+- **Stability Improvements**: Multiple critical fixes preventing system crashes in VNet/VNic components (946331a, 8892f5a)
+- **Protocol Keys**: Fixed primary keys handling for improved data consistency (8892f5a)
+- **Health Service Architecture**: Removed redundant HealthCenter, consolidated into streamlined HealthService (3c2a893)
+- **Connection Synchronization**: Optimized synchronization mechanisms, removing unnecessary sync overhead (3dd2952, 907b949)
+- **Generic to Base Refactoring**: Renamed generic components to base for clearer architecture (c761c88)
+- **Health List Enhancements**: Improved health status list management and reporting (559c468)
 
 ### Dependencies
 - Go 1.23.8
@@ -142,6 +149,9 @@ This repository now includes a comprehensive Go implementation of the Layer8 ove
 
 The Go implementation demonstrates production-ready distributed systems patterns with proper error handling, resource management, and concurrent processing.
 
-Total current codebase: 30,812+ lines of code (5,147 lines of Go implementation)
+### Project Statistics
+- **Go Implementation**: 340 files, 58,879+ lines of code
+- **Comprehensive test coverage** including unit tests and integration tests
+- **Production-ready** with extensive error handling and recovery mechanisms
 
 # Detail documenting is WIP...
