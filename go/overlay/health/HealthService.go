@@ -1,75 +1,75 @@
 package health
 
-/*
 import (
+	"github.com/saichler/l8services/go/services/base"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8api"
 	"github.com/saichler/l8types/go/types/l8health"
-	"github.com/saichler/l8types/go/types/l8web"
+	"github.com/saichler/l8types/go/types/l8services"
 	"github.com/saichler/l8utils/go/utils/web"
 )
 
-type HealthService struct {
-	healthCenter *HealthCenter
+const (
+	ServiceTypeName = "HealthService"
+	ServiceName     = "Health"
+	ServiceArea     = byte(0)
+)
+
+func Activate(vnic ifs.IVNic, isVnet bool) {
+	serviceConfig := ifs.NewServiceLevelAgreement(&base.BaseService{}, ServiceName, ServiceArea, true, nil)
+
+	services := &l8services.L8Services{}
+	services.ServiceToAreas = make(map[string]*l8services.L8ServiceAreas)
+	services.ServiceToAreas[ServiceName] = &l8services.L8ServiceAreas{}
+	services.ServiceToAreas[ServiceName].Areas = make(map[int32]bool)
+	services.ServiceToAreas[ServiceName].Areas[int32(ServiceArea)] = true
+
+	serviceConfig.SetServiceItem(&l8health.L8Health{AUuid: vnic.Resources().SysConfig().LocalUuid, Services: services})
+	serviceConfig.SetServiceItemList(&l8health.L8HealthList{})
+	serviceConfig.SetInitItems([]interface{}{serviceConfig.ServiceItem()})
+
+	serviceConfig.SetVoter(isVnet)
+	serviceConfig.SetTransactional(false)
+	serviceConfig.SetPrimaryKeys("AUuid")
+	serviceConfig.SetWebService(web.New(ServiceName, ServiceArea,
+		nil, nil,
+		nil, nil,
+		nil, nil,
+		nil, nil,
+		&l8api.L8Query{}, &l8health.L8HealthList{}))
+	base.Activate(serviceConfig, vnic)
 }
 
-func (this *HealthService) Activate(serviceName string, serviceArea byte,
-	resources ifs.IResources, listener ifs.IServiceCacheListener, args ...interface{}) error {
-	_, err := resources.Registry().Register(&l8health.L8Health{})
-	if err != nil {
-		return err
+func HealthOf(uuid string, r ifs.IResources) *l8health.L8Health {
+	sh, ok := HealthService(r)
+	if ok {
+		filter := &l8health.L8Health{}
+		filter.AUuid = uuid
+		h := sh.Get(object.New(nil, filter), nil)
+		result, _ := h.Element().(*l8health.L8Health)
+		return result
 	}
-	this.healthCenter = newHealthCenter(resources, listener)
 	return nil
 }
 
-func (this *HealthService) DeActivate() error {
-	return nil
+func HealthService(r ifs.IResources) (ifs.IServiceHandler, bool) {
+	return r.Services().ServiceHandler(ServiceName, ServiceArea)
 }
 
-func (this *HealthService) Post(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	hp, ok := pb.Element().(*l8health.L8Health)
-	if !ok {
-		return nil
+func HealthServiceCache(r ifs.IResources) (ifs.IServiceHandlerCache, bool) {
+	hs, _ := HealthService(r)
+	hc, ok := hs.(ifs.IServiceHandlerCache)
+	return hc, ok
+}
+
+func All(r ifs.IResources) map[string]*l8health.L8Health {
+	hc, _ := HealthServiceCache(r)
+	all := hc.All()
+	result := make(map[string]*l8health.L8Health)
+	for _, h := range all {
+		hp := h.(*l8health.L8Health)
+		result[hp.AUuid] = hp
 	}
-	this.healthCenter.Put(hp, pb.Notification())
-	return nil
+	return result
 }
-func (this *HealthService) Put(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	hp, ok := pb.Element().(*l8health.L8Health)
-	if !ok {
-		return nil
-	}
-	this.healthCenter.Put(hp, pb.Notification())
-	this.healthCenter.healths.Sync()
-	return nil
-}
-func (this *HealthService) Patch(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	hp := pb.Element().(*l8health.L8Health)
-	this.healthCenter.Patch(hp, pb.Notification())
-	return nil
-}
-func (this *HealthService) Delete(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	hp := pb.Element().(*l8health.L8Health)
-	this.healthCenter.Delete(hp, pb.Notification())
-	return nil
-}
-func (this *HealthService) GetCopy(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	return nil
-}
-func (this *HealthService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	return object.New(nil, this.healthCenter.Top())
-}
-func (this *HealthService) Failed(pb ifs.IElements, vnic ifs.IVNic, msg *ifs.Message) ifs.IElements {
-	return nil
-}
-
-func (this *HealthService) TransactionConfig() ifs.ITransactionConfig {
-	return nil
-}
-
-func (this *HealthService) WebService() ifs.IWebService {
-	return web.New(ServiceName, 0, nil, nil, nil, nil, nil, nil, nil, nil,
-		&l8web.L8Empty{}, &l8health.L8Top{})
-}
-*/
