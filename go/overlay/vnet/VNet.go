@@ -30,7 +30,7 @@ type VNet struct {
 	vnic        *VnicVnet
 }
 
-func NewVNet(resources ifs.IResources) *VNet {
+func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 	resources.Registry().Register(&l8system.L8SystemMessage{})
 	resources.Registry().Register(&l8web.L8Empty{})
 	resources.Registry().Register(&l8health.L8Top{})
@@ -43,6 +43,9 @@ func NewVNet(resources ifs.IResources) *VNet {
 	net.resources.SysConfig().LocalUuid = ifs.NewUuid()
 	net.switchTable = newSwitchTable(net)
 	health.Activate(net.vnic, true)
+	if hasSecondary != nil && hasSecondary[0] {
+		health.Activate(net.vnic, true, true)
+	}
 	net.discovery = NewDiscovery(net)
 
 	hp := &l8health.L8Health{}
@@ -50,8 +53,13 @@ func NewVNet(resources ifs.IResources) *VNet {
 	hp.AUuid = net.resources.SysConfig().LocalUuid
 	hp.IsVnet = true
 	hp.Services = net.resources.SysConfig().Services
+
 	hs, _ := health.HealthService(net.resources)
 	hs.Put(object.NewNotify(hp), net.vnic)
+	if hasSecondary != nil && hasSecondary[0] {
+		hs, _ = health.HealthService(net.resources, true)
+		hs.Put(object.NewNotify(hp), net.vnic)
+	}
 	return net
 }
 
@@ -174,7 +182,7 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 	source, sourceVnet, destination, serviceName, serviceArea, _, multicastMode := ifs.HeaderOf(data)
 	protocol.MsgLog.AddLog(serviceName, serviceArea, ifs.Handle)
 
-	if serviceName == ifs.SysMsg && serviceArea == ifs.SysArea {
+	if serviceName == ifs.SysMsg && serviceArea == ifs.SysAreaPrimary {
 		go this.systemMessageReceived(data, vnic)
 		return
 	}

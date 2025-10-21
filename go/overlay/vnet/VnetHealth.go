@@ -15,7 +15,7 @@ import (
 func (this *VNet) addHealthForVNic(config *l8sysconfig.L8SysConfig) {
 	serviceData := &l8system.L8ServiceData{}
 	serviceData.ServiceName = health.ServiceName
-	serviceData.ServiceArea = int32(health.ServiceArea)
+	serviceData.ServiceArea = 0
 	serviceData.ServiceUuid = config.RemoteUuid
 	this.switchTable.services.addService(serviceData)
 
@@ -71,5 +71,5 @@ func (this *VNet) mergeServices(hp *l8health.L8Health, config *l8sysconfig.L8Sys
 func (this *VNet) sendHealthReport(uuid string) {
 	time.Sleep(time.Second)
 	all := health.All(this.resources)
-	this.vnic.Unicast(uuid, health.ServiceName, health.ServiceArea, ifs.PATCH, all)
+	this.vnic.Unicast(uuid, health.ServiceName, 0, ifs.PATCH, all)
 }

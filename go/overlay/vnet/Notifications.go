@@ -50,7 +50,7 @@ func (this *VNet) publisLocalHealth() {
 		}
 
 		nextId := this.protocol.NextMessageNumber()
-		sync, _ := this.protocol.CreateMessageFor("", health.ServiceName, health.ServiceArea, ifs.P1, ifs.M_All,
+		sync, _ := this.protocol.CreateMessageFor("", health.ServiceName, 0, ifs.P1, ifs.M_All,
 			ifs.PATCH, vnetUuid, vnetUuid, object.New(nil, hps), false, false,
 			nextId, ifs.NotATransaction, "", "",
 			-1, -1, -1, -1, -1, 0, false, "")
@@ -72,7 +72,7 @@ func (this *VNet) publishRoutes() {
 	data := &l8system.L8SystemMessage_RouteTable{RouteTable: routeTable}
 	routes := &l8system.L8SystemMessage{Action: l8system.L8SystemAction_Routes_Add, Data: data}
 
-	routesData, _ := this.protocol.CreateMessageFor("", ifs.SysMsg, ifs.SysArea, ifs.P1, ifs.M_All,
+	routesData, _ := this.protocol.CreateMessageFor("", ifs.SysMsg, ifs.SysAreaPrimary, ifs.P1, ifs.M_All,
 		ifs.POST, vnetUuid, vnetUuid, object.New(nil, routes), false, false,
 		nextId, ifs.NotATransaction, "", "",
 		-1, -1, -1, -1, -1, 0, false, "")
@@ -92,7 +92,7 @@ func (this *VNet) publishRemovedRoutes(removed map[string]string) {
 	data := &l8system.L8SystemMessage_RouteTable{RouteTable: routeTable}
 	routes := &l8system.L8SystemMessage{Action: l8system.L8SystemAction_Routes_Remove, Data: data}
 
-	routesData, _ := this.protocol.CreateMessageFor("", ifs.SysMsg, ifs.SysArea, ifs.P1, ifs.M_All,
+	routesData, _ := this.protocol.CreateMessageFor("", ifs.SysMsg, ifs.SysAreaPrimary, ifs.P1, ifs.M_All,
 		ifs.POST, vnetUuid, vnetUuid, object.New(nil, routes), false, false,
 		nextId, ifs.NotATransaction, "", "",
 		-1, -1, -1, -1, -1, 0, false, "")
@@ -109,7 +109,7 @@ func (this *VNet) publishSystemMessage(sysmsg *l8system.L8SystemMessage) {
 
 	sysmsg.Publish = false
 
-	sysmsgData, _ := this.protocol.CreateMessageFor("", ifs.SysMsg, ifs.SysArea, ifs.P1, ifs.M_All,
+	sysmsgData, _ := this.protocol.CreateMessageFor("", ifs.SysMsg, ifs.SysAreaPrimary, ifs.P1, ifs.M_All,
 		ifs.POST, vnetUuid, vnetUuid, object.New(nil, sysmsg), false, false,
 		nextId, ifs.NotATransaction, "", "",
 		-1, -1, -1, -1, -1, 0, false, "")

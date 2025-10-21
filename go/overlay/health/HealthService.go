@@ -11,28 +11,30 @@ import (
 )
 
 const (
-	ServiceTypeName = "HealthService"
-	ServiceName     = "Health"
-	ServiceArea     = byte(0)
+	ServiceName = "Health"
 )
 
-func Activate(vnic ifs.IVNic, isVnet bool) {
-	serviceConfig := ifs.NewServiceLevelAgreement(&base.BaseService{}, ServiceName, ServiceArea, true, nil)
+func Activate(vnic ifs.IVNic, voter bool, secondary ...bool) {
+	serviceArea := byte(0)
+	if secondary != nil && secondary[0] {
+		serviceArea = 1
+	}
+	serviceConfig := ifs.NewServiceLevelAgreement(&base.BaseService{}, ServiceName, serviceArea, true, nil)
 
 	services := &l8services.L8Services{}
 	services.ServiceToAreas = make(map[string]*l8services.L8ServiceAreas)
 	services.ServiceToAreas[ServiceName] = &l8services.L8ServiceAreas{}
 	services.ServiceToAreas[ServiceName].Areas = make(map[int32]bool)
-	services.ServiceToAreas[ServiceName].Areas[int32(ServiceArea)] = true
+	services.ServiceToAreas[ServiceName].Areas[int32(serviceArea)] = true
 
 	serviceConfig.SetServiceItem(&l8health.L8Health{AUuid: vnic.Resources().SysConfig().LocalUuid, Services: services})
 	serviceConfig.SetServiceItemList(&l8health.L8HealthList{})
 	serviceConfig.SetInitItems([]interface{}{serviceConfig.ServiceItem()})
 
-	serviceConfig.SetVoter(isVnet)
+	serviceConfig.SetVoter(voter)
 	serviceConfig.SetTransactional(false)
 	serviceConfig.SetPrimaryKeys("AUuid")
-	serviceConfig.SetWebService(web.New(ServiceName, ServiceArea,
+	serviceConfig.SetWebService(web.New(ServiceName, serviceArea,
 		nil, nil,
 		nil, nil,
 		nil, nil,
@@ -41,8 +43,8 @@ func Activate(vnic ifs.IVNic, isVnet bool) {
 	base.Activate(serviceConfig, vnic)
 }
 
-func HealthOf(uuid string, r ifs.IResources) *l8health.L8Health {
-	sh, ok := HealthService(r)
+func HealthOf(uuid string, r ifs.IResources, secondary ...bool) *l8health.L8Health {
+	sh, ok := HealthService(r, secondary...)
 	if ok {
 		filter := &l8health.L8Health{}
 		filter.AUuid = uuid
@@ -53,18 +55,21 @@ func HealthOf(uuid string, r ifs.IResources) *l8health.L8Health {
 	return nil
 }
 
-func HealthService(r ifs.IResources) (ifs.IServiceHandler, bool) {
-	return r.Services().ServiceHandler(ServiceName, ServiceArea)
+func HealthService(r ifs.IResources, secondary ...bool) (ifs.IServiceHandler, bool) {
+	if secondary != nil && secondary[0] {
+		return r.Services().ServiceHandler(ServiceName, 1)
+	}
+	return r.Services().ServiceHandler(ServiceName, 0)
 }
 
-func HealthServiceCache(r ifs.IResources) (ifs.IServiceHandlerCache, bool) {
-	hs, _ := HealthService(r)
+func HealthServiceCache(r ifs.IResources, secondary ...bool) (ifs.IServiceHandlerCache, bool) {
+	hs, _ := HealthService(r, secondary...)
 	hc, ok := hs.(ifs.IServiceHandlerCache)
 	return hc, ok
 }
 
-func All(r ifs.IResources) map[string]*l8health.L8Health {
-	hc, _ := HealthServiceCache(r)
+func All(r ifs.IResources, secondary ...bool) map[string]*l8health.L8Health {
+	hc, _ := HealthServiceCache(r, secondary...)
 	all := hc.All()
 	result := make(map[string]*l8health.L8Health)
 	for _, h := range all {
