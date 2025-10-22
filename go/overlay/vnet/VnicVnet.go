@@ -51,7 +51,7 @@ func (this *VnicVnet) Unicast(destination string, serviceName string, serviceAre
 
 func (this *VnicVnet) Request(destination string, serviceName string, area byte, action ifs.Action, data interface{}, timeout int, returnAttributes ...string) ifs.IElements {
 	if destination == "" {
-		externals := this.vnet.switchTable.conns.allExternals()
+		externals := this.vnet.switchTable.conns.allExternalVnets()
 		for uuid, _ := range externals {
 			destination = uuid
 			break

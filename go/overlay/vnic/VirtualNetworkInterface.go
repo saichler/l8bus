@@ -82,8 +82,10 @@ func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *Virtua
 
 	if conn == nil {
 		health.Activate(vnic, false)
-		sla := ifs.NewServiceLevelAgreement(&plugins.PluginService{}, plugins.ServiceName, 0, false, nil)
-		vnic.resources.Services().Activate(sla, vnic)
+		if resources.SysConfig().RemoteVnet == "" {
+			sla := ifs.NewServiceLevelAgreement(&plugins.PluginService{}, plugins.ServiceName, 0, false, nil)
+			vnic.resources.Services().Activate(sla, vnic)
+		}
 	}
 
 	return vnic
@@ -110,16 +112,22 @@ func (this *VirtualNetworkInterface) connectToSwitch() {
 
 func (this *VirtualNetworkInterface) connect() error {
 	// Dial the destination and validate the secret and key
-	destination := protocol.MachineIP
-	if ifs.NetworkMode_K8s() {
-		destination = os.Getenv("NODE_IP")
-	} else if ifs.NetworkMode_DOCKER() {
-		// inside a containet the switch ip will be the external subnet + ".1"
-		// for example if the address of the container is 172.1.1.112, the switch will be accessible
-		// via 172.1.1.1
-		subnet := protocol.IpSegment.ExternalSubnet()
-		destination = strings.New(subnet, ".1").String()
+	destination := this.resources.SysConfig().RemoteVnet
+	if destination == "" {
+		destination = protocol.MachineIP
+		if ifs.NetworkMode_K8s() {
+			destination = os.Getenv("NODE_IP")
+		} else if ifs.NetworkMode_DOCKER() {
+			// inside a containet the switch ip will be the external subnet + ".1"
+			// for example if the address of the container is 172.1.1.112, the switch will be accessible
+			// via 172.1.1.1
+			subnet := protocol.IpSegment.ExternalSubnet()
+			destination = strings.New(subnet, ".1").String()
+		}
+	} else {
+		fmt.Println("Remote nic")
 	}
+
 	this.resources.Logger().Info("Trying to connect to vnet at IP - ", destination)
 	// Try to dial to the switch
 	conn, err := this.resources.Security().CanDial(destination, this.resources.SysConfig().VnetPort)

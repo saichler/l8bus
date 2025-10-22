@@ -15,7 +15,7 @@ import (
 func (this *VNet) addHealthForVNic(config *l8sysconfig.L8SysConfig) {
 	serviceData := &l8system.L8ServiceData{}
 	serviceData.ServiceName = health.ServiceName
-	serviceData.ServiceArea = 0
+	serviceData.ServiceArea = int32(health.ServiceAreaByConfig(config))
 	serviceData.ServiceUuid = config.RemoteUuid
 	this.switchTable.services.addService(serviceData)
 

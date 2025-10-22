@@ -7,6 +7,7 @@ import (
 	"github.com/saichler/l8types/go/types/l8api"
 	"github.com/saichler/l8types/go/types/l8health"
 	"github.com/saichler/l8types/go/types/l8services"
+	"github.com/saichler/l8types/go/types/l8sysconfig"
 	"github.com/saichler/l8utils/go/utils/web"
 )
 
@@ -14,11 +15,8 @@ const (
 	ServiceName = "Health"
 )
 
-func Activate(vnic ifs.IVNic, voter bool, secondary ...bool) {
-	serviceArea := byte(0)
-	if secondary != nil && secondary[0] {
-		serviceArea = 1
-	}
+func Activate(vnic ifs.IVNic, voter bool) {
+	serviceArea := ServiceArea(vnic.Resources())
 	serviceConfig := ifs.NewServiceLevelAgreement(&base.BaseService{}, ServiceName, serviceArea, true, nil)
 
 	services := &l8services.L8Services{}
@@ -43,8 +41,8 @@ func Activate(vnic ifs.IVNic, voter bool, secondary ...bool) {
 	base.Activate(serviceConfig, vnic)
 }
 
-func HealthOf(uuid string, r ifs.IResources, secondary ...bool) *l8health.L8Health {
-	sh, ok := HealthService(r, secondary...)
+func HealthOf(uuid string, r ifs.IResources) *l8health.L8Health {
+	sh, ok := HealthService(r)
 	if ok {
 		filter := &l8health.L8Health{}
 		filter.AUuid = uuid
@@ -55,21 +53,18 @@ func HealthOf(uuid string, r ifs.IResources, secondary ...bool) *l8health.L8Heal
 	return nil
 }
 
-func HealthService(r ifs.IResources, secondary ...bool) (ifs.IServiceHandler, bool) {
-	if secondary != nil && secondary[0] {
-		return r.Services().ServiceHandler(ServiceName, 1)
-	}
-	return r.Services().ServiceHandler(ServiceName, 0)
+func HealthService(r ifs.IResources) (ifs.IServiceHandler, bool) {
+	return r.Services().ServiceHandler(ServiceName, ServiceArea(r))
 }
 
-func HealthServiceCache(r ifs.IResources, secondary ...bool) (ifs.IServiceHandlerCache, bool) {
-	hs, _ := HealthService(r, secondary...)
+func HealthServiceCache(r ifs.IResources) (ifs.IServiceHandlerCache, bool) {
+	hs, _ := HealthService(r)
 	hc, ok := hs.(ifs.IServiceHandlerCache)
 	return hc, ok
 }
 
-func All(r ifs.IResources, secondary ...bool) map[string]*l8health.L8Health {
-	hc, _ := HealthServiceCache(r, secondary...)
+func All(r ifs.IResources) map[string]*l8health.L8Health {
+	hc, _ := HealthServiceCache(r)
 	all := hc.All()
 	result := make(map[string]*l8health.L8Health)
 	for _, h := range all {
@@ -77,4 +72,15 @@ func All(r ifs.IResources, secondary ...bool) map[string]*l8health.L8Health {
 		result[hp.AUuid] = hp
 	}
 	return result
+}
+
+func ServiceArea(r ifs.IResources) byte {
+	return ServiceAreaByConfig(r.SysConfig())
+}
+
+func ServiceAreaByConfig(config *l8sysconfig.L8SysConfig) byte {
+	if config.RemoteVnet != "" {
+		return byte(1)
+	}
+	return byte(0)
 }

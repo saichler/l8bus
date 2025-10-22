@@ -44,8 +44,11 @@ func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 	net.switchTable = newSwitchTable(net)
 	health.Activate(net.vnic, true)
 	if hasSecondary != nil && hasSecondary[0] {
-		health.Activate(net.vnic, true, true)
+		net.resources.SysConfig().RemoteVnet = "X"
+		health.Activate(net.vnic, true)
+		net.resources.SysConfig().RemoteVnet = ""
 	}
+
 	net.discovery = NewDiscovery(net)
 
 	hp := &l8health.L8Health{}
@@ -57,8 +60,10 @@ func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 	hs, _ := health.HealthService(net.resources)
 	hs.Put(object.NewNotify(hp), net.vnic)
 	if hasSecondary != nil && hasSecondary[0] {
-		hs, _ = health.HealthService(net.resources, true)
+		net.resources.SysConfig().RemoteVnet = "X"
+		hs, _ = health.HealthService(net.resources)
 		hs.Put(object.NewNotify(hp), net.vnic)
+		net.resources.SysConfig().RemoteVnet = ""
 	}
 	return net
 }

@@ -35,13 +35,17 @@ func (this *SwitchTable) addVNic(vnic ifs.IVNic) {
 	config := vnic.Resources().SysConfig()
 	//check if this port is local to the machine, e.g. not belong to public subnet
 	isLocal := protocol.IpSegment.IsLocal(config.Address)
+	isExternalVnic := config.RemoteVnet != ""
+	if isExternalVnic {
+		this.conns.addExternalVnic(config.RemoteUuid, vnic)
+	} else
 	// If it is local, add it to the internal map
 	if isLocal && !config.ForceExternal {
 		this.conns.addInternal(config.RemoteUuid, vnic)
 		go this.switchService.sendHealthReport(config.RemoteUuid)
 	} else {
 		// otherwise, add it to the external connections
-		this.conns.addExternal(config.RemoteUuid, vnic)
+		this.conns.addExternalVnet(config.RemoteUuid, vnic)
 	}
 	this.switchService.publishRoutes()
 }

@@ -32,7 +32,7 @@ func (this *VNet) publisLocalHealth() {
 	vnetName := this.resources.SysConfig().LocalAlias
 
 	local := this.switchTable.conns.allInternals()
-	ext := this.switchTable.conns.allExternals()
+	ext := this.switchTable.conns.allExternalVnets()
 
 	this.resources.Logger().Debug("Vnet ", vnetName, " publish health ", len(local), " ext ", len(ext))
 
@@ -77,7 +77,7 @@ func (this *VNet) publishRoutes() {
 		nextId, ifs.NotATransaction, "", "",
 		-1, -1, -1, -1, -1, 0, false, "")
 
-	allExternal := this.switchTable.conns.allExternals()
+	allExternal := this.switchTable.conns.allExternalVnets()
 	for _, external := range allExternal {
 		external.SendMessage(routesData)
 	}
@@ -97,7 +97,7 @@ func (this *VNet) publishRemovedRoutes(removed map[string]string) {
 		nextId, ifs.NotATransaction, "", "",
 		-1, -1, -1, -1, -1, 0, false, "")
 
-	allExternal := this.switchTable.conns.allExternals()
+	allExternal := this.switchTable.conns.allExternalVnets()
 	for _, external := range allExternal {
 		external.SendMessage(routesData)
 	}
@@ -114,7 +114,7 @@ func (this *VNet) publishSystemMessage(sysmsg *l8system.L8SystemMessage) {
 		nextId, ifs.NotATransaction, "", "",
 		-1, -1, -1, -1, -1, 0, false, "")
 
-	allExternal := this.switchTable.conns.allExternals()
+	allExternal := this.switchTable.conns.allExternalVnets()
 	for _, external := range allExternal {
 		external.SendMessage(sysmsgData)
 	}

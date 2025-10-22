@@ -8,9 +8,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/saichler/l8bus/go/overlay/health"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8health"
-	"github.com/saichler/l8bus/go/overlay/health"
 )
 
 type CPUTracker struct {
@@ -73,7 +73,7 @@ func (this *KeepAlive) sendState() {
 	hp.StartTime = this.startTime
 	//this.vnic.resources.Logger().Debug("Sending Keep Alive for ", this.vnic.resources.SysConfig().LocalUuid, " ", this.vnic.resources.SysConfig().LocalAlias)
 	//We unicast to the vnet, it will multicast the change to all
-	this.vnic.Unicast(this.vnic.resources.SysConfig().RemoteUuid, health.ServiceName, 0, ifs.PATCH, hp)
+	this.vnic.Unicast(this.vnic.resources.SysConfig().RemoteUuid, health.ServiceName, health.ServiceArea(this.vnic.resources), ifs.PATCH, hp)
 }
 
 func memoryUsage() uint64 {

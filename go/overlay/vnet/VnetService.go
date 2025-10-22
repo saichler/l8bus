@@ -49,7 +49,7 @@ func (this *VNet) vnetServiceRequest(data []byte, vnic ifs.IVNic) {
 }
 
 func (this *VNet) ExternalCount() int32 {
-	return this.switchTable.conns.sizeExternal.Load()
+	return this.switchTable.conns.sizeExternalVnet.Load()
 }
 
 func (this *VNet) LocalCount() int32 {

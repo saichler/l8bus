@@ -8,19 +8,22 @@ import (
 )
 
 type Connections struct {
-	internal     *sync.Map
-	external     *sync.Map
-	routeTable   *RouteTable
-	logger       ifs.ILogger
-	vnetUuid     string
-	sizeInternal atomic.Int32
-	sizeExternal atomic.Int32
+	internal         *sync.Map
+	externalVnet     *sync.Map
+	externalVnic     *sync.Map
+	routeTable       *RouteTable
+	logger           ifs.ILogger
+	vnetUuid         string
+	sizeInternal     atomic.Int32
+	sizeExternalVnet atomic.Int32
+	sizeExternalVnic atomic.Int32
 }
 
 func newConnections(vnetUuid string, routeTable *RouteTable, logger ifs.ILogger) *Connections {
 	conns := &Connections{}
 	conns.internal = &sync.Map{}
-	conns.external = &sync.Map{}
+	conns.externalVnet = &sync.Map{}
+	conns.externalVnic = &sync.Map{}
 	conns.routeTable = routeTable
 	conns.logger = logger
 	conns.vnetUuid = vnetUuid
@@ -40,22 +43,35 @@ func (this *Connections) addInternal(uuid string, vnic ifs.IVNic) {
 	this.sizeInternal.Add(1)
 }
 
-func (this *Connections) addExternal(uuid string, vnic ifs.IVNic) {
+func (this *Connections) addExternalVnet(uuid string, vnic ifs.IVNic) {
 	this.logger.Info("Adding external with alias ", vnic.Resources().SysConfig().RemoteAlias)
-	exist, ok := this.external.Load(uuid)
+	exist, ok := this.externalVnet.Load(uuid)
+	if ok {
+		this.logger.Info("External vnet ", uuid, " already exists, shutting down")
+		existVnic := exist.(ifs.IVNic)
+		existVnic.Shutdown()
+		this.externalVnet.Delete(uuid)
+	}
+	this.externalVnet.Store(uuid, vnic)
+	this.sizeExternalVnet.Add(1)
+}
+
+func (this *Connections) addExternalVnic(uuid string, vnic ifs.IVNic) {
+	this.logger.Info("Adding external vnic with alias ", vnic.Resources().SysConfig().RemoteAlias)
+	exist, ok := this.externalVnic.Load(uuid)
 	if ok {
 		this.logger.Info("External vnic ", uuid, " already exists, shutting down")
 		existVnic := exist.(ifs.IVNic)
 		existVnic.Shutdown()
-		this.external.Delete(uuid)
+		this.externalVnic.Delete(uuid)
 	}
-	this.external.Store(uuid, vnic)
-	this.sizeExternal.Add(1)
+	this.externalVnic.Store(uuid, vnic)
+	this.sizeExternalVnic.Add(1)
 }
 
 func (this *Connections) isConnected(ip string) bool {
 	connected := false
-	this.external.Range(func(key, value interface{}) bool {
+	this.externalVnet.Range(func(key, value interface{}) bool {
 		conn := value.(ifs.IVNic)
 		addr := conn.Resources().SysConfig().Address
 		if ip == addr {
@@ -68,14 +84,20 @@ func (this *Connections) isConnected(ip string) bool {
 }
 
 func (this *Connections) getConnection(vnicUuid string, isHope0 bool) (string, ifs.IVNic) {
+	//internal vnic
 	vnic, ok := this.internal.Load(vnicUuid)
+	if ok {
+		return vnicUuid, vnic.(ifs.IVNic)
+	}
+	//external vnic
+	vnic, ok = this.externalVnic.Load(vnicUuid)
 	if ok {
 		return vnicUuid, vnic.(ifs.IVNic)
 	}
 	// only if this is hope0, e.g. the source of the message is from this switch sources,
 	// fetch try to find the route
 	if isHope0 {
-		vnic, ok = this.external.Load(vnicUuid)
+		vnic, ok = this.externalVnet.Load(vnicUuid)
 		if ok {
 			return vnicUuid, vnic.(ifs.IVNic)
 		}
@@ -84,7 +106,7 @@ func (this *Connections) getConnection(vnicUuid string, isHope0 bool) (string, i
 		if !ok {
 			return "", nil
 		}
-		vnic, ok = this.external.Load(remoteUuid)
+		vnic, ok = this.externalVnet.Load(remoteUuid)
 		if ok {
 			return remoteUuid, vnic.(ifs.IVNic)
 		}
@@ -98,7 +120,7 @@ func (this *Connections) all() map[string]ifs.IVNic {
 		all[key.(string)] = value.(ifs.IVNic)
 		return true
 	})
-	this.external.Range(func(key, value interface{}) bool {
+	this.externalVnet.Range(func(key, value interface{}) bool {
 		all[key.(string)] = value.(ifs.IVNic)
 		return true
 	})
@@ -119,9 +141,9 @@ func (this *Connections) allInternals() map[string]ifs.IVNic {
 	return result
 }
 
-func (this *Connections) allExternals() map[string]ifs.IVNic {
+func (this *Connections) allExternalVnets() map[string]ifs.IVNic {
 	result := make(map[string]ifs.IVNic)
-	this.external.Range(func(key, value interface{}) bool {
+	this.externalVnet.Range(func(key, value interface{}) bool {
 		result[key.(string)] = value.(ifs.IVNic)
 		return true
 	})
@@ -134,7 +156,7 @@ func (this *Connections) shutdownConnection(uuid string) {
 	if ok {
 		conn.(ifs.IVNic).Shutdown()
 	}
-	conn, ok = this.external.Load(uuid)
+	conn, ok = this.externalVnet.Load(uuid)
 	if ok {
 		conn.(ifs.IVNic).Shutdown()
 	}
@@ -148,7 +170,7 @@ func (this *Connections) allDownConnections() map[string]bool {
 		}
 		return true
 	})
-	this.external.Range(func(key, value interface{}) bool {
+	this.externalVnet.Range(func(key, value interface{}) bool {
 		if !value.(ifs.IVNic).Running() {
 			result[key.(string)] = true
 		}
