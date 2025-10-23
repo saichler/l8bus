@@ -256,3 +256,7 @@ func (this *VNet) sendHealth(hp *l8health.L8Health) {
 		-1, -1, -1, -1, -1, 0, false, "")
 	go this.HandleData(h, nil)
 }
+
+func (this *VNet) VnetVnic() ifs.IVNic {
+	return this.vnic
+}
