@@ -103,7 +103,9 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 func (this *Protocol) CreateMessageForm(msg *ifs.Message, o ifs.IElements) ([]byte, error) {
 	var data []byte
 	var err error
-
+	if o == nil {
+		o = object.New(nil, nil)
+	}
 	data, err = o.Serialize()
 	if err != nil {
 		return nil, err

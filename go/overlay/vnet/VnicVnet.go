@@ -87,6 +87,11 @@ func (this *VnicVnet) Multicast(serviceName string, serviceArea byte, action ifs
 			err = e
 		}
 	}
+	data, err = this.vnet.protocol.CreateMessageFor(myUuid, serviceName, serviceArea, ifs.P1, ifs.M_All, action,
+		myUuid, myUuid, object.New(nil, any), false, false, this.vnet.protocol.NextMessageNumber(),
+		ifs.NotATransaction, "", "", -1, -1, -1, -1,
+		-1, 0, false, "")
+	go this.vnet.HandleData(data, this)
 	return err
 }
 

@@ -1,6 +1,8 @@
 package vnet
 
-import "github.com/saichler/l8types/go/ifs"
+import (
+	"github.com/saichler/l8types/go/ifs"
+)
 
 func (this *VNet) vnetServiceRequest(data []byte, vnic ifs.IVNic) {
 	msg, err := this.protocol.MessageOf(data, this.resources)
