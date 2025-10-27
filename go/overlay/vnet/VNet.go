@@ -198,8 +198,14 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 			go this.vnetServiceRequest(data, vnic)
 			return
 		}
+
 		if destination == ifs.DESTINATION_Single {
 			destination = this.switchTable.services.serviceFor(serviceName, serviceArea, source, multicastMode)
+		}
+		//Incase the destination is the vnet after the service sele
+		if destination == this.resources.SysConfig().LocalUuid {
+			go this.vnetServiceRequest(data, vnic)
+			return
 		}
 		//The destination is a single port
 		_, p := this.switchTable.conns.getConnection(destination, true)
