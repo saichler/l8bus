@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-
+echo "******************************************************"
+echo "Make sure you built security before running this tests"
+echo "Shallow Security exist in https://github.com/saichler/l8utils/tree/main/go/utils/shallow_security/build.sh"
+echo "******************************************************"
 # Fail on errors and don't open cover file
 set -e
 # clean up
@@ -14,8 +17,6 @@ go mod vendor
 
 # Run unit tests with coverage
 go test -tags=unit -v -coverpkg=./overlay/... -coverprofile=cover.html ./... --failfast
-
-#rm -rf ./tests/loader.so
 
 # Open the coverage report in a browser
 go tool cover -html=cover.html
