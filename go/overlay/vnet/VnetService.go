@@ -38,7 +38,7 @@ func (this *VNet) vnetServiceRequest(data []byte, vnic ifs.IVNic) {
 		return
 	}
 
-	resp := this.resources.Services().Handle(pb, msg, vnic)
+	resp := this.resources.Services().Handle(pb, msg.Action(), msg, vnic)
 	if resp != nil && resp.Error() != nil {
 		this.resources.Logger().Error(resp.Error(), " : ", msg.Action())
 	}
