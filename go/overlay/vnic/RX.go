@@ -140,7 +140,7 @@ func (this *RX) handleMessage(msg *ifs.Message, pb ifs.IElements) {
 		}
 	} else {
 		//Add bool
-		resp := this.vnic.resources.Services().Handle(pb, msg.Action(), this.vnic, msg)
+		resp := this.vnic.resources.Services().Handle(pb, msg, this.vnic)
 		if resp != nil && resp.Error() != nil {
 			//panic(this.vnic.resources.SysConfig().LocalAlias + " " + resp.Error().Error())
 			this.vnic.resources.Logger().Error(resp.Error())
