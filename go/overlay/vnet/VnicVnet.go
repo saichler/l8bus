@@ -140,8 +140,31 @@ func (this *VnicVnet) LocalRequest(serviceName string, area byte, action ifs.Act
 }
 
 func (this *VnicVnet) Forward(msg *ifs.Message, destination string) ifs.IElements {
-	panic("implement me")
-	return nil
+	pb, err := this.vnet.protocol.ElementsOf(msg)
+	if err != nil {
+		return object.NewError(err.Error())
+	}
+
+	timeout := 15
+	if msg.Tr_Timeout() > 0 {
+		timeout = int(msg.Tr_Timeout())
+	}
+
+	if destination == "" {
+		externals := this.vnet.switchTable.conns.allExternalVnets()
+		for uuid, _ := range externals {
+			destination = uuid
+			break
+		}
+	}
+	if destination == this.Resources().SysConfig().LocalUuid {
+		return this.Resources().Services().Handle(pb, msg.Action(), msg, this)
+	}
+	_, conn := this.vnet.switchTable.conns.getConnection(destination, true)
+	if conn == nil {
+		return object.New(nil, []interface{}{})
+	}
+	return conn.Request(destination, msg.ServiceName(), msg.ServiceArea(), msg.Action(), pb, timeout)
 }
 
 func (this *VnicVnet) ServiceAPI(serviceName string, area byte) ifs.ServiceAPI {
