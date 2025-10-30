@@ -38,7 +38,7 @@ func (this *VirtualNetworkInterface) Forward(msg *ifs.Message, destination strin
 	return request.Response()
 }
 
-func CreateElements(any interface{}, resources ifs.IResources) (ifs.IElements, error) {
+func createElements(any interface{}, resources ifs.IResources) (ifs.IElements, error) {
 	if any == nil {
 		return object.New(nil, nil), nil
 	}
