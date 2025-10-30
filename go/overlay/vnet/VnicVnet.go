@@ -45,7 +45,9 @@ func (this *VnicVnet) Unicast(destination string, serviceName string, serviceAre
 	if err != nil {
 		return err
 	}
-	conn.SendMessage(bts)
+	if conn != nil {
+		conn.SendMessage(bts)
+	}
 	return nil
 }
 
