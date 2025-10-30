@@ -36,7 +36,6 @@ func (this *VnicVnet) SendMessage(data []byte) error {
 }
 
 func (this *VnicVnet) Unicast(destination string, serviceName string, serviceArea byte, action ifs.Action, data interface{}) error {
-	_, conn := this.vnet.switchTable.conns.getConnection(destination, true)
 	elems := object.New(nil, data)
 	bts, err := this.vnet.protocol.CreateMessageFor(destination, serviceName, serviceArea, ifs.P1, ifs.M_All, action,
 		this.Resources().SysConfig().LocalUuid, this.Resources().SysConfig().LocalUuid, elems,
@@ -45,9 +44,12 @@ func (this *VnicVnet) Unicast(destination string, serviceName string, serviceAre
 	if err != nil {
 		return err
 	}
-	if conn != nil {
-		conn.SendMessage(bts)
+	if destination == this.Resources().SysConfig().LocalUuid {
+		go this.vnet.HandleData(bts, this)
+		return nil
 	}
+	_, conn := this.vnet.switchTable.conns.getConnection(destination, true)
+	conn.SendMessage(bts)
 	return nil
 }
 

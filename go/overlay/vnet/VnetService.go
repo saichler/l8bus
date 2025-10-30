@@ -37,8 +37,12 @@ func (this *VNet) vnetServiceRequest(data []byte, vnic ifs.IVNic) {
 		this.vnic.SetResponse(msg, pb)
 		return
 	}
-
-	resp := this.resources.Services().Handle(pb, msg.Action(), msg, vnic)
+	var resp ifs.IElements
+	if msg.Action() >= ifs.MapR_POST && msg.Action() <= ifs.MapR_GET {
+		resp = this.resources.Services().Handle(pb, msg.Action(), msg, this.vnic)
+	} else {
+		resp = this.resources.Services().Handle(pb, msg.Action(), msg, vnic)
+	}
 	if resp != nil && resp.Error() != nil {
 		this.resources.Logger().Error(resp.Error(), " : ", msg.Action())
 	}
