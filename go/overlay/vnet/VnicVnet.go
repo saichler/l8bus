@@ -78,6 +78,10 @@ func (this *VnicVnet) Multicast(serviceName string, serviceArea byte, action ifs
 	var data []byte
 	myUuid := this.vnet.resources.SysConfig().LocalUuid
 	connections := this.vnet.switchTable.connectionsForService(serviceName, serviceArea, myUuid, ifs.M_All)
+	//in case this is the first multicast from a vnet to a vnet
+	if serviceName >= ifs.SysMsg && len(connections) == 0 {
+		connections = this.vnet.switchTable.conns.allExternalVnets()
+	}
 	for uuid, connection := range connections {
 		data, err = this.vnet.protocol.CreateMessageFor(uuid, serviceName, serviceArea, ifs.P1, ifs.M_All, action,
 			myUuid, uuid, object.New(nil, any), false, false, this.vnet.protocol.NextMessageNumber(),
