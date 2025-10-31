@@ -46,6 +46,8 @@ func (this *SwitchTable) addVNic(vnic ifs.IVNic) {
 	} else {
 		// otherwise, add it to the external connections
 		this.conns.addExternalVnet(config.RemoteUuid, vnic)
+		//When this is an external vnet, we need to re-publish the services
+		this.switchService.resources.Services().TriggerElections(this.switchService.vnic)
 	}
 	this.switchService.publishRoutes()
 }
