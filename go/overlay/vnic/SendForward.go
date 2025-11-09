@@ -21,11 +21,12 @@ func (this *VirtualNetworkInterface) Forward(msg *ifs.Message, destination strin
 		timeout = int(msg.Tr_Timeout())
 	}
 
-	request := this.requests.NewRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid, timeout, this.resources.Logger())
-	defer this.requests.DelRequest(request.MsgNum(), request.MsgSource())
+	request, err := this.requests.NewRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid, timeout, this.resources.Logger())
+	if err != nil {
+		return object.NewError(err.Error())
+	}
 
-	request.Lock()
-	defer request.Unlock()
+	defer this.requests.DelRequest(request.MsgNum(), request.MsgSource())
 
 	e := this.components.TX().Unicast(destination, msg.ServiceName(), msg.ServiceArea(), msg.Action(),
 		pb, ifs.P8, ifs.M_All, true, false, request.MsgNum(),

@@ -108,38 +108,43 @@ This repository now includes a comprehensive Go implementation of the Layer8 ove
 
 ### Core Features
 - **Virtual Network Overlay**: Complete TCP-based virtual networking layer with VNet switches and VNic interfaces
-- **Service Discovery**: UDP-based automatic peer discovery and service registration
-- **Health Monitoring**: Comprehensive health scoring system with circuit breaker patterns
+- **Multicast Messaging**: Full multicast support for efficient one-to-many communication patterns
+- **MapReduce Framework**: Integrated MapR capabilities for distributed data processing and parallel computation
+- **Service Discovery**: UDP-based automatic peer discovery and service registration with enhanced selection
+- **Health Monitoring**: Comprehensive health scoring system with circuit breaker patterns and SLA tracking
 - **Metrics Collection**: Advanced performance monitoring with counters, gauges, and histograms
-- **Connection Management**: Automatic reconnection, connection pooling, and lifecycle management
-- **Message Routing**: Intelligent service-based routing with multicast and leader election support
+- **Connection Management**: Automatic reconnection, connection pooling, and external NIC support
+- **Message Routing**: Intelligent service-based routing with multicast, forwarding, and leader election support
 
 ### Architecture Components
-- **VNet (Virtual Network)**: Central network switch managing connections between nodes with enhanced stability
-- **VNic (Virtual Network Interface)**: Network interface for nodes with improved request/response handling
-- **Protocol System**: Message serialization/deserialization with enhanced primary key management
+- **VNet (Virtual Network)**: Central network switch managing connections between nodes with enhanced service publishing
+- **VNic (Virtual Network Interface)**: Network interface for nodes with service selection and external NIC support
+- **Protocol System**: Message serialization/deserialization with multicast and forwarding capabilities
+- **MapR System**: Distributed MapReduce framework for parallel data processing across the overlay
 - **Health Service**: Streamlined distributed health monitoring with SLA-based tracking
-- **Plugin System**: Dynamic plugin loading with improved service activation
+- **Plugin System**: Dynamic plugin loading with improved service activation and pause functionality
 - **Metrics System**: Real-time performance monitoring with optimized collection methods
 
-### Key Improvements in Latest Release
-- **Consolidated Health Architecture**: Removed redundancy by unifying health monitoring into a single, efficient service
-- **Enhanced Stability**: Multiple crash prevention fixes ensuring robust operation under load
-- **Optimized Synchronization**: Reduced overhead by removing unnecessary synchronization points
-- **Improved Service Management**: Cleaner activation patterns and better lifecycle control
-- **SLA-Based Monitoring**: Transition to Service Level Agreement tracking for better observability
+### Key Improvements in Latest Release (November 2025)
+- **Multicast Messaging**: Full implementation of one-to-many communication patterns for efficient broadcasting
+- **MapReduce Integration**: Added MapR framework for distributed parallel data processing
+- **Enhanced Forwarding**: Improved message forwarding mechanisms with optimized multi-hop routing
+- **External NIC Support**: Comprehensive support for external network interfaces expanding deployment flexibility
+- **Service Selection**: VNIC-level service selection for granular routing control
+- **VNet Service Publishing**: Fixed critical service publishing issues for reliable discovery
+- **Stability Improvements**: Multiple crash prevention fixes and pause functionality for maintenance
 
-### Recent Optimizations (Latest Commits)
-- **Health Monitoring System**: Complete implementation of comprehensive health service with improved reliability (3c2a893)
-- **Service Activation Refactor**: Streamlined service activation and lifecycle management (32007dc)
-- **SLA Support**: Switched to Service Level Agreement (SLA) based monitoring for better performance tracking (827eb05)
-- **Request/Response Implementation**: Enhanced VNet/VNic layer with proper request/response handling (91e994c)
-- **Stability Improvements**: Multiple critical fixes preventing system crashes in VNet/VNic components (946331a, 8892f5a)
-- **Protocol Keys**: Fixed primary keys handling for improved data consistency (8892f5a)
-- **Health Service Architecture**: Removed redundant HealthCenter, consolidated into streamlined HealthService (3c2a893)
-- **Connection Synchronization**: Optimized synchronization mechanisms, removing unnecessary sync overhead (3dd2952, 907b949)
-- **Generic to Base Refactoring**: Renamed generic components to base for clearer architecture (c761c88)
-- **Health List Enhancements**: Improved health status list management and reporting (559c468)
+### Recent Commits (Latest Updates)
+- **VNet Service Publishing Fix**: Resolved critical service publishing issues for reliable service discovery (e67190c)
+- **Multicast Implementation**: First complete multicast messaging implementation for broadcast scenarios (276ea8a)
+- **Message Forwarding**: Enhanced forwarding implementation with improved routing logic (86ec694, 5bc5bd5)
+- **MapReduce Addition**: Integrated MapR capabilities for distributed data processing (b2eef18, f92067d, 3dbf30d)
+- **Crash Prevention**: Multiple fixes preventing system crashes under high load (a81adf1)
+- **Pause Functionality**: Added system pause capability for maintenance operations (10b0a28)
+- **VNIC Service Selection**: Implemented granular service selection at VNIC level (297770e)
+- **External NIC Support**: Added comprehensive external network interface support (d4a2208)
+- **Response Handling**: Fixed nil response issues improving system reliability (1db0be4)
+- **VNIC Get Method**: Added VNIC retrieval functionality for better interface management (e920c4f)
 
 ### Dependencies
 - Go 1.23.8
@@ -150,7 +155,8 @@ This repository now includes a comprehensive Go implementation of the Layer8 ove
 The Go implementation demonstrates production-ready distributed systems patterns with proper error handling, resource management, and concurrent processing.
 
 ### Project Statistics
-- **Go Implementation**: 340 files, 58,879+ lines of code
+- **Go Implementation**: 340+ files, 59,000+ lines of code
+- **Latest Features**: Multicast messaging, MapReduce framework, External NIC support
 - **Comprehensive test coverage** including unit tests and integration tests
 - **Production-ready** with extensive error handling and recovery mechanisms
 

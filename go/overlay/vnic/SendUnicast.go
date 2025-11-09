@@ -39,11 +39,11 @@ func (this *VirtualNetworkInterface) request(destination, serviceName string, se
 		destination = ifs.DESTINATION_Single
 	}
 
-	request := this.requests.NewRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid, timeoutInSeconds, this.resources.Logger())
+	request, err := this.requests.NewRequest(this.protocol.NextMessageNumber(), this.resources.SysConfig().LocalUuid, timeoutInSeconds, this.resources.Logger())
+	if err != nil {
+		return object.NewError(err.Error())
+	}
 	defer this.requests.DelRequest(request.MsgNum(), request.MsgSource())
-
-	request.Lock()
-	defer request.Unlock()
 
 	elements, err := createElements(any, this.resources)
 	if err != nil {

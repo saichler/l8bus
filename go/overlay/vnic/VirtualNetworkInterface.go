@@ -12,9 +12,9 @@ import (
 	"github.com/saichler/l8bus/go/overlay/metrics"
 	"github.com/saichler/l8bus/go/overlay/plugins"
 	"github.com/saichler/l8bus/go/overlay/protocol"
-	requests2 "github.com/saichler/l8bus/go/overlay/vnic/requests"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8services"
+	requests2 "github.com/saichler/l8utils/go/utils/requests"
 	"github.com/saichler/l8utils/go/utils/strings"
 )
 

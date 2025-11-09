@@ -518,7 +518,7 @@
             <h1>Layer 8 Network BUS</h1>
             <div class="subtitle">Virtual Overlay Network for Distributed Systems</div>
             <div class="tagline">"Work less, Achieve much more."</div>
-            <div style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.7;">Latest Release: October 2025 | v3c2a893</div>
+            <div style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.7;">Latest Release: November 2025 | ve67190c</div>
         </div>
 
         <!-- Custom Network Illustration -->
@@ -580,22 +580,24 @@
                 <h2>Overview</h2>
                 <p style="font-size: 1.1rem; text-align: center; margin-bottom: 2rem;">
                     The Layer 8 Network BUS provides a comprehensive virtual networking layer built on top of TCP connections,
-                    enabling distributed systems to communicate as if they were on a single network. Latest release (October 2025) features
-                    streamlined health monitoring with SLA-based tracking, enhanced stability fixes, and optimized synchronization mechanisms.
+                    enabling distributed systems to communicate as if they were on a single network. Latest release (November 2025) introduces
+                    multicast messaging support, enhanced forwarding mechanisms, MapReduce capabilities, and external NIC integration.
                     <br><br>
-                    <strong>Project Scale:</strong> 340 Go files | 58,879+ lines of production-ready code
+                    <strong>Project Scale:</strong> 340+ Go files | 59,000+ lines of production-ready code
                 </p>
 
                 <!-- Key Improvements Banner -->
                 <div style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 1.5rem; border-radius: 8px; margin: 2rem 0; text-align: center;">
                     <h3 style="color: white; margin-bottom: 1rem;">🎯 Key Improvements in Latest Release</h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; text-align: left;">
-                        <div>✅ Unified HealthService architecture</div>
-                        <div>✅ SLA-based monitoring</div>
-                        <div>✅ VNet/VNic crash prevention</div>
-                        <div>✅ Optimized synchronization</div>
-                        <div>✅ Request/Response improvements</div>
-                        <div>✅ Base component refactoring</div>
+                        <div>✅ Multicast messaging support</div>
+                        <div>✅ Enhanced forwarding mechanisms</div>
+                        <div>✅ MapReduce capabilities (MapR)</div>
+                        <div>✅ External NIC integration</div>
+                        <div>✅ VNet service publishing fixes</div>
+                        <div>✅ VNIC service selection</div>
+                        <div>✅ Multiple crash fixes</div>
+                        <div>✅ Pause functionality</div>
                     </div>
                 </div>
 
@@ -736,26 +738,26 @@
                 <div class="features-list">
                     <div class="feature-item">
                         <div class="network-icon"></div>
-                        <h4>Streamlined Health Architecture</h4>
-                        <p>Unified health monitoring system with SLA-based tracking, removing redundancy and improving efficiency through consolidated HealthService implementation.</p>
-                    </div>
-
-                    <div class="feature-item">
-                        <div class="network-icon security-icon"></div>
-                        <h4>Enhanced Stability & Reliability</h4>
-                        <p>Critical fixes preventing VNet/VNic crashes with improved request/response handling, primary key management, and optimized synchronization mechanisms.</p>
-                    </div>
-
-                    <div class="feature-item">
-                        <div class="network-icon service-icon"></div>
-                        <h4>Advanced Service Linking</h4>
-                        <p>Improved service interconnection and dependency management with enhanced service discovery and registration capabilities.</p>
+                        <h4>Multicast Messaging</h4>
+                        <p>Full multicast messaging support enabling efficient one-to-many communication patterns for distributed systems, with optimized message forwarding and routing.</p>
                     </div>
 
                     <div class="feature-item">
                         <div class="network-icon routing-icon"></div>
-                        <h4>Distributed Cache System</h4>
-                        <p>Major refactoring and updates to distributed cache system with optimized data distribution and cache coherency protocols.</p>
+                        <h4>MapReduce Capabilities (MapR)</h4>
+                        <p>Integrated MapReduce functionality for distributed data processing, enabling efficient parallel computation across the network overlay.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="network-icon service-icon"></div>
+                        <h4>External NIC Support</h4>
+                        <p>Enhanced support for external network interface cards, allowing seamless integration with diverse network configurations and environments.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="network-icon"></div>
+                        <h4>Advanced Message Forwarding</h4>
+                        <p>Improved message forwarding mechanisms with intelligent routing decisions, reducing latency and improving overall network performance.</p>
                     </div>
 
                     <div class="feature-item">
@@ -857,46 +859,46 @@
                 </div>
 
                 <div class="card">
-                    <h3>Latest Performance Optimizations (October 2025)</h3>
+                    <h3>Latest Performance Optimizations (November 2025)</h3>
                     <div class="features-list">
                         <div class="feature-item">
-                            <h4>Health Service Consolidation (3c2a893)</h4>
-                            <p>Complete implementation of unified health service, removing HealthCenter redundancy and streamlining health monitoring into a single, efficient service.</p>
+                            <h4>Multicast Implementation (276ea8a)</h4>
+                            <p>First implementation of multicast messaging, enabling efficient one-to-many communication patterns for distributed broadcast scenarios.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>Service Activation Refactor (32007dc)</h4>
-                            <p>Streamlined service activation with cleaner lifecycle management patterns and improved initialization sequencing for better system startup performance.</p>
+                            <h4>Message Forwarding (86ec694, 5bc5bd5)</h4>
+                            <p>Enhanced message forwarding implementation with improved routing logic and reduced latency for multi-hop communications.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>SLA-Based Monitoring (827eb05)</h4>
-                            <p>Implemented Service Level Agreement tracking for improved observability and performance monitoring across distributed services.</p>
+                            <h4>MapReduce Integration (b2eef18, f92067d, 3dbf30d)</h4>
+                            <p>Added MapR capabilities for distributed data processing, enabling parallel computation patterns across the overlay network.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>VNet/VNic Stability (946331a, 8892f5a)</h4>
-                            <p>Critical crash prevention fixes in network layer with enhanced request/response handling and improved connection stability under load.</p>
+                            <h4>VNet Service Publishing (e67190c)</h4>
+                            <p>Fixed critical issues in VNet service publishing mechanism, ensuring reliable service registration and discovery.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>Protocol Key Management (8892f5a)</h4>
-                            <p>Fixed primary key handling for improved data consistency and reliability in distributed message passing.</p>
+                            <h4>External NIC Support (d4a2208)</h4>
+                            <p>Added comprehensive support for external network interfaces, expanding deployment flexibility and network integration options.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>Synchronization Optimization (3dd2952, 907b949)</h4>
-                            <p>Removed unnecessary synchronization overhead, improving performance by reducing lock contention in high-throughput scenarios.</p>
+                            <h4>VNIC Service Selection (297770e)</h4>
+                            <p>Implemented service selection capabilities in VNIC, allowing more granular control over service routing and load distribution.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>Base Component Refactoring (c761c88)</h4>
-                            <p>Renamed generic components to base for clearer architecture and better code organization across the codebase.</p>
+                            <h4>Crash Prevention Fixes (a81adf1, 946331a)</h4>
+                            <p>Multiple critical fixes preventing system crashes, improving overall stability and reliability under high load conditions.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>Health List Management (559c468)</h4>
-                            <p>Enhanced health status list management with improved aggregation and reporting capabilities for better cluster-wide visibility.</p>
+                            <h4>Pause Functionality (10b0a28)</h4>
+                            <p>Added pause capability for better control over system operations during maintenance or debugging scenarios.</p>
                         </div>
                     </div>
                 </div>
@@ -932,9 +934,9 @@
                     <p>Simulate network operations and see how Layer8 handles different scenarios:</p>
                     
                     <button class="demo-button" onclick="simulateDiscovery()">Network Discovery</button>
-                    <button class="demo-button" onclick="simulateRouting()">Message Routing</button>
-                    <button class="demo-button" onclick="simulateBatching()">Service Batching</button>
-                    <button class="demo-button" onclick="simulateFailover()">Health & Metrics</button>
+                    <button class="demo-button" onclick="simulateMulticast()">Multicast</button>
+                    <button class="demo-button" onclick="simulateMapReduce()">MapReduce</button>
+                    <button class="demo-button" onclick="simulateForwarding()">Forwarding</button>
                     <button class="demo-button" onclick="simulateMetrics()">Performance Stats</button>
                     <button class="demo-button" onclick="clearDemo()">Clear</button>
                     
@@ -1021,7 +1023,7 @@ google.golang.org/protobuf       // Protocol buffer support
     <footer>
         <div class="container">
             <p>&copy; 2025 Layer 8 Network BUS. A comprehensive virtual networking solution for distributed systems.</p>
-            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem;">Latest Release: October 2025 | 58,879+ lines of Go | Production Ready</p>
+            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem;">Latest Release: November 2025 | 59,000+ lines of Go | Production Ready</p>
         </div>
     </footer>
 
@@ -1039,39 +1041,39 @@ google.golang.org/protobuf       // Protocol buffer support
             `;
         }
 
-        function simulateRouting() {
+        function simulateMulticast() {
             const status = document.getElementById('demo-status');
             status.innerHTML = `
-<strong>Message Routing Simulation:</strong><br>
-1. Received message for service "HealthService" area 0<br>
-2. Consulting switch table for available instances...<br>
-3. Found 3 healthy instances: [uuid1, uuid2, uuid3]<br>
-4. Selecting leader instance: uuid2<br>
-5. ✓ Message routed to destination successfully
+<strong>Multicast Messaging Simulation:</strong><br>
+1. Initiating multicast message to group "config-update"<br>
+2. Identifying multicast group members: [Node-A, Node-B, Node-C, Node-D]<br>
+3. Broadcasting message to all group members simultaneously<br>
+4. Acknowledgments received: 4/4 nodes confirmed receipt<br>
+5. ✓ Multicast delivered to all nodes in 12ms
             `;
         }
 
-        function simulateBatching() {
+        function simulateMapReduce() {
             const status = document.getElementById('demo-status');
             status.innerHTML = `
-<strong>Service Batching Simulation:</strong><br>
-1. Collecting 15 individual service requests...<br>
-2. Grouping requests by service type and destination<br>
-3. Batch 1: HealthService requests [5 items] → Node A<br>
-4. Batch 2: PluginService requests [3 items] → Node B<br>
-5. ✓ Processed 15 requests in 2 batches (75% reduction)
+<strong>MapReduce Processing Simulation:</strong><br>
+1. Distributing MapR job across 5 nodes...<br>
+2. Map phase: Processing 10GB dataset in parallel chunks<br>
+3. Shuffle: Redistributing intermediate results by key<br>
+4. Reduce phase: Aggregating results from all mappers<br>
+5. ✓ MapReduce job completed: 10GB processed in 3.2 seconds
             `;
         }
 
-        function simulateFailover() {
+        function simulateForwarding() {
             const status = document.getElementById('demo-status');
             status.innerHTML = `
-<strong>Health Check & SLA Monitoring:</strong><br>
-1. HealthService collecting SLA metrics from all nodes...<br>
-2. HealthService: UP (3 instances) - SLA: 99.8% availability<br>
-3. PluginService: UP (1 instance) - SLA: 100% availability<br>
-4. CustomService: Circuit Breaker OPEN - SLA breach (85%)<br>
-5. ✓ SLA tracking updated, service failover initiated
+<strong>Message Forwarding Simulation:</strong><br>
+1. Message received at VNet-A for destination VNic-Z<br>
+2. Checking routing table... destination not directly connected<br>
+3. Identifying next hop: VNet-B (2 hops to destination)<br>
+4. Forwarding message to VNet-B with TTL=3<br>
+5. ✓ Message successfully delivered via 2-hop forwarding path
             `;
         }
 
