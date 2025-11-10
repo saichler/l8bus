@@ -338,3 +338,15 @@ func (m *CircuitBreakerManager) GetAll() map[string]*CircuitBreaker {
 	}
 	return breakers
 }
+
+// Remove removes a circuit breaker from the manager
+// Note: This does not clean up metrics in the registry - that remains a known limitation
+func (m *CircuitBreakerManager) Remove(name string) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	if _, exists := m.breakers[name]; exists {
+		delete(m.breakers, name)
+		m.logger.Debug("Removed circuit breaker:", name)
+	}
+}

@@ -40,12 +40,14 @@ type VirtualNetworkInterface struct {
 
 	requests *requests2.Requests
 
-	healthStatistics  *HealthStatistics
-	connectionMetrics *metrics.ConnectionMetrics
-	circuitBreaker    *metrics.CircuitBreaker
-	metricsRegistry   *metrics.MetricsRegistry
-	connected         bool
-	serviceLinks      *sync.Map
+	healthStatistics       *HealthStatistics
+	connectionMetrics      *metrics.ConnectionMetrics
+	circuitBreaker         *metrics.CircuitBreaker
+	circuitBreakerManager  *metrics.CircuitBreakerManager
+	circuitBreakerName     string
+	metricsRegistry        *metrics.MetricsRegistry
+	connected              bool
+	serviceLinks           *sync.Map
 }
 
 func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *VirtualNetworkInterface {
@@ -71,9 +73,10 @@ func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *Virtua
 		vnic.connectionMetrics = metrics.NewConnectionMetrics(connectionID, remoteAddr)
 
 		// Initialize circuit breaker for this connection
-		cbManager := metrics.NewCircuitBreakerManager(vnic.metricsRegistry, resources.Logger())
+		vnic.circuitBreakerManager = metrics.NewCircuitBreakerManager(vnic.metricsRegistry, resources.Logger())
 		cbConfig := metrics.DefaultCircuitBreakerConfig()
-		vnic.circuitBreaker = cbManager.GetOrCreate(strings.New("vnic_", connectionID).String(), cbConfig)
+		vnic.circuitBreakerName = strings.New("vnic_", connectionID).String()
+		vnic.circuitBreaker = vnic.circuitBreakerManager.GetOrCreate(vnic.circuitBreakerName, cbConfig)
 	}
 
 	if vnic.resources.SysConfig().LocalUuid == "" {
@@ -181,6 +184,12 @@ func (this *VirtualNetworkInterface) Shutdown() {
 		this.conn.Close()
 	}
 	this.components.shutdown()
+
+	// Clean up circuit breaker to prevent memory leak
+	if this.circuitBreakerManager != nil && this.circuitBreakerName != "" {
+		this.circuitBreakerManager.Remove(this.circuitBreakerName)
+	}
+
 	if this.resources.DataListener() != nil {
 		go this.resources.DataListener().ShutdownVNic(this)
 	}
