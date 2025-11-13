@@ -1,6 +1,7 @@
 package vnic
 
 import (
+	"fmt"
 	"os"
 	"runtime"
 	"strconv"
@@ -74,6 +75,7 @@ func (this *KeepAlive) sendState() {
 	//this.vnic.resources.Logger().Debug("Sending Keep Alive for ", this.vnic.resources.SysConfig().LocalUuid, " ", this.vnic.resources.SysConfig().LocalAlias)
 	//We unicast to the vnet, it will multicast the change to all
 	this.vnic.Unicast(this.vnic.resources.SysConfig().RemoteUuid, health.ServiceName, health.ServiceArea(this.vnic.resources), ifs.PATCH, hp)
+	fmt.Println("Sending Keep Alive")
 }
 
 func memoryUsage() uint64 {
