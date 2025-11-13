@@ -36,6 +36,14 @@ func (this *VNet) newHealth(config *l8sysconfig.L8SysConfig) *l8health.L8Health 
 	hp.AUuid = config.RemoteUuid
 	hp.Status = l8health.L8HealthState_Up
 	hp.Services = config.Services
+	hp.Stats = &l8health.L8HealthStats{}
+	hp.Stats.TxMsgCount = -1
+	hp.Stats.RxMsgCount = -1
+	hp.Stats.LastMsgTime = -1
+	hp.Stats.CpuUsage = -1
+	hp.Stats.RxDataCont = -1
+	hp.Stats.TxDataCount = -1
+	hp.Stats.MemoryUsage = -1
 	isLocal := protocol.IpSegment.IsLocal(config.Address)
 	hp.IsVnet = config.ForceExternal || !isLocal
 

@@ -32,6 +32,16 @@ func TestKeepAlive(t *testing.T) {
 	}
 
 	time.Sleep(time.Second * time.Duration(eg2_1.Resources().SysConfig().KeepAliveIntervalSeconds+5))
+	for i := 1; i <= 3; i++ {
+		for j := 1; j <= 3; j++ {
+			nic := topo.VnicByVnetNum(i, j)
+			hp := health.HealthOf(nic.Resources().SysConfig().LocalUuid, nic.Resources())
+			if hp.Stats == nil {
+				nic.Resources().Logger().Fail(t, "no stats for ", nic.Resources().SysConfig().LocalAlias)
+				return
+			}
+		}
+	}
 	hp := health.HealthOf(eg2_1.Resources().SysConfig().LocalUuid, eg1_2.Resources())
 	if hp.Stats.TxMsgCount == 0 {
 		Log.Fail(t, "Expected at least one message to be sent for ", eg2_1.Resources().SysConfig().LocalUuid)
