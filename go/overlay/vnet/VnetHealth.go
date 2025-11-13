@@ -43,7 +43,7 @@ func (this *VNet) newHealth(config *l8sysconfig.L8SysConfig) *l8health.L8Health 
 	hp.Stats.CpuUsage = -1
 	hp.Stats.RxDataCont = -1
 	hp.Stats.TxDataCount = -1
-	hp.Stats.MemoryUsage = -1
+	hp.Stats.MemoryUsage = 1
 	isLocal := protocol.IpSegment.IsLocal(config.Address)
 	hp.IsVnet = config.ForceExternal || !isLocal
 
