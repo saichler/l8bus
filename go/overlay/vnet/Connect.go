@@ -1,9 +1,9 @@
 package vnet
 
 import (
+	vnic2 "github.com/saichler/l8bus/go/overlay/vnic"
 	"github.com/saichler/l8types/go/types/l8sysconfig"
 	resources2 "github.com/saichler/l8utils/go/utils/resources"
-	vnic2 "github.com/saichler/l8bus/go/overlay/vnic"
 )
 
 func (this *VNet) ConnectNetworks(host string, destPort uint32) error {
@@ -38,6 +38,7 @@ func (this *VNet) ConnectNetworks(host string, destPort uint32) error {
 	}
 
 	vnic.Start()
+	this.addHealthForVNic(vnic.Resources().SysConfig())
 	this.notifyNewVNic(vnic)
 	return nil
 }
