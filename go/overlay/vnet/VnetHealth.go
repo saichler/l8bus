@@ -4,12 +4,12 @@ import (
 	"time"
 
 	"github.com/saichler/l8bus/go/overlay/health"
-	"github.com/saichler/l8bus/go/overlay/protocol"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8health"
 	"github.com/saichler/l8types/go/types/l8sysconfig"
 	"github.com/saichler/l8types/go/types/l8system"
+	"github.com/saichler/l8utils/go/utils/ipsegment"
 )
 
 func (this *VNet) addHealthForVNic(config *l8sysconfig.L8SysConfig) {
@@ -44,7 +44,7 @@ func (this *VNet) newHealth(config *l8sysconfig.L8SysConfig) *l8health.L8Health 
 	hp.Stats.RxDataCont = -1
 	hp.Stats.TxDataCount = -1
 	hp.Stats.MemoryUsage = 1
-	isLocal := protocol.IpSegment.IsLocal(config.Address)
+	isLocal := ipsegment.IpSegment.IsLocal(config.Address)
 	hp.IsVnet = config.ForceExternal || !isLocal
 
 	if !hp.IsVnet {

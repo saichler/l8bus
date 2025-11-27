@@ -4,10 +4,10 @@ import (
 	"time"
 
 	"github.com/saichler/l8bus/go/overlay/health"
-	"github.com/saichler/l8bus/go/overlay/protocol"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8health"
+	"github.com/saichler/l8utils/go/utils/ipsegment"
 	"github.com/saichler/l8utils/go/utils/strings"
 )
 
@@ -34,7 +34,7 @@ func newSwitchTable(switchService *VNet) *SwitchTable {
 func (this *SwitchTable) addVNic(vnic ifs.IVNic) {
 	config := vnic.Resources().SysConfig()
 	//check if this port is local to the machine, e.g. not belong to public subnet
-	isLocal := protocol.IpSegment.IsLocal(config.Address)
+	isLocal := ipsegment.IpSegment.IsLocal(config.Address)
 	isExternalVnic := config.RemoteVnet != ""
 	if isExternalVnic {
 		this.conns.addExternalVnic(config.RemoteUuid, vnic)

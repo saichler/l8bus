@@ -2,10 +2,11 @@ package vnet
 
 import (
 	"net"
-	"time"
 	stdstrings "strings"
+	"time"
 
 	"github.com/saichler/l8bus/go/overlay/protocol"
+	"github.com/saichler/l8utils/go/utils/ipsegment"
 	"github.com/saichler/l8utils/go/utils/strings"
 )
 
@@ -24,7 +25,7 @@ func NewDiscovery(vnet *VNet) *Discovery {
 
 func (this *Discovery) Discover() {
 	if !protocol.Discovery_Enabled {
-		this.vnet.resources.Logger().Info("Discovery is disabled, machine IP is ", protocol.MachineIP)
+		this.vnet.resources.Logger().Info("Discovery is disabled, machine IP is ", ipsegment.MachineIP)
 		return
 	}
 	addr, err := net.ResolveUDPAddr("udp", strings.New(":", int(this.vnet.resources.SysConfig().VnetPort-2)).String())
@@ -59,9 +60,9 @@ func (this *Discovery) discoveryRx() {
 			break
 		}
 		if n == 3 {
-			if ip != protocol.MachineIP && ip != "127.0.0.1" {
+			if ip != ipsegment.MachineIP && ip != "127.0.0.1" {
 				_, ok := this.discovered[ip]
-				if stdstrings.Compare(ip, protocol.MachineIP) == -1 && !ok {
+				if stdstrings.Compare(ip, ipsegment.MachineIP) == -1 && !ok {
 					this.vnet.resources.Logger().Info("Trying to connect to peer at ", ip)
 					err = this.vnet.ConnectNetworks(ip, this.vnet.resources.SysConfig().VnetPort)
 					if err != nil {

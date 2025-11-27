@@ -14,6 +14,7 @@ import (
 	"github.com/saichler/l8bus/go/overlay/protocol"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8services"
+	"github.com/saichler/l8utils/go/utils/ipsegment"
 	requests2 "github.com/saichler/l8utils/go/utils/requests"
 	"github.com/saichler/l8utils/go/utils/strings"
 )
@@ -40,14 +41,14 @@ type VirtualNetworkInterface struct {
 
 	requests *requests2.Requests
 
-	healthStatistics       *HealthStatistics
-	connectionMetrics      *metrics.ConnectionMetrics
-	circuitBreaker         *metrics.CircuitBreaker
-	circuitBreakerManager  *metrics.CircuitBreakerManager
-	circuitBreakerName     string
-	metricsRegistry        *metrics.MetricsRegistry
-	connected              bool
-	serviceLinks           *sync.Map
+	healthStatistics      *HealthStatistics
+	connectionMetrics     *metrics.ConnectionMetrics
+	circuitBreaker        *metrics.CircuitBreaker
+	circuitBreakerManager *metrics.CircuitBreakerManager
+	circuitBreakerName    string
+	metricsRegistry       *metrics.MetricsRegistry
+	connected             bool
+	serviceLinks          *sync.Map
 }
 
 func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *VirtualNetworkInterface {
@@ -117,14 +118,14 @@ func (this *VirtualNetworkInterface) connect() error {
 	// Dial the destination and validate the secret and key
 	destination := this.resources.SysConfig().RemoteVnet
 	if destination == "" {
-		destination = protocol.MachineIP
+		destination = ipsegment.MachineIP
 		if ifs.NetworkMode_K8s() {
 			destination = os.Getenv("NODE_IP")
 		} else if ifs.NetworkMode_DOCKER() {
 			// inside a containet the switch ip will be the external subnet + ".1"
 			// for example if the address of the container is 172.1.1.112, the switch will be accessible
 			// via 172.1.1.1
-			subnet := protocol.IpSegment.ExternalSubnet()
+			subnet := ipsegment.IpSegment.ExternalSubnet()
 			destination = strings.New(subnet, ".1").String()
 		}
 	} else {
