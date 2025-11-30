@@ -2,6 +2,7 @@ package vnet
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"time"
 
@@ -42,6 +43,14 @@ func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 	net.running = true
 	net.resources.SysConfig().LocalUuid = ifs.NewUuid()
 	net.switchTable = newSwitchTable(net)
+
+	secService, ok := net.resources.Security().(ifs.ISecurityProviderActivate)
+	if ok {
+		secService.Activate(net.vnic)
+	} else {
+		fmt.Println("Security provider is not activate!")
+	}
+
 	health.Activate(net.vnic, true)
 	if hasSecondary != nil && hasSecondary[0] {
 		net.resources.SysConfig().RemoteVnet = "X"
