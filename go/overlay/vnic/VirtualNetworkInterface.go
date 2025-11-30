@@ -95,6 +95,10 @@ func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *Virtua
 	return vnic
 }
 
+func (this *VirtualNetworkInterface) IsVnet() bool {
+	return false
+}
+
 func (this *VirtualNetworkInterface) Start() {
 	this.running = true
 	if this.conn == nil {

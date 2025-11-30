@@ -247,3 +247,7 @@ func (this *VnicVnet) SetResponse(msg *ifs.Message, pb ifs.IElements) {
 	_, conn := this.vnet.switchTable.conns.getConnection(msg.Source(), true)
 	conn.SetResponse(msg, pb)
 }
+
+func (this *VnicVnet) IsVnet() bool {
+	return true
+}
