@@ -236,7 +236,10 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 	} else {
 		connections := this.switchTable.connectionsForService(serviceName, serviceArea, sourceVnet, multicastMode)
 		this.uniCastToPorts(connections, data)
-		if serviceName == health.ServiceName && source != this.resources.SysConfig().LocalUuid {
+		if (serviceName == health.ServiceName ||
+			serviceName == "tokens" ||
+			serviceName == "users" ||
+			serviceName == "roles") && source != this.resources.SysConfig().LocalUuid {
 			go this.vnetServiceRequest(data, vnic)
 		}
 		return
