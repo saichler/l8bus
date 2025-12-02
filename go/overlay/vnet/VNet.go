@@ -142,6 +142,7 @@ func (this *VNet) connect(conn net.Conn) {
 		TxQueueSize: resources2.DEFAULT_QUEUE_SIZE,
 		LocalAlias:  this.resources.SysConfig().LocalAlias,
 		LocalUuid:   this.resources.SysConfig().LocalUuid,
+		IAmVnet:     true,
 		Services: &l8services.L8Services{ServiceToAreas: map[string]*l8services.L8ServiceAreas{
 			health.ServiceName: &l8services.L8ServiceAreas{
 				Areas: map[int32]bool{0: true},
