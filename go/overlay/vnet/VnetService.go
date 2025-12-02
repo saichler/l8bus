@@ -38,7 +38,7 @@ func (this *VNet) vnetServiceRequest(data []byte, vnic ifs.IVNic) {
 		return
 	}
 	var resp ifs.IElements
-	if msg.Action() >= ifs.MapR_POST && msg.Action() <= ifs.MapR_GET {
+	if internal(msg) {
 		resp = this.resources.Services().Handle(pb, msg.Action(), msg, this.vnic)
 	} else {
 		resp = this.resources.Services().Handle(pb, msg.Action(), msg, vnic)
@@ -60,4 +60,14 @@ func (this *VNet) ExternalCount() int32 {
 
 func (this *VNet) LocalCount() int32 {
 	return this.switchTable.conns.sizeInternal.Load()
+}
+
+func internal(msg *ifs.Message) bool {
+	if msg.Action() >= ifs.MapR_POST && msg.Action() <= ifs.MapR_GET {
+		return true
+	}
+	if msg.ServiceName() == "users" || msg.ServiceName() == "roles" || msg.ServiceName() == "tokens" {
+		return true
+	}
+	return false
 }
