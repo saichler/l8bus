@@ -32,12 +32,11 @@ func Activate(vnic ifs.IVNic, voter bool) {
 	serviceConfig.SetVoter(voter)
 	serviceConfig.SetTransactional(false)
 	serviceConfig.SetPrimaryKeys("AUuid")
-	serviceConfig.SetWebService(web.New(ServiceName, serviceArea,
-		nil, nil,
-		nil, nil,
-		nil, nil,
-		nil, nil,
-		&l8api.L8Query{}, &l8health.L8HealthList{}))
+
+	webService := web.New(ServiceName, serviceArea, vnic.Resources().SysConfig().VnetPort)
+	webService.AddEndpoint(&l8api.L8Query{}, ifs.GET, &l8health.L8HealthList{})
+	serviceConfig.SetWebService(webService)
+	
 	base.Activate(serviceConfig, vnic)
 }
 
