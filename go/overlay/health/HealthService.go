@@ -36,7 +36,7 @@ func Activate(vnic ifs.IVNic, voter bool) {
 	webService := web.New(ServiceName, serviceArea, vnic.Resources().SysConfig().VnetPort)
 	webService.AddEndpoint(&l8api.L8Query{}, ifs.GET, &l8health.L8HealthList{})
 	serviceConfig.SetWebService(webService)
-	
+
 	base.Activate(serviceConfig, vnic)
 }
 
@@ -82,4 +82,23 @@ func ServiceAreaByConfig(config *l8sysconfig.L8SysConfig) byte {
 		return byte(1)
 	}
 	return byte(0)
+}
+
+func Participants(serviceName string, serviceArea byte, r ifs.IResources) map[string]bool {
+	hc, _ := HealthServiceCache(r)
+	all := hc.All()
+	result := make(map[string]bool)
+	for _, h := range all {
+		hp := h.(*l8health.L8Health)
+		if hp.Services != nil && hp.Services.ServiceToAreas != nil {
+			areas, ok := hp.Services.ServiceToAreas[serviceName]
+			if ok && areas.Areas != nil {
+				_, ok2 := areas.Areas[int32(serviceArea)]
+				if ok2 {
+					result[hp.AUuid] = true
+				}
+			}
+		}
+	}
+	return result
 }
