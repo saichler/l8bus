@@ -25,7 +25,8 @@ func (this *VNet) addHealthForVNic(config *l8sysconfig.L8SysConfig) {
 		hp = this.newHealth(config)
 		hs.Post(object.New(nil, hp), nil)
 	} else {
-		this.mergeServices(hp, config)
+		hp.Services = config.Services
+		//this.mergeServices(hp, config)
 		hs.Patch(object.New(nil, hp), nil)
 	}
 }
@@ -55,6 +56,7 @@ func (this *VNet) newHealth(config *l8sysconfig.L8SysConfig) *l8health.L8Health 
 	return hp
 }
 
+/*
 func (this *VNet) mergeServices(hp *l8health.L8Health, config *l8sysconfig.L8SysConfig) {
 	if hp.Services == nil {
 		hp.Services = config.Services
@@ -74,7 +76,7 @@ func (this *VNet) mergeServices(hp *l8health.L8Health, config *l8sysconfig.L8Sys
 			}
 		}
 	}
-}
+}*/
 
 func (this *VNet) sendHealthReport(uuid string) {
 	time.Sleep(time.Second)
