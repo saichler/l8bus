@@ -1,6 +1,7 @@
 package health
 
 import (
+	"fmt"
 	"github.com/saichler/l8services/go/services/base"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
@@ -91,14 +92,17 @@ func Participants(serviceName string, serviceArea byte, r ifs.IResources) map[st
 	for _, h := range all {
 		hp := h.(*l8health.L8Health)
 		if hp.Services != nil && hp.Services.ServiceToAreas != nil {
+			fmt.Println("[Round Robin] ServiceName ", serviceName)
 			areas, ok := hp.Services.ServiceToAreas[serviceName]
 			if ok && areas.Areas != nil {
-				_, ok2 := areas.Areas[int32(serviceArea)]
+				v, ok2 := areas.Areas[int32(serviceArea)]
+				fmt.Println("[Round Robin] ServiceArea ", serviceArea, " ", v, " ", ok2)
 				if ok2 {
 					result[hp.AUuid] = true
 				}
 			}
 		}
 	}
+	fmt.Println("[Round Robin] UUIDs ", len(result))
 	return result
 }
