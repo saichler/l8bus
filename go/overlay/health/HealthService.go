@@ -32,7 +32,7 @@ func Activate(vnic ifs.IVNic, voter bool) {
 	serviceConfig.SetVoter(voter)
 	serviceConfig.SetTransactional(false)
 	serviceConfig.SetPrimaryKeys("AUuid")
-	serviceConfig.SetAlwaysOverwrite("lhHealth.services.servicetoareas")
+	serviceConfig.SetAlwaysOverwrite("l8health.services.servicetoareas")
 
 	webService := web.New(ServiceName, serviceArea, vnic.Resources().SysConfig().VnetPort)
 	webService.AddEndpoint(&l8api.L8Query{}, ifs.GET, &l8health.L8HealthList{})
