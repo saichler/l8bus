@@ -63,6 +63,19 @@ func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *Virtua
 	vnic.components.addComponent(newKeepAlive(vnic))
 	vnic.requests = requests2.NewRequests()
 	vnic.healthStatistics = &HealthStatistics{}
+	services := vnic.resources.SysConfig().Services
+	if services == nil {
+		services = &l8services.L8Services{}
+		vnic.resources.SysConfig().Services = services
+	}
+	if services.ServiceToAreas == nil {
+		services.ServiceToAreas = make(map[string]*l8services.L8ServiceAreas)
+	}
+	services.ServiceToAreas[health.ServiceName] = &l8services.L8ServiceAreas{}
+	if services.ServiceToAreas[health.ServiceName].Areas == nil {
+		services.ServiceToAreas[health.ServiceName].Areas = make(map[int32]bool)
+	}
+	services.ServiceToAreas[health.ServiceName].Areas[0] = true
 
 	// Initialize metrics system
 	vnic.metricsRegistry = metrics.GetGlobalRegistry(resources.Logger())
