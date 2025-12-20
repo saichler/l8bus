@@ -191,7 +191,7 @@ func (this *VnicVnet) NotifyServiceAdded(serviceNames []string, serviceArea byte
 	hp := &l8health.L8Health{}
 	hp.AUuid = curr.AUuid
 	hp.Services = curr.Services
-	mergeServices(hp, this.vnet.resources.SysConfig().Services)
+	//mergeServices(hp, this.vnet.resources.SysConfig().Services)
 	for _, serviceName := range serviceNames {
 		this.Multicast(serviceName, serviceArea, ifs.PATCH, hp)
 	}
@@ -220,29 +220,30 @@ func (this *VnicVnet) RegisterServiceLink(link *l8services.L8ServiceLink) {
 	panic("implement me")
 }
 
-func mergeServices(hp *l8health.L8Health, services *l8services.L8Services) {
-	if hp.Services == nil {
-		hp.Services = services
-		return
+/*
+	func mergeServices(hp *l8health.L8Health, services *l8services.L8Services) {
+		if hp.Services == nil {
+			hp.Services = services
+			return
 
+		}
+		for serviceName, serviceAreas := range services.ServiceToAreas {
+			_, ok := hp.Services.ServiceToAreas[serviceName]
+			if !ok {
+				hp.Services.ServiceToAreas[serviceName] = serviceAreas
+				continue
+			}
+			if hp.Services.ServiceToAreas[serviceName].Areas == nil {
+				hp.Services.ServiceToAreas[serviceName].Areas = serviceAreas.Areas
+				continue
+			}
+			for svArea, score := range serviceAreas.Areas {
+				serviceArea := svArea
+				hp.Services.ServiceToAreas[serviceName].Areas[serviceArea] = score
+			}
+		}
 	}
-	for serviceName, serviceAreas := range services.ServiceToAreas {
-		_, ok := hp.Services.ServiceToAreas[serviceName]
-		if !ok {
-			hp.Services.ServiceToAreas[serviceName] = serviceAreas
-			continue
-		}
-		if hp.Services.ServiceToAreas[serviceName].Areas == nil {
-			hp.Services.ServiceToAreas[serviceName].Areas = serviceAreas.Areas
-			continue
-		}
-		for svArea, score := range serviceAreas.Areas {
-			serviceArea := svArea
-			hp.Services.ServiceToAreas[serviceName].Areas[serviceArea] = score
-		}
-	}
-}
-
+*/
 func (this *VnicVnet) SetResponse(msg *ifs.Message, pb ifs.IElements) {
 	_, conn := this.vnet.switchTable.conns.getConnection(msg.Source(), true)
 	conn.SetResponse(msg, pb)

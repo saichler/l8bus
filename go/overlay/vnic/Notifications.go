@@ -6,7 +6,6 @@ import (
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8health"
 	"github.com/saichler/l8types/go/types/l8notify"
-	"github.com/saichler/l8types/go/types/l8services"
 )
 
 func (this *VirtualNetworkInterface) NotifyServiceAdded(serviceNames []string, serviceArea byte) error {
@@ -15,7 +14,7 @@ func (this *VirtualNetworkInterface) NotifyServiceAdded(serviceNames []string, s
 	hp := &l8health.L8Health{}
 	hp.AUuid = curr.AUuid
 	hp.Services = curr.Services
-	mergeServices(hp, this.resources.SysConfig().Services)
+	//mergeServices(hp, this.resources.SysConfig().Services)
 	//send notification for health service
 	err := this.Unicast(this.resources.SysConfig().RemoteUuid, health.ServiceName, 0, ifs.PATCH, hp)
 
@@ -27,7 +26,7 @@ func (this *VirtualNetworkInterface) NotifyServiceRemoved(serviceName string, se
 	hp := &l8health.L8Health{}
 	hp.AUuid = curr.AUuid
 	hp.Services = curr.Services
-	mergeServices(hp, this.resources.SysConfig().Services)
+	//mergeServices(hp, this.resources.SysConfig().Services)
 	ifs.RemoveService(hp.Services, serviceName, int32(serviceArea))
 	return this.Unicast(this.resources.SysConfig().RemoteUuid, health.ServiceName, serviceArea, ifs.PATCH, hp)
 }
@@ -37,6 +36,7 @@ func (this *VirtualNetworkInterface) PropertyChangeNotification(set *l8notify.L8
 	this.Multicast(set.ServiceName, byte(set.ServiceArea), ifs.Notify, set)
 }
 
+/*
 func mergeServices(hp *l8health.L8Health, services *l8services.L8Services) {
 	if hp.Services == nil {
 		hp.Services = services
@@ -58,4 +58,4 @@ func mergeServices(hp *l8health.L8Health, services *l8services.L8Services) {
 			hp.Services.ServiceToAreas[serviceName].Areas[serviceArea] = score
 		}
 	}
-}
+}*/
