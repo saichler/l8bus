@@ -1,7 +1,6 @@
 package health
 
 import (
-	"fmt"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8health"
 )
@@ -41,7 +40,6 @@ func Participants(serviceName string, serviceArea byte, r ifs.IResources) map[st
 			if ok && areas.Areas != nil {
 				_, ok2 := areas.Areas[int32(serviceArea)]
 				if ok2 {
-					fmt.Println("Adding - ", hp.Alias, "-", hp.AUuid)
 					result[hp.AUuid] = true
 				}
 			}
