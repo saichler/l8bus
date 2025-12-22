@@ -108,10 +108,11 @@ This repository now includes a comprehensive Go implementation of the Layer8 ove
 
 ### Core Features
 - **Virtual Network Overlay**: Complete TCP-based virtual networking layer with VNet switches and VNic interfaces
+- **Round Robin Load Balancing**: Intelligent service selection with round robin distribution for optimal load balancing
 - **Multicast Messaging**: Full multicast support for efficient one-to-many communication patterns
 - **MapReduce Framework**: Integrated MapR capabilities for distributed data processing and parallel computation
 - **Service Discovery**: UDP-based automatic peer discovery and service registration with enhanced selection
-- **Health Monitoring**: Comprehensive health scoring system with circuit breaker patterns and SLA tracking
+- **Health Monitoring**: Comprehensive health scoring system with participant tracking, circuit breaker patterns and SLA tracking
 - **Metrics Collection**: Advanced performance monitoring with counters, gauges, and histograms
 - **Connection Management**: Automatic reconnection, connection pooling, and external NIC support
 - **Message Routing**: Intelligent service-based routing with multicast, forwarding, and leader election support
@@ -121,11 +122,15 @@ This repository now includes a comprehensive Go implementation of the Layer8 ove
 - **VNic (Virtual Network Interface)**: Network interface for nodes with service selection and external NIC support
 - **Protocol System**: Message serialization/deserialization with multicast and forwarding capabilities
 - **MapR System**: Distributed MapReduce framework for parallel data processing across the overlay
-- **Health Service**: Streamlined distributed health monitoring with SLA-based tracking
+- **Health Service**: Streamlined distributed health monitoring with participant tracking, round robin selection, and SLA-based tracking
 - **Plugin System**: Dynamic plugin loading with improved service activation and pause functionality
 - **Metrics System**: Real-time performance monitoring with optimized collection methods
 
-### Key Improvements in Latest Release (November 2025)
+### Key Improvements in Latest Release (December 2025)
+- **Round Robin Load Balancing**: Intelligent round robin service selection for optimized load distribution across service instances
+- **Health Participants**: Enhanced health monitoring with participant tracking for comprehensive service visibility
+- **Multicast Keep Alive**: Migrated keep-alive mechanism to multicast for improved network efficiency
+- **Service Overwrite Control**: Added always-overwrite capability for service registration management
 - **Multicast Messaging**: Full implementation of one-to-many communication patterns for efficient broadcasting
 - **MapReduce Integration**: Added MapR framework for distributed parallel data processing
 - **Enhanced Forwarding**: Improved message forwarding mechanisms with optimized multi-hop routing
@@ -134,17 +139,17 @@ This repository now includes a comprehensive Go implementation of the Layer8 ove
 - **VNet Service Publishing**: Fixed critical service publishing issues for reliable discovery
 - **Stability Improvements**: Multiple crash prevention fixes and pause functionality for maintenance
 
-### Recent Commits (Latest Updates)
-- **VNet Service Publishing Fix**: Resolved critical service publishing issues for reliable service discovery (e67190c)
-- **Multicast Implementation**: First complete multicast messaging implementation for broadcast scenarios (276ea8a)
-- **Message Forwarding**: Enhanced forwarding implementation with improved routing logic (86ec694, 5bc5bd5)
-- **MapReduce Addition**: Integrated MapR capabilities for distributed data processing (b2eef18, f92067d, 3dbf30d)
-- **Crash Prevention**: Multiple fixes preventing system crashes under high load (a81adf1)
-- **Pause Functionality**: Added system pause capability for maintenance operations (10b0a28)
-- **VNIC Service Selection**: Implemented granular service selection at VNIC level (297770e)
-- **External NIC Support**: Added comprehensive external network interface support (d4a2208)
-- **Response Handling**: Fixed nil response issues improving system reliability (1db0be4)
-- **VNIC Get Method**: Added VNIC retrieval functionality for better interface management (e920c4f)
+### Recent Commits (Latest Updates - December 2025)
+- **Copyright Addition**: Added copyright headers across the codebase (3a40e2f)
+- **Multicast Keep Alive**: Changed keep-alive mechanism to use multicast for efficiency (eb4c0c2)
+- **Round Robin Load Balancing**: Implemented round robin service selection algorithm (f556c16)
+- **Health Participants**: Added participant tracking to health monitoring system (e7a2b8d)
+- **Service Overwrite**: Added always-overwrite option for service registration (6597218, 2ed3984)
+- **Multicast Fixes**: Resolved multicast messaging issues (56674dd)
+- **VNet Security**: Added VNet support to security activation (17d750f)
+- **VNet Service Publishing Fix**: Resolved critical service publishing issues (e67190c)
+- **Multicast Implementation**: First complete multicast messaging implementation (276ea8a)
+- **Message Forwarding**: Enhanced forwarding implementation with improved routing (86ec694, 5bc5bd5)
 
 ### Dependencies
 - Go 1.23.8
@@ -155,8 +160,8 @@ This repository now includes a comprehensive Go implementation of the Layer8 ove
 The Go implementation demonstrates production-ready distributed systems patterns with proper error handling, resource management, and concurrent processing.
 
 ### Project Statistics
-- **Go Implementation**: 340+ files, 59,000+ lines of code
-- **Latest Features**: Multicast messaging, MapReduce framework, External NIC support
+- **Go Implementation**: 45 source files, 4,700+ lines of code (plus Layer8 ecosystem dependencies)
+- **Latest Features**: Round Robin load balancing, Health participants, Multicast keep-alive, MapReduce framework
 - **Comprehensive test coverage** including unit tests and integration tests
 - **Production-ready** with extensive error handling and recovery mechanisms
 

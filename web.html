@@ -518,7 +518,7 @@
             <h1>Layer 8 Network BUS</h1>
             <div class="subtitle">Virtual Overlay Network for Distributed Systems</div>
             <div class="tagline">"Work less, Achieve much more."</div>
-            <div style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.7;">Latest Release: November 2025 | ve67190c</div>
+            <div style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.7;">Latest Release: December 2025 | v3a40e2f</div>
         </div>
 
         <!-- Custom Network Illustration -->
@@ -580,24 +580,24 @@
                 <h2>Overview</h2>
                 <p style="font-size: 1.1rem; text-align: center; margin-bottom: 2rem;">
                     The Layer 8 Network BUS provides a comprehensive virtual networking layer built on top of TCP connections,
-                    enabling distributed systems to communicate as if they were on a single network. Latest release (November 2025) introduces
-                    multicast messaging support, enhanced forwarding mechanisms, MapReduce capabilities, and external NIC integration.
+                    enabling distributed systems to communicate as if they were on a single network. Latest release (December 2025) introduces
+                    round robin load balancing, health participant tracking, multicast keep-alive, and enhanced service management.
                     <br><br>
-                    <strong>Project Scale:</strong> 340+ Go files | 59,000+ lines of production-ready code
+                    <strong>Project Scale:</strong> 45 Go source files | 4,700+ lines of production-ready code (plus Layer8 ecosystem)
                 </p>
 
                 <!-- Key Improvements Banner -->
                 <div style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 1.5rem; border-radius: 8px; margin: 2rem 0; text-align: center;">
-                    <h3 style="color: white; margin-bottom: 1rem;">🎯 Key Improvements in Latest Release</h3>
+                    <h3 style="color: white; margin-bottom: 1rem;">🎯 Key Improvements in Latest Release (December 2025)</h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; text-align: left;">
+                        <div>✅ Round Robin load balancing</div>
+                        <div>✅ Health participant tracking</div>
+                        <div>✅ Multicast keep-alive</div>
+                        <div>✅ Service overwrite control</div>
                         <div>✅ Multicast messaging support</div>
-                        <div>✅ Enhanced forwarding mechanisms</div>
+                        <div>✅ VNet security activation</div>
+                        <div>✅ Enhanced multicast fixes</div>
                         <div>✅ MapReduce capabilities (MapR)</div>
-                        <div>✅ External NIC integration</div>
-                        <div>✅ VNet service publishing fixes</div>
-                        <div>✅ VNIC service selection</div>
-                        <div>✅ Multiple crash fixes</div>
-                        <div>✅ Pause functionality</div>
                     </div>
                 </div>
 
@@ -737,6 +737,24 @@
                 
                 <div class="features-list">
                     <div class="feature-item">
+                        <div class="network-icon routing-icon"></div>
+                        <h4>Round Robin Load Balancing</h4>
+                        <p>Intelligent round robin service selection for optimized load distribution across service instances, ensuring fair resource utilization and improved reliability.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="network-icon health-icon"></div>
+                        <h4>Health Participant Tracking</h4>
+                        <p>Enhanced health monitoring with participant tracking for comprehensive service visibility, enabling better observability and debugging capabilities.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="network-icon"></div>
+                        <h4>Multicast Keep-Alive</h4>
+                        <p>Migrated keep-alive mechanism to multicast for improved network efficiency, reducing connection overhead and improving scalability.</p>
+                    </div>
+
+                    <div class="feature-item">
                         <div class="network-icon"></div>
                         <h4>Multicast Messaging</h4>
                         <p>Full multicast messaging support enabling efficient one-to-many communication patterns for distributed systems, with optimized message forwarding and routing.</p>
@@ -752,12 +770,6 @@
                         <div class="network-icon service-icon"></div>
                         <h4>External NIC Support</h4>
                         <p>Enhanced support for external network interface cards, allowing seamless integration with diverse network configurations and environments.</p>
-                    </div>
-
-                    <div class="feature-item">
-                        <div class="network-icon"></div>
-                        <h4>Advanced Message Forwarding</h4>
-                        <p>Improved message forwarding mechanisms with intelligent routing decisions, reducing latency and improving overall network performance.</p>
                     </div>
 
                     <div class="feature-item">
@@ -859,21 +871,36 @@
                 </div>
 
                 <div class="card">
-                    <h3>Latest Performance Optimizations (November 2025)</h3>
+                    <h3>Latest Performance Optimizations (December 2025)</h3>
                     <div class="features-list">
                         <div class="feature-item">
-                            <h4>Multicast Implementation (276ea8a)</h4>
-                            <p>First implementation of multicast messaging, enabling efficient one-to-many communication patterns for distributed broadcast scenarios.</p>
+                            <h4>Round Robin Load Balancing (f556c16)</h4>
+                            <p>Implemented intelligent round robin service selection algorithm for optimized load distribution across service instances.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>Message Forwarding (86ec694, 5bc5bd5)</h4>
-                            <p>Enhanced message forwarding implementation with improved routing logic and reduced latency for multi-hop communications.</p>
+                            <h4>Health Participants (e7a2b8d)</h4>
+                            <p>Added participant tracking to health monitoring system for comprehensive service visibility and improved debugging.</p>
                         </div>
 
                         <div class="feature-item">
-                            <h4>MapReduce Integration (b2eef18, f92067d, 3dbf30d)</h4>
-                            <p>Added MapR capabilities for distributed data processing, enabling parallel computation patterns across the overlay network.</p>
+                            <h4>Multicast Keep-Alive (eb4c0c2)</h4>
+                            <p>Changed keep-alive mechanism to use multicast for improved efficiency and reduced network overhead.</p>
+                        </div>
+
+                        <div class="feature-item">
+                            <h4>Service Overwrite Control (6597218, 2ed3984)</h4>
+                            <p>Added always-overwrite option for service registration, providing better control over service updates.</p>
+                        </div>
+
+                        <div class="feature-item">
+                            <h4>VNet Security Activation (17d750f)</h4>
+                            <p>Added VNet support to security activation for enhanced authentication and authorization during node connections.</p>
+                        </div>
+
+                        <div class="feature-item">
+                            <h4>Multicast Fixes (56674dd)</h4>
+                            <p>Resolved multicast messaging issues for more reliable one-to-many communication patterns.</p>
                         </div>
 
                         <div class="feature-item">
@@ -882,23 +909,8 @@
                         </div>
 
                         <div class="feature-item">
-                            <h4>External NIC Support (d4a2208)</h4>
-                            <p>Added comprehensive support for external network interfaces, expanding deployment flexibility and network integration options.</p>
-                        </div>
-
-                        <div class="feature-item">
-                            <h4>VNIC Service Selection (297770e)</h4>
-                            <p>Implemented service selection capabilities in VNIC, allowing more granular control over service routing and load distribution.</p>
-                        </div>
-
-                        <div class="feature-item">
-                            <h4>Crash Prevention Fixes (a81adf1, 946331a)</h4>
-                            <p>Multiple critical fixes preventing system crashes, improving overall stability and reliability under high load conditions.</p>
-                        </div>
-
-                        <div class="feature-item">
-                            <h4>Pause Functionality (10b0a28)</h4>
-                            <p>Added pause capability for better control over system operations during maintenance or debugging scenarios.</p>
+                            <h4>Message Forwarding (86ec694, 5bc5bd5)</h4>
+                            <p>Enhanced message forwarding implementation with improved routing logic and reduced latency for multi-hop communications.</p>
                         </div>
                     </div>
                 </div>
@@ -934,6 +946,7 @@
                     <p>Simulate network operations and see how Layer8 handles different scenarios:</p>
                     
                     <button class="demo-button" onclick="simulateDiscovery()">Network Discovery</button>
+                    <button class="demo-button" onclick="simulateRoundRobin()">Round Robin</button>
                     <button class="demo-button" onclick="simulateMulticast()">Multicast</button>
                     <button class="demo-button" onclick="simulateMapReduce()">MapReduce</button>
                     <button class="demo-button" onclick="simulateForwarding()">Forwarding</button>
@@ -1004,8 +1017,8 @@ health.Activate(vnic, isVnet)
                 <div class="card">
                     <h3>Dependencies</h3>
                     <div class="code-block">
-// Go 1.23.8 implementation (October 2025)
-// 340 files | 58,879+ lines of production code
+// Go 1.23.8 implementation (December 2025)
+// 45 source files | 4,700+ lines of production code
 
 github.com/saichler/l8types      // Type definitions and interfaces
 github.com/saichler/l8utils      // Utility functions and resources
@@ -1023,7 +1036,7 @@ google.golang.org/protobuf       // Protocol buffer support
     <footer>
         <div class="container">
             <p>&copy; 2025 Layer 8 Network BUS. A comprehensive virtual networking solution for distributed systems.</p>
-            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem;">Latest Release: November 2025 | 59,000+ lines of Go | Production Ready</p>
+            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem;">Latest Release: December 2025 | 4,700+ lines of Go | Production Ready</p>
         </div>
     </footer>
 
@@ -1038,6 +1051,19 @@ google.golang.org/protobuf       // Protocol buffer support
 3. Found peer at 192.168.1.100<br>
 4. Establishing TCP connection...<br>
 5. ✓ Connection established and added to switch table
+            `;
+        }
+
+        function simulateRoundRobin() {
+            const status = document.getElementById('demo-status');
+            status.innerHTML = `
+<strong>Round Robin Load Balancing Simulation:</strong><br>
+1. Incoming request for service "user-api"<br>
+2. Available instances: [Node-A (idx:0), Node-B (idx:1), Node-C (idx:2)]<br>
+3. Current round robin index: 1<br>
+4. Selecting Node-B for this request<br>
+5. Incrementing index: 1 → 2 (next request goes to Node-C)<br>
+6. ✓ Request routed to Node-B | Load distributed evenly across all instances
             `;
         }
 
