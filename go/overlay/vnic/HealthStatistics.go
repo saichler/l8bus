@@ -18,6 +18,8 @@ import (
 	"time"
 )
 
+// HealthStatistics tracks message and data transfer statistics for health monitoring.
+// All counters are thread-safe using atomic operations.
 type HealthStatistics struct {
 	LastMsgTime atomic.Int64
 	TxMsgCount  atomic.Int64
@@ -26,15 +28,18 @@ type HealthStatistics struct {
 	RxDataCont  atomic.Int64
 }
 
+// Stamp updates the last message timestamp to the current time.
 func (this *HealthStatistics) Stamp() {
 	this.LastMsgTime.Store(time.Now().UnixMilli())
 }
 
+// IncrementTX increments the transmitted message count and data byte count.
 func (this *HealthStatistics) IncrementTX(data []byte) {
 	this.TxMsgCount.Add(1)
 	this.TxDataCount.Add(int64(len(data)))
 }
 
+// IncrementRx increments the received message count and data byte count.
 func (this *HealthStatistics) IncrementRx(data []byte) {
 	this.RxMsgCount.Add(1)
 	this.RxDataCont.Add(int64(len(data)))

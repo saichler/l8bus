@@ -26,6 +26,7 @@ import (
 	"github.com/saichler/l8types/go/types/l8health"
 )
 
+// CPUTracker tracks CPU usage for the current process by sampling /proc stats.
 type CPUTracker struct {
 	lastProcCPU uint64
 	lastSysCPU  uint64
@@ -33,6 +34,8 @@ type CPUTracker struct {
 	mu          sync.Mutex
 }
 
+// KeepAlive monitors connection health and periodically sends health status updates.
+// It tracks CPU and memory usage and broadcasts health statistics to the network.
 type KeepAlive struct {
 	vnic       *VirtualNetworkInterface
 	startTime  int64

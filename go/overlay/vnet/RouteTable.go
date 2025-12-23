@@ -15,15 +15,19 @@ package vnet
 
 import "sync"
 
+// RouteTable maintains a mapping of VNic UUIDs to their parent VNet UUIDs,
+// enabling message routing across distributed network segments.
 type RouteTable struct {
 	routes   *sync.Map
 	vnetUuid string
 }
 
+// newRouteTable creates a new RouteTable for the given VNet UUID.
 func newRouteTable(vnetUuid string) *RouteTable {
 	return &RouteTable{routes: &sync.Map{}, vnetUuid: vnetUuid}
 }
 
+// addRoutes adds new routes to the table, returning only the routes that were newly added.
 func (this *RouteTable) addRoutes(routes map[string]string) map[string]string {
 	added := make(map[string]string)
 	for k, v := range routes {
@@ -36,6 +40,7 @@ func (this *RouteTable) addRoutes(routes map[string]string) map[string]string {
 	return added
 }
 
+// removeRoutes removes routes from the table, returning the routes that were actually removed.
 func (this *RouteTable) removeRoutes(toRemove map[string]string) map[string]string {
 	removed := make(map[string]string)
 	for uuid, _ := range toRemove {
@@ -56,6 +61,8 @@ func (this *RouteTable) removeRoutes(toRemove map[string]string) map[string]stri
 	return removed
 }
 
+// vnetOf returns the VNet UUID that the given VNic UUID belongs to.
+// Returns the local VNet UUID if not found in the route table.
 func (this *RouteTable) vnetOf(uuid string) (string, bool) {
 	vnetUuid, ok := this.routes.Load(uuid)
 	if ok {

@@ -19,6 +19,9 @@ import (
 	resources2 "github.com/saichler/l8utils/go/utils/resources"
 )
 
+// ConnectNetworks establishes a connection to a remote VNet at the specified host and port.
+// It creates a new VNic for the connection, validates security credentials, and registers
+// the connection for health monitoring and routing.
 func (this *VNet) ConnectNetworks(host string, destPort uint32) error {
 	sec := this.resources.Security()
 	// Dial the destination and validate the secret and key

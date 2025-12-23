@@ -24,16 +24,21 @@ import (
 	"github.com/saichler/l8types/go/types/l8system"
 )
 
+// Services manages service registration and discovery for the VNet.
+// It tracks services by name, area, and UUID, supporting various multicast modes
+// for service selection (proximity, local, leader, round-robin, all).
 type Services struct {
 	services   *sync.Map
 	routeTable *RouteTable
 	roundrobin *sync.Map
 }
 
+// newServices creates a new Services manager with the given route table.
 func newServices(routeTable *RouteTable) *Services {
 	return &Services{services: &sync.Map{}, routeTable: routeTable, roundrobin: &sync.Map{}}
 }
 
+// addService registers a service with its name, area, and UUID for discovery.
 func (this *Services) addService(data *l8system.L8ServiceData) {
 	m1, ok := this.services.Load(data.ServiceName)
 	if !ok {
@@ -49,6 +54,7 @@ func (this *Services) addService(data *l8system.L8ServiceData) {
 	m2.(*sync.Map).Store(data.ServiceUuid, time.Now().UnixMilli())
 }
 
+// removeService unregisters services matching the UUIDs in the removed map.
 func (this *Services) removeService(removed map[string]string) {
 	for uuid, _ := range removed {
 		this.services.Range(func(key, value interface{}) bool {
@@ -64,6 +70,7 @@ func (this *Services) removeService(removed map[string]string) {
 	}
 }
 
+// serviceUuids returns all service UUIDs for a given service name and area, with their registration timestamps.
 func (this *Services) serviceUuids(serviceName string, serviceArea byte) map[string]int64 {
 	m1, ok := this.services.Load(serviceName)
 	if !ok {
@@ -83,6 +90,12 @@ func (this *Services) serviceUuids(serviceName string, serviceArea byte) map[str
 	return result
 }
 
+// serviceFor selects a service UUID based on the multicast mode:
+// M_Proximity: prefer services on the same VNet as source
+// M_Local: prefer service matching the source UUID
+// M_Leader: select the earliest registered service (leader election)
+// M_RoundRobin: distribute requests across services in rotation
+// M_All: select any available service
 func (this *Services) serviceFor(serviceName string, serviceArea byte, source string, mode ifs.MulticastMode) string {
 	m1, ok := this.services.Load(serviceName)
 	if !ok {

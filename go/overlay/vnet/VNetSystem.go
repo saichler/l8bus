@@ -20,6 +20,8 @@ import (
 	"github.com/saichler/l8types/go/types/l8system"
 )
 
+// systemMessageReceived handles incoming system control messages for route and service management.
+// It processes route additions/removals and service registrations from the network.
 func (this *VNet) systemMessageReceived(data []byte, vnic ifs.IVNic) {
 	msg, err := this.protocol.MessageOf(data, this.resources)
 	if err != nil {
@@ -63,12 +65,14 @@ func (this *VNet) systemMessageReceived(data []byte, vnic ifs.IVNic) {
 	}
 }
 
+// routesAdded publishes new routes to external VNets when routes are added to the local table.
 func (this *VNet) routesAdded(added map[string]string) {
 	if len(added) > 0 {
 		this.publishRoutes()
 	}
 }
 
+// routesRemoved handles cleanup when routes are removed, including service deregistration and health removal.
 func (this *VNet) routesRemoved(removed map[string]string) {
 	if len(removed) > 0 {
 		this.switchTable.services.removeService(removed)
@@ -77,6 +81,7 @@ func (this *VNet) routesRemoved(removed map[string]string) {
 	}
 }
 
+// removeHealth deletes health records for VNics that have been disconnected.
 func (this *VNet) removeHealth(removed map[string]string) {
 	hs, _ := health.HealthService(this.resources)
 	for uuid, _ := range removed {

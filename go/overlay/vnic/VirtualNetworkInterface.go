@@ -32,6 +32,9 @@ import (
 	"github.com/saichler/l8utils/go/utils/strings"
 )
 
+// VirtualNetworkInterface represents a network interface that connects to a VNet switch.
+// It provides bidirectional communication, health monitoring, metrics collection,
+// and circuit breaker patterns for resilient distributed communication.
 type VirtualNetworkInterface struct {
 	// Resources for this VNic such as registry, security & config
 	resources ifs.IResources
@@ -64,6 +67,9 @@ type VirtualNetworkInterface struct {
 	serviceLinks          *sync.Map
 }
 
+// NewVirtualNetworkInterface creates a new VNic instance. If conn is nil, the VNic
+// will actively connect to a VNet switch. If conn is provided, the VNic operates
+// in server mode, receiving connections from the VNet.
 func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *VirtualNetworkInterface {
 	vnic := &VirtualNetworkInterface{}
 	vnic.conn = conn
@@ -121,10 +127,13 @@ func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *Virtua
 	return vnic
 }
 
+// IsVnet returns false as this is a VNic, not a VNet switch.
 func (this *VirtualNetworkInterface) IsVnet() bool {
 	return false
 }
 
+// Start initiates the VNic, either connecting to a VNet switch or accepting
+// an incoming connection. It starts all sub-components (TX, RX, KeepAlive).
 func (this *VirtualNetworkInterface) Start() {
 	this.running = true
 	if this.conn == nil {
@@ -208,6 +217,8 @@ func (this *VirtualNetworkInterface) receiveConnection() {
 	this.components.start()
 }
 
+// Shutdown gracefully stops the VNic, closing the connection and cleaning up
+// all resources including circuit breakers and sub-components.
 func (this *VirtualNetworkInterface) Shutdown() {
 	this.resources.Logger().Info("Shutdown was called on ", this.resources.SysConfig().LocalAlias)
 	this.running = false
@@ -226,6 +237,7 @@ func (this *VirtualNetworkInterface) Shutdown() {
 	}
 }
 
+// Name returns the connection path name in the format "local -->> remote".
 func (this *VirtualNetworkInterface) Name() string {
 	if this.name == "" {
 		this.name = strings.New(this.resources.SysConfig().LocalUuid,
@@ -235,14 +247,18 @@ func (this *VirtualNetworkInterface) Name() string {
 	return this.name
 }
 
+// SendMessage sends a message through the TX component to the connected VNet.
 func (this *VirtualNetworkInterface) SendMessage(data []byte) error {
 	return this.components.TX().SendMessage(data)
 }
 
+// ServiceAPI returns an API interface for communicating with a specific service.
+// It supports GET, POST, PUT, DELETE operations with request/reply semantics.
 func (this *VirtualNetworkInterface) ServiceAPI(serviceName string, serviceArea byte) ifs.ServiceAPI {
 	return newAPI(serviceName, serviceArea, false, false)
 }
 
+// Resources returns the IResources instance for this VNic.
 func (this *VirtualNetworkInterface) Resources() ifs.IResources {
 	return this.resources
 }
@@ -272,6 +288,8 @@ func (this *VirtualNetworkInterface) reconnect() {
 	}
 }
 
+// WaitForConnection blocks until the VNic is connected to the VNet and
+// health information is available. It also activates the security provider.
 func (this *VirtualNetworkInterface) WaitForConnection() {
 	for !this.connected {
 		time.Sleep(time.Millisecond * 100)
@@ -289,6 +307,7 @@ func (this *VirtualNetworkInterface) WaitForConnection() {
 	}
 }
 
+// Running returns true if the VNic is currently active.
 func (this *VirtualNetworkInterface) Running() bool {
 	return this.running
 }
@@ -377,6 +396,7 @@ func (this *VirtualNetworkInterface) ExecuteWithCircuitBreaker(fn func() (interf
 	return fn()
 }
 
+// SetResponse sets the response for a pending request identified by the message sequence.
 func (this *VirtualNetworkInterface) SetResponse(msg *ifs.Message, pb ifs.IElements) {
 	request := this.requests.GetRequest(msg.Sequence(), this.resources.SysConfig().LocalUuid)
 	request.SetResponse(pb)

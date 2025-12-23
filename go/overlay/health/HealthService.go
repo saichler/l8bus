@@ -24,10 +24,14 @@ import (
 	"github.com/saichler/l8utils/go/utils/web"
 )
 
+// ServiceName is the identifier used to register and lookup the health service.
 const (
 	ServiceName = "Health"
 )
 
+// Activate registers the health service with the given VNic. If voter is true,
+// the service participates in leader election. The service is initialized with
+// the local node's health information and exposes a web API for health queries.
 func Activate(vnic ifs.IVNic, voter bool) {
 	serviceArea := ServiceArea(vnic.Resources())
 	serviceConfig := ifs.NewServiceLevelAgreement(&base.BaseService{}, ServiceName, serviceArea, true, nil)
@@ -54,6 +58,8 @@ func Activate(vnic ifs.IVNic, voter bool) {
 	base.Activate(serviceConfig, vnic)
 }
 
+// HealthOf retrieves the health record for a node identified by its UUID.
+// Returns nil if the node is not found in the health registry.
 func HealthOf(uuid string, r ifs.IResources) *l8health.L8Health {
 	sh, ok := HealthService(r)
 	if ok {
@@ -66,16 +72,21 @@ func HealthOf(uuid string, r ifs.IResources) *l8health.L8Health {
 	return nil
 }
 
+// HealthService returns the health service handler for the given resources.
+// The second return value indicates if the service was found.
 func HealthService(r ifs.IResources) (ifs.IServiceHandler, bool) {
 	return r.Services().ServiceHandler(ServiceName, ServiceArea(r))
 }
 
+// HealthServiceCache returns the health service as a cache interface for direct
+// access to all cached health records.
 func HealthServiceCache(r ifs.IResources) (ifs.IServiceHandlerCache, bool) {
 	hs, _ := HealthService(r)
 	hc, ok := hs.(ifs.IServiceHandlerCache)
 	return hc, ok
 }
 
+// All returns a map of all known health records indexed by node UUID.
 func All(r ifs.IResources) map[string]*l8health.L8Health {
 	hc, _ := HealthServiceCache(r)
 	all := hc.All()
@@ -87,10 +98,14 @@ func All(r ifs.IResources) map[string]*l8health.L8Health {
 	return result
 }
 
+// ServiceArea returns the service area for health based on the resources configuration.
+// Area 0 is for primary/local VNet, Area 1 is for remote/secondary VNet.
 func ServiceArea(r ifs.IResources) byte {
 	return ServiceAreaByConfig(r.SysConfig())
 }
 
+// ServiceAreaByConfig determines the service area based on the system configuration.
+// Returns 1 if RemoteVnet is configured, otherwise returns 0.
 func ServiceAreaByConfig(config *l8sysconfig.L8SysConfig) byte {
 	if config.RemoteVnet != "" {
 		return byte(1)

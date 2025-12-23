@@ -26,9 +26,15 @@ import (
 	"github.com/saichler/l8utils/go/utils/strings"
 )
 
+// loadedPlugins caches loaded plugins by their MD5 hash to prevent duplicate loading.
 var loadedPlugins = make(map[string]*plugin.Plugin)
+
+// mtx protects concurrent access to the loadedPlugins map.
 var mtx = &sync.Mutex{}
 
+// loadPluginFile loads a plugin from base64-encoded data. It caches plugins by
+// MD5 hash to avoid reloading identical plugins. The plugin is written to a
+// temporary .so file and loaded using Go's plugin package.
 func loadPluginFile(p *l8web.L8Plugin) (*plugin.Plugin, error) {
 
 	md5 := md5.New()
@@ -61,6 +67,9 @@ func loadPluginFile(p *l8web.L8Plugin) (*plugin.Plugin, error) {
 	return pluginFile, nil
 }
 
+// LoadPlugin loads and installs a plugin from the given L8Plugin data.
+// The plugin must export a "Plugin" symbol implementing the IPlugin interface.
+// After loading, the plugin's Install method is called with the provided VNic.
 func LoadPlugin(p *l8web.L8Plugin, vnic ifs.IVNic) error {
 	pluginFile, err := loadPluginFile(p)
 	if err != nil {

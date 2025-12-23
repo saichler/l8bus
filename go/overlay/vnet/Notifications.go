@@ -25,6 +25,8 @@ import (
 	"github.com/saichler/l8types/go/types/l8system"
 )
 
+// PropertyChangeNotification handles property change notifications from services (primarily health),
+// broadcasting the notification to local VNics in the network.
 func (this *VNet) PropertyChangeNotification(set *l8notify.L8NotificationSet) {
 	//only health service will call this callback so check if the notification is from a local source
 	//if it is from local source, then just notify local vnics
@@ -39,6 +41,7 @@ func (this *VNet) PropertyChangeNotification(set *l8notify.L8NotificationSet) {
 	go this.HandleData(syncData, nil)
 }
 
+// publisLocalHealth broadcasts health information for all local and external connections to external VNets.
 func (this *VNet) publisLocalHealth() {
 	time.Sleep(time.Second)
 	vnetUuid := this.resources.SysConfig().LocalUuid
@@ -73,6 +76,7 @@ func (this *VNet) publisLocalHealth() {
 	}
 }
 
+// publishRoutes broadcasts the current route table to all external VNet connections.
 func (this *VNet) publishRoutes() {
 	vnetUuid := this.resources.SysConfig().LocalUuid
 	vnetName := this.resources.SysConfig().LocalAlias
@@ -97,6 +101,7 @@ func (this *VNet) publishRoutes() {
 	go this.publisLocalHealth()
 }
 
+// publishRemovedRoutes broadcasts route removal messages to all external VNet connections.
 func (this *VNet) publishRemovedRoutes(removed map[string]string) {
 	vnetUuid := this.resources.SysConfig().LocalUuid
 	nextId := this.protocol.NextMessageNumber()
@@ -116,6 +121,7 @@ func (this *VNet) publishRemovedRoutes(removed map[string]string) {
 	}
 }
 
+// publishSystemMessage broadcasts a system control message to all external VNet connections.
 func (this *VNet) publishSystemMessage(sysmsg *l8system.L8SystemMessage) {
 	vnetUuid := this.resources.SysConfig().LocalUuid
 	nextId := this.protocol.NextMessageNumber()

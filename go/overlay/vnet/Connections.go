@@ -20,6 +20,9 @@ import (
 	"github.com/saichler/l8types/go/ifs"
 )
 
+// Connections manages all VNic connections for a VNet, categorized as internal
+// (same network), external VNet (cross-network switches), or external VNic (direct endpoints).
+// It provides thread-safe access to connections and maintains size counters.
 type Connections struct {
 	internal         *sync.Map
 	externalVnet     *sync.Map
@@ -32,6 +35,7 @@ type Connections struct {
 	sizeExternalVnic atomic.Int32
 }
 
+// newConnections creates a new Connections manager for the given VNet UUID.
 func newConnections(vnetUuid string, routeTable *RouteTable, logger ifs.ILogger) *Connections {
 	conns := &Connections{}
 	conns.internal = &sync.Map{}
@@ -43,6 +47,7 @@ func newConnections(vnetUuid string, routeTable *RouteTable, logger ifs.ILogger)
 	return conns
 }
 
+// addInternal registers an internal VNic connection, shutting down any existing connection with the same UUID.
 func (this *Connections) addInternal(uuid string, vnic ifs.IVNic) {
 	this.logger.Info("Adding internal with alias ", vnic.Resources().SysConfig().RemoteAlias)
 	exist, ok := this.internal.Load(uuid)
@@ -56,6 +61,7 @@ func (this *Connections) addInternal(uuid string, vnic ifs.IVNic) {
 	this.sizeInternal.Add(1)
 }
 
+// addExternalVnet registers an external VNet connection, shutting down any existing connection with the same UUID.
 func (this *Connections) addExternalVnet(uuid string, vnic ifs.IVNic) {
 	this.logger.Info("Adding external with alias ", vnic.Resources().SysConfig().RemoteAlias)
 	exist, ok := this.externalVnet.Load(uuid)
@@ -69,6 +75,7 @@ func (this *Connections) addExternalVnet(uuid string, vnic ifs.IVNic) {
 	this.sizeExternalVnet.Add(1)
 }
 
+// addExternalVnic registers an external VNic connection, shutting down any existing connection with the same UUID.
 func (this *Connections) addExternalVnic(uuid string, vnic ifs.IVNic) {
 	this.logger.Info("Adding external vnic with alias ", vnic.Resources().SysConfig().RemoteAlias)
 	exist, ok := this.externalVnic.Load(uuid)
@@ -82,6 +89,7 @@ func (this *Connections) addExternalVnic(uuid string, vnic ifs.IVNic) {
 	this.sizeExternalVnic.Add(1)
 }
 
+// isConnected checks if there is an existing external VNet connection to the given IP address.
 func (this *Connections) isConnected(ip string) bool {
 	connected := false
 	this.externalVnet.Range(func(key, value interface{}) bool {
@@ -96,6 +104,8 @@ func (this *Connections) isConnected(ip string) bool {
 	return connected
 }
 
+// getConnection retrieves a VNic by UUID, searching internal, external VNic, and route table.
+// If isHope0 is true (message originates from this switch), it also checks external VNet connections.
 func (this *Connections) getConnection(vnicUuid string, isHope0 bool) (string, ifs.IVNic) {
 	//internal vnic
 	vnic, ok := this.internal.Load(vnicUuid)
@@ -127,6 +137,7 @@ func (this *Connections) getConnection(vnicUuid string, isHope0 bool) (string, i
 	return "", nil
 }
 
+// all returns a map of all connections (internal and external VNet) keyed by UUID.
 func (this *Connections) all() map[string]ifs.IVNic {
 	all := make(map[string]ifs.IVNic)
 	this.internal.Range(func(key, value interface{}) bool {
@@ -140,11 +151,13 @@ func (this *Connections) all() map[string]ifs.IVNic {
 	return all
 }
 
+// isInterval checks if the given UUID corresponds to an internal connection.
 func (this *Connections) isInterval(uuid string) bool {
 	_, ok := this.internal.Load(uuid)
 	return ok
 }
 
+// allInternals returns a map of all internal connections keyed by UUID.
 func (this *Connections) allInternals() map[string]ifs.IVNic {
 	result := make(map[string]ifs.IVNic)
 	this.internal.Range(func(key, value interface{}) bool {
@@ -154,6 +167,7 @@ func (this *Connections) allInternals() map[string]ifs.IVNic {
 	return result
 }
 
+// allExternalVnets returns a map of all external VNet connections keyed by UUID.
 func (this *Connections) allExternalVnets() map[string]ifs.IVNic {
 	result := make(map[string]ifs.IVNic)
 	this.externalVnet.Range(func(key, value interface{}) bool {
@@ -163,6 +177,7 @@ func (this *Connections) allExternalVnets() map[string]ifs.IVNic {
 	return result
 }
 
+// shutdownConnection closes the connection with the given UUID from both internal and external maps.
 func (this *Connections) shutdownConnection(uuid string) {
 	this.logger.Info("Shutting down connection ", uuid)
 	conn, ok := this.internal.Load(uuid)
@@ -175,6 +190,7 @@ func (this *Connections) shutdownConnection(uuid string) {
 	}
 }
 
+// allDownConnections returns a map of UUIDs for all connections that are not currently running.
 func (this *Connections) allDownConnections() map[string]bool {
 	result := make(map[string]bool)
 	this.internal.Range(func(key, value interface{}) bool {
@@ -192,6 +208,7 @@ func (this *Connections) allDownConnections() map[string]bool {
 	return result
 }
 
+// Routes returns a map of internal connection UUIDs to the VNet UUID for routing purposes.
 func (this *Connections) Routes() map[string]string {
 	routes := make(map[string]string)
 	this.internal.Range(func(key, value interface{}) bool {

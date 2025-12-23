@@ -21,6 +21,7 @@ import (
 	"github.com/saichler/l8types/go/types/l8notify"
 )
 
+// NotifyServiceAdded sends a health update notification when new services are registered on this VNic.
 func (this *VirtualNetworkInterface) NotifyServiceAdded(serviceNames []string, serviceArea byte) error {
 	curr := health.HealthOf(this.resources.SysConfig().LocalUuid, this.resources)
 
@@ -34,6 +35,7 @@ func (this *VirtualNetworkInterface) NotifyServiceAdded(serviceNames []string, s
 	return err
 }
 
+// NotifyServiceRemoved sends a health update notification when a service is unregistered from this VNic.
 func (this *VirtualNetworkInterface) NotifyServiceRemoved(serviceName string, serviceArea byte) error {
 	curr := health.HealthOf(this.resources.SysConfig().LocalUuid, this.resources)
 	hp := &l8health.L8Health{}
@@ -44,6 +46,7 @@ func (this *VirtualNetworkInterface) NotifyServiceRemoved(serviceName string, se
 	return this.Unicast(this.resources.SysConfig().RemoteUuid, health.ServiceName, serviceArea, ifs.PATCH, hp)
 }
 
+// PropertyChangeNotification broadcasts property change notifications to service subscribers.
 func (this *VirtualNetworkInterface) PropertyChangeNotification(set *l8notify.L8NotificationSet) {
 	protocol.MsgLog.AddLog(set.ServiceName, byte(set.ServiceArea), ifs.Notify)
 	this.Multicast(set.ServiceName, byte(set.ServiceArea), ifs.Notify, set)

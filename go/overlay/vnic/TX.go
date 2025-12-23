@@ -22,6 +22,8 @@ import (
 	"github.com/saichler/l8utils/go/utils/strings"
 )
 
+// TX handles outgoing message transmission for a VNic.
+// It queues messages and writes them to the socket connection.
 type TX struct {
 	vnic         *VirtualNetworkInterface
 	shuttingDown bool

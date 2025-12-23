@@ -19,23 +19,29 @@ import (
 	"github.com/saichler/l8types/go/types/l8web"
 )
 
+// ServiceName is the identifier used to register and lookup the plugin service.
 const (
 	ServiceName     = "Plugin"
 	ServiceTypeName = "PluginService"
 )
 
+// PluginService handles plugin distribution and loading across the Layer8 network.
+// It receives plugin data via POST requests and loads them into the local VNic.
 type PluginService struct {
 }
 
+// Activate registers the plugin type with the registry when the service starts.
 func (this *PluginService) Activate(sla *ifs.ServiceLevelAgreement, vnic ifs.IVNic) error {
 	vnic.Resources().Registry().Register(&l8web.L8Plugin{})
 	return nil
 }
 
+// DeActivate is called when the service is stopped.
 func (this *PluginService) DeActivate() error {
 	return nil
 }
 
+// Post handles incoming plugin data and loads it into the local VNic.
 func (this *PluginService) Post(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	plugin := pb.Element().(*l8web.L8Plugin)
 	err := LoadPlugin(plugin, vnic)

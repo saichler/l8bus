@@ -20,29 +20,37 @@ import (
 	"github.com/saichler/l8types/go/ifs"
 )
 
+// Discovery_Enabled controls whether peer discovery via UDP broadcast is enabled.
 var Discovery_Enabled = true
 
+// Protocol handles message creation, serialization, and sequence numbering
+// for the Layer8 overlay network communication.
 type Protocol struct {
 	sequence  atomic.Uint32
 	resources ifs.IResources
 }
 
+// New creates a new Protocol instance with the given resources.
 func New(resources ifs.IResources) *Protocol {
 	p := &Protocol{}
 	p.resources = resources
 	return p
 }
 
+// MessageOf deserializes raw bytes into a Message struct.
 func (this *Protocol) MessageOf(data []byte, resources ifs.IResources) (*ifs.Message, error) {
 	msg := &ifs.Message{}
 	_, err := msg.Unmarshal(data, this.resources)
 	return msg, err
 }
 
+// ElementsOf extracts the payload elements from a message.
 func (this *Protocol) ElementsOf(msg *ifs.Message) (ifs.IElements, error) {
 	return ElementsOf(msg, this.resources)
 }
 
+// ElementsOf is a standalone function to extract payload elements from a message
+// using the provided resources for deserialization.
 func ElementsOf(msg *ifs.Message, resourcs ifs.IResources) (ifs.IElements, error) {
 	result := &object.Elements{}
 	err := result.Deserialize(msg.Data(), resourcs.Registry())
@@ -52,10 +60,13 @@ func ElementsOf(msg *ifs.Message, resourcs ifs.IResources) (ifs.IElements, error
 	return result, err
 }
 
+// NextMessageNumber returns the next unique message sequence number.
+// This is used for message ordering and request/reply correlation.
 func (this *Protocol) NextMessageNumber() uint32 {
 	return this.sequence.Add(1)
 }
 
+// DataFor serializes elements into bytes for message transmission.
 func DataFor(elems ifs.IElements, security ifs.ISecurityProvider) ([]byte, error) {
 	var data []byte
 	var err error
@@ -64,6 +75,9 @@ func DataFor(elems ifs.IElements, security ifs.ISecurityProvider) ([]byte, error
 	return data, err
 }
 
+// CreateMessageFor creates a complete message with all routing and metadata.
+// It supports unicast/multicast modes, request/reply patterns, transactions,
+// and priority-based scheduling.
 func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceArea byte,
 	priority ifs.Priority, multicastMode ifs.MulticastMode, action ifs.Action, source, vnet string, o ifs.IElements,
 	isRequest, isReply bool, msgNum uint32,
@@ -113,6 +127,7 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 	return msg.Marshal(nil, this.resources)
 }
 
+// CreateMessageForm creates a message from an existing Message template with new payload elements.
 func (this *Protocol) CreateMessageForm(msg *ifs.Message, o ifs.IElements) ([]byte, error) {
 	var data []byte
 	var err error

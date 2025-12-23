@@ -22,32 +22,41 @@ import (
 	"github.com/saichler/l8types/go/types/l8services"
 )
 
+// VnicVnet provides a VNic interface implementation for the VNet itself,
+// enabling the VNet to participate in service communication as a virtual endpoint.
+// This allows the VNet to send and receive messages like any other VNic in the network.
 type VnicVnet struct {
 	vnet *VNet
 }
 
+// newVnicVnet creates a new VnicVnet wrapper for the given VNet.
 func newVnicVnet(vnet *VNet) *VnicVnet {
 	return &VnicVnet{vnet: vnet}
 }
 
+// Start is not implemented for VnicVnet as it operates through the parent VNet.
 func (this *VnicVnet) Start() {
 	panic("implement me")
 }
 
+// Shutdown is not implemented for VnicVnet as it operates through the parent VNet.
 func (this *VnicVnet) Shutdown() {
 	panic("implement me")
 }
 
+// Name is not implemented for VnicVnet.
 func (this *VnicVnet) Name() string {
 	panic("implement me")
 	return ""
 }
 
+// SendMessage is not implemented for VnicVnet; use Unicast or Multicast instead.
 func (this *VnicVnet) SendMessage(data []byte) error {
 	panic("implement me")
 	return nil
 }
 
+// Unicast sends a message to a specific destination VNic by UUID.
 func (this *VnicVnet) Unicast(destination string, serviceName string, serviceArea byte, action ifs.Action, data interface{}) error {
 	elems := object.New(nil, data)
 	bts, err := this.vnet.protocol.CreateMessageFor(destination, serviceName, serviceArea, ifs.P1, ifs.M_All, action,
@@ -66,6 +75,7 @@ func (this *VnicVnet) Unicast(destination string, serviceName string, serviceAre
 	return nil
 }
 
+// Request sends a request to a destination and waits for a response with timeout.
 func (this *VnicVnet) Request(destination string, serviceName string, area byte, action ifs.Action, data interface{}, timeout int, returnAttributes ...string) ifs.IElements {
 	if destination == "" {
 		externals := this.vnet.switchTable.conns.allExternalVnets()
@@ -81,11 +91,13 @@ func (this *VnicVnet) Request(destination string, serviceName string, area byte,
 	return conn.Request(destination, serviceName, area, action, data, timeout, returnAttributes...)
 }
 
+// Reply is not implemented for VnicVnet.
 func (this *VnicVnet) Reply(msg *ifs.Message, elements ifs.IElements) error {
 	panic("implement me")
 	return nil
 }
 
+// Multicast sends a message to all connections hosting the specified service.
 func (this *VnicVnet) Multicast(serviceName string, serviceArea byte, action ifs.Action, any interface{}) error {
 	var err error
 	var data []byte
@@ -156,6 +168,7 @@ func (this *VnicVnet) LocalRequest(serviceName string, area byte, action ifs.Act
 	return nil
 }
 
+// Forward sends a message to a destination and returns the response.
 func (this *VnicVnet) Forward(msg *ifs.Message, destination string) ifs.IElements {
 	pb, err := this.vnet.protocol.ElementsOf(msg)
 	if err != nil {
@@ -189,10 +202,12 @@ func (this *VnicVnet) ServiceAPI(serviceName string, area byte) ifs.ServiceAPI {
 	return nil
 }
 
+// Resources returns the IResources from the parent VNet.
 func (this *VnicVnet) Resources() ifs.IResources {
 	return this.vnet.resources
 }
 
+// NotifyServiceAdded broadcasts health updates when services are added.
 func (this *VnicVnet) NotifyServiceAdded(serviceNames []string, serviceArea byte) error {
 	if this == nil {
 		return nil
@@ -216,6 +231,7 @@ func (this *VnicVnet) NotifyServiceRemoved(serviceName string, area byte) error 
 	return nil
 }
 
+// PropertyChangeNotification forwards property change notifications to the parent VNet.
 func (this *VnicVnet) PropertyChangeNotification(set *l8notify.L8NotificationSet) {
 	this.vnet.PropertyChangeNotification(set)
 }
@@ -257,11 +273,13 @@ func (this *VnicVnet) RegisterServiceLink(link *l8services.L8ServiceLink) {
 		}
 	}
 */
+// SetResponse sets the response for a pending request on the source connection.
 func (this *VnicVnet) SetResponse(msg *ifs.Message, pb ifs.IElements) {
 	_, conn := this.vnet.switchTable.conns.getConnection(msg.Source(), true)
 	conn.SetResponse(msg, pb)
 }
 
+// IsVnet returns true, indicating this VNic represents a VNet switch.
 func (this *VnicVnet) IsVnet() bool {
 	return true
 }

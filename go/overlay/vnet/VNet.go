@@ -33,6 +33,9 @@ import (
 	"github.com/saichler/l8utils/go/utils/strings"
 )
 
+// VNet represents a Virtual Network switch that manages connections between
+// distributed nodes in the Layer8 overlay network. It acts as a central hub
+// for message routing, service discovery, and health monitoring.
 type VNet struct {
 	resources   ifs.IResources
 	socket      net.Listener
@@ -44,6 +47,9 @@ type VNet struct {
 	vnic        *VnicVnet
 }
 
+// NewVNet creates and initializes a new VNet instance. It registers required
+// types, initializes the switch table, protocol handler, and discovery service.
+// The hasSecondary parameter enables secondary VNet connectivity for cross-network communication.
 func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 	resources.Registry().Register(&l8system.L8SystemMessage{})
 	resources.Registry().Register(&l8web.L8Empty{})
@@ -90,6 +96,8 @@ func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 	return net
 }
 
+// Start begins the VNet server, binding to the configured port and accepting
+// incoming connections. It also initiates peer discovery via UDP broadcast.
 func (this *VNet) Start() error {
 	var err error
 	go this.start(&err)
@@ -186,6 +194,7 @@ func (this *VNet) notifyNewVNic(vnic ifs.IVNic) {
 	this.switchTable.addVNic(vnic)
 }
 
+// Shutdown gracefully stops the VNet, closing all connections and releasing resources.
 func (this *VNet) Shutdown() {
 	this.resources.Logger().Info("Shutdown called!")
 	this.running = false
@@ -193,6 +202,8 @@ func (this *VNet) Shutdown() {
 	this.switchTable.shutdown()
 }
 
+// Failed handles message delivery failures by creating and sending a failure
+// response back to the originating VNic with the specified error message.
 func (this *VNet) Failed(data []byte, vnic ifs.IVNic, failMsg string) {
 	msg, err := this.protocol.MessageOf(data, this.resources)
 	if err != nil {
@@ -206,6 +217,9 @@ func (this *VNet) Failed(data []byte, vnic ifs.IVNic, failMsg string) {
 	err = vnic.SendMessage(data)
 }
 
+// HandleData processes incoming message data, routing it to the appropriate
+// destination based on message headers. It supports unicast, multicast, and
+// service-based routing modes.
 func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 	source, sourceVnet, destination, serviceName, serviceArea, _, multicastMode := ifs.HeaderOf(data)
 	protocol.MsgLog.AddLog(serviceName, serviceArea, ifs.Handle)
@@ -266,6 +280,8 @@ func (this *VNet) uniCastToPorts(connections map[string]ifs.IVNic, data []byte) 
 	}
 }
 
+// ShutdownVNic handles the disconnection of a VNic, removing its routes,
+// services, and health records from the switch table.
 func (this *VNet) ShutdownVNic(vnic ifs.IVNic) {
 	uuid := vnic.Resources().SysConfig().RemoteUuid
 	removed := map[string]string{uuid: ""}
@@ -275,6 +291,8 @@ func (this *VNet) ShutdownVNic(vnic ifs.IVNic) {
 	this.publishRemovedRoutes(removed)
 }
 
+// Resources returns the IResources instance containing configuration,
+// registry, security provider, and other shared resources.
 func (this *VNet) Resources() ifs.IResources {
 	return this.resources
 }
@@ -289,6 +307,7 @@ func (this *VNet) sendHealth(hp *l8health.L8Health) {
 	go this.HandleData(h, nil)
 }
 
+// VnetVnic returns the internal VNic used by the VNet for its own service communication.
 func (this *VNet) VnetVnic() ifs.IVNic {
 	return this.vnic
 }

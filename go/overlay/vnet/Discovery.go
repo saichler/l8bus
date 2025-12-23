@@ -23,12 +23,15 @@ import (
 	"github.com/saichler/l8utils/go/utils/strings"
 )
 
+// Discovery handles peer VNet discovery using UDP broadcast.
+// It enables automatic detection and connection to other VNet switches on the local network.
 type Discovery struct {
 	vnet       *VNet
 	conn       *net.UDPConn
 	discovered map[string]bool
 }
 
+// NewDiscovery creates a new Discovery instance for the given VNet.
 func NewDiscovery(vnet *VNet) *Discovery {
 	ds := &Discovery{}
 	ds.vnet = vnet
@@ -36,6 +39,8 @@ func NewDiscovery(vnet *VNet) *Discovery {
 	return ds
 }
 
+// Discover starts the discovery process by listening for UDP broadcasts
+// and initiating connections to discovered peer VNets.
 func (this *Discovery) Discover() {
 	if !protocol.Discovery_Enabled {
 		this.vnet.resources.Logger().Info("Discovery is disabled, machine IP is ", ipsegment.MachineIP)
@@ -88,6 +93,7 @@ func (this *Discovery) discoveryRx() {
 	}
 }
 
+// Broadcast sends periodic UDP discovery broadcasts to announce this VNet's presence.
 func (this *Discovery) Broadcast() {
 	this.vnet.resources.Logger().Debug("Sending discovery broadcast")
 	addr, err := net.ResolveUDPAddr("udp", strings.New("255.255.255.255:", int(this.vnet.resources.SysConfig().VnetPort-2)).String())

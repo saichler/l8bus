@@ -22,6 +22,8 @@ import (
 	"github.com/saichler/l8utils/go/utils/strings"
 )
 
+// txServiceLink manages batched message sending for a service link.
+// It buffers messages and flushes them at configurable intervals.
 type txServiceLink struct {
 	mtx      *sync.Mutex
 	link     *l8services.L8ServiceLink
@@ -30,11 +32,13 @@ type txServiceLink struct {
 	vnic     *VirtualNetworkInterface
 }
 
+// txServiceLinkEntry holds a single queued message with its action.
 type txServiceLinkEntry struct {
 	element interface{}
 	action  ifs.Action
 }
 
+// RegisterServiceLink registers a service link for batched message transmission.
 func (this *VirtualNetworkInterface) RegisterServiceLink(link *l8services.L8ServiceLink) {
 	if this.serviceLinks == nil {
 		this.serviceLinks = &sync.Map{}
@@ -46,6 +50,7 @@ func (this *VirtualNetworkInterface) RegisterServiceLink(link *l8services.L8Serv
 	}
 }
 
+// newTxServiceLink creates a new service link with batching support and starts the flush watcher.
 func newTxServiceLink(link *l8services.L8ServiceLink, vnic *VirtualNetworkInterface) *txServiceLink {
 	tsb := &txServiceLink{}
 	tsb.mtx = &sync.Mutex{}
@@ -57,16 +62,19 @@ func newTxServiceLink(link *l8services.L8ServiceLink, vnic *VirtualNetworkInterf
 	return tsb
 }
 
+// BatchMode returns true if this service link uses batch mode (interval > 0).
 func (this *txServiceLink) BatchMode() bool {
 	return this.link.Interval > 0
 }
 
+// Send queues a message for batched transmission.
 func (this *txServiceLink) Send(action ifs.Action, element interface{}) {
 	this.mtx.Lock()
 	defer this.mtx.Unlock()
 	this.queue = append(this.queue, &txServiceLinkEntry{element: element, action: action})
 }
 
+// watch periodically flushes the message queue at the configured interval.
 func (this *txServiceLink) watch() {
 	for this.vnic.Running() {
 		this.flush()
@@ -74,6 +82,7 @@ func (this *txServiceLink) watch() {
 	}
 }
 
+// flush sends all queued messages, grouping them by action type.
 func (this *txServiceLink) flush() {
 	this.mtx.Lock()
 	items := this.queue
@@ -98,15 +107,18 @@ func (this *txServiceLink) flush() {
 	}
 }
 
+// send transmits a batch of elements using multicast.
 func (this *txServiceLink) send(action ifs.Action, elements []interface{}) {
 	this.vnic.multicastLink(ifs.P7, ifs.MulticastMode(this.link.Mode),
 		this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), action, elements)
 }
 
+// LinkKeyByLink generates a unique key for a service link based on its properties.
 func LinkKeyByLink(link *l8services.L8ServiceLink) string {
 	return strings.New(link.ZsideServiceName, link.ZsideServiceArea, link.Mode, link.Request).String()
 }
 
+// LinkKeyByAttr generates a unique key for a service link from individual attributes.
 func LinkKeyByAttr(serviceName string, serviceArea byte, mode ifs.MulticastMode, request bool) string {
 	return strings.New(serviceName, serviceArea, mode, request).String()
 }

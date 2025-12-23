@@ -25,6 +25,8 @@ import (
 	"github.com/saichler/l8utils/go/utils/ipsegment"
 )
 
+// addHealthForVNic registers a VNic's health information in the health service,
+// creating or updating the health record based on the VNic's configuration.
 func (this *VNet) addHealthForVNic(config *l8sysconfig.L8SysConfig) {
 	serviceData := &l8system.L8ServiceData{}
 	serviceData.ServiceName = health.ServiceName
@@ -44,6 +46,7 @@ func (this *VNet) addHealthForVNic(config *l8sysconfig.L8SysConfig) {
 	}
 }
 
+// newHealth creates a new L8Health record from a VNic's system configuration.
 func (this *VNet) newHealth(config *l8sysconfig.L8SysConfig) *l8health.L8Health {
 	hp := &l8health.L8Health{}
 	hp.Alias = config.RemoteAlias
@@ -91,6 +94,7 @@ func (this *VNet) mergeServices(hp *l8health.L8Health, config *l8sysconfig.L8Sys
 	}
 }*/
 
+// sendHealthReport sends a complete health report to the specified destination VNic.
 func (this *VNet) sendHealthReport(uuid string) {
 	time.Sleep(time.Second)
 	all := health.All(this.resources)

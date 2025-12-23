@@ -15,10 +15,13 @@ package vnic
 
 import "github.com/saichler/l8types/go/ifs"
 
+// Multicast sends a message to all instances of a service across the network.
 func (this *VirtualNetworkInterface) Multicast(serviceName string, serviceArea byte, action ifs.Action, any interface{}) error {
 	return this.multicast(ifs.P8, ifs.M_All, serviceName, serviceArea, action, any)
 }
 
+// multicast is the internal implementation for sending messages to service instances
+// based on the specified multicast mode (All, Proximity, RoundRobin, Leader, Local).
 func (this *VirtualNetworkInterface) multicast(priority ifs.Priority, multicastMode ifs.MulticastMode, serviceName string, serviceArea byte, action ifs.Action, any interface{}) error {
 	if this.serviceLinks != nil {
 		key := LinkKeyByAttr(serviceName, serviceArea, multicastMode, false)
@@ -40,6 +43,7 @@ func (this *VirtualNetworkInterface) multicast(priority ifs.Priority, multicastM
 		-1, -1, -1, -1, -1, 0, false, "")
 }
 
+// multicastLink sends a multicast message using the service link infrastructure.
 func (this *VirtualNetworkInterface) multicastLink(priority ifs.Priority, multicastMode ifs.MulticastMode, serviceName string, serviceArea byte, action ifs.Action, any interface{}) error {
 	elems, err := createElements(any, this.resources)
 	if err != nil {

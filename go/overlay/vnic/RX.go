@@ -20,6 +20,8 @@ import (
 	"github.com/saichler/l8utils/go/utils/queues"
 )
 
+// RX handles incoming message reception for a VNic.
+// It reads messages from the socket and dispatches them to service handlers.
 type RX struct {
 	vnic         *VirtualNetworkInterface
 	shuttingDown bool

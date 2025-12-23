@@ -17,6 +17,8 @@ import (
 	"github.com/saichler/l8types/go/ifs"
 )
 
+// vnetServiceRequest handles service requests received by the VNet, routing them to the
+// appropriate service handler based on the message action and type.
 func (this *VNet) vnetServiceRequest(data []byte, vnic ifs.IVNic) {
 	msg, err := this.protocol.MessageOf(data, this.resources)
 	if err != nil {
@@ -67,14 +69,17 @@ func (this *VNet) vnetServiceRequest(data []byte, vnic ifs.IVNic) {
 	}
 }
 
+// ExternalCount returns the number of external VNet connections.
 func (this *VNet) ExternalCount() int32 {
 	return this.switchTable.conns.sizeExternalVnet.Load()
 }
 
+// LocalCount returns the number of internal (local) VNic connections.
 func (this *VNet) LocalCount() int32 {
 	return this.switchTable.conns.sizeInternal.Load()
 }
 
+// internal checks if a message should be handled internally by the VNet's internal VNic.
 func internal(msg *ifs.Message) bool {
 	if msg.Action() >= ifs.MapR_POST && msg.Action() <= ifs.MapR_GET {
 		return true

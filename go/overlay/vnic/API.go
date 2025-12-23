@@ -17,6 +17,8 @@ import (
 	"github.com/saichler/l8types/go/ifs"
 )
 
+// VnicAPI provides a high-level API for service communication through a VNic.
+// It supports standard REST-like operations (Get, Post, Put, Patch, Delete).
 type VnicAPI struct {
 	serviceName string
 	serviceArea byte

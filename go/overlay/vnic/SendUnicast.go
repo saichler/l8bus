@@ -19,11 +19,13 @@ import (
 	"github.com/saichler/l8types/go/ifs"
 )
 
+// Unicast sends a message to a specific destination VNic by UUID.
 func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, serviceArea byte,
 	action ifs.Action, any interface{}) error {
 	return this.unicast(destination, serviceName, serviceArea, action, any, ifs.P8, ifs.M_All)
 }
 
+// unicast is the internal implementation for sending a message to a specific destination.
 func (this *VirtualNetworkInterface) unicast(destination, serviceName string, serviceArea byte,
 	action ifs.Action, any interface{}, priority ifs.Priority, multicastMode ifs.MulticastMode) error {
 
@@ -40,11 +42,13 @@ func (this *VirtualNetworkInterface) unicast(destination, serviceName string, se
 		-1, -1, -1, -1, -1, 0, false, "")
 }
 
+// Request sends a request to a destination and waits for a response with timeout.
 func (this *VirtualNetworkInterface) Request(destination, serviceName string, serviceArea byte,
 	action ifs.Action, any interface{}, timeoutSeconds int, tokens ...string) ifs.IElements {
 	return this.request(destination, serviceName, serviceArea, action, any, ifs.P8, ifs.M_All, timeoutSeconds, tokens...)
 }
 
+// request is the internal implementation for sending requests and waiting for responses.
 func (this *VirtualNetworkInterface) request(destination, serviceName string, serviceArea byte,
 	action ifs.Action, any interface{}, priority ifs.Priority, multicastMode ifs.MulticastMode, timeoutInSeconds int, tokens ...string) ifs.IElements {
 
@@ -76,6 +80,7 @@ func (this *VirtualNetworkInterface) request(destination, serviceName string, se
 	return request.Response()
 }
 
+// Reply sends a response back to the originator of a request message.
 func (this *VirtualNetworkInterface) Reply(msg *ifs.Message, response ifs.IElements) error {
 	reply := msg.CloneReply(this.resources.SysConfig().LocalUuid, this.resources.SysConfig().RemoteUuid)
 	data, e := this.protocol.CreateMessageForm(reply, response)

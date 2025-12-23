@@ -18,11 +18,15 @@ import (
 	"github.com/saichler/l8types/go/types/l8health"
 )
 
+// RoundRobin implements round-robin load balancing across service participants.
+// It distributes requests evenly across all available instances of a service.
 type RoundRobin struct {
 	participants []string
 	index        int
 }
 
+// NewRoundRobin creates a new RoundRobin balancer for the specified service.
+// It populates the participant list from the health service registry.
 func NewRoundRobin(serviceName string, serviceArea byte, r ifs.IResources) *RoundRobin {
 	rr := &RoundRobin{}
 	rr.participants = make([]string, 0)
@@ -33,6 +37,7 @@ func NewRoundRobin(serviceName string, serviceArea byte, r ifs.IResources) *Roun
 	return rr
 }
 
+// Next returns the UUID of the next participant in the round-robin sequence.
 func (this *RoundRobin) Next() string {
 	if this.index >= len(this.participants) {
 		this.index = 0
@@ -42,6 +47,7 @@ func (this *RoundRobin) Next() string {
 	return next
 }
 
+// Participants returns a map of UUIDs for all nodes providing the specified service.
 func Participants(serviceName string, serviceArea byte, r ifs.IResources) map[string]bool {
 	hc, _ := HealthServiceCache(r)
 	all := hc.All()

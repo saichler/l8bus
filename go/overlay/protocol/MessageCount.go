@@ -24,20 +24,28 @@ import (
 	"github.com/saichler/l8utils/go/utils/strings"
 )
 
+// MessageLog enables or disables message type logging for debugging and monitoring.
 var MessageLog bool = false
+
+// MsgLog is the global message type logger instance used for tracking message statistics.
 var MsgLog = newMessageTypeLog()
 var started bool = false
 
+// MessageTypeLog tracks message counts by service name, area, and action type.
+// It provides statistics and CSV export capabilities for debugging message flow.
 type MessageTypeLog struct {
 	mtx   sync.Mutex
 	msgs  map[string]int
 	total int
 }
 
+// newMessageTypeLog creates a new MessageTypeLog instance with initialized maps.
 func newMessageTypeLog() *MessageTypeLog {
 	return &MessageTypeLog{msgs: make(map[string]int), mtx: sync.Mutex{}}
 }
 
+// AddLog records a message occurrence for the given service name, area, and action.
+// If MessageLog is disabled, this function returns immediately without logging.
 func (this *MessageTypeLog) AddLog(serviceName string, serviceArea byte, action ifs.Action) {
 	if !MessageLog {
 		return
@@ -53,6 +61,7 @@ func (this *MessageTypeLog) AddLog(serviceName string, serviceArea byte, action 
 	this.total++
 }
 
+// Print outputs all message type counts and the total to stdout.
 func (this *MessageTypeLog) Print() {
 	this.mtx.Lock()
 	defer this.mtx.Unlock()
@@ -62,6 +71,7 @@ func (this *MessageTypeLog) Print() {
 	fmt.Println("Total - ", this.total)
 }
 
+// log continuously writes the current statistics to /tmp/log.csv every second.
 func (this *MessageTypeLog) log() {
 	for {
 		os.WriteFile("/tmp/log.csv", this.CSV(), 0777)
@@ -69,6 +79,7 @@ func (this *MessageTypeLog) log() {
 	}
 }
 
+// CSV returns the current message statistics formatted as CSV bytes.
 func (this *MessageTypeLog) CSV() []byte {
 	str := strings.New()
 	str.Add("\"Key\",\"Count\"\n")
@@ -85,6 +96,7 @@ func (this *MessageTypeLog) CSV() []byte {
 	return str.Bytes()
 }
 
+// Total returns the total number of messages logged across all types.
 func (this *MessageTypeLog) Total() int {
 	this.mtx.Lock()
 	defer this.mtx.Unlock()

@@ -23,6 +23,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// Forward sends a message to a destination and returns the response.
+// It preserves transaction context from the original message.
 func (this *VirtualNetworkInterface) Forward(msg *ifs.Message, destination string) ifs.IElements {
 	pb, err := this.protocol.ElementsOf(msg)
 	if err != nil {
@@ -52,6 +54,8 @@ func (this *VirtualNetworkInterface) Forward(msg *ifs.Message, destination strin
 	return request.Response()
 }
 
+// createElements converts various input types to IElements for message transmission.
+// Supports queries, proto messages, slices, and existing IElements.
 func createElements(any interface{}, resources ifs.IResources) (ifs.IElements, error) {
 	if any == nil {
 		return object.New(nil, nil), nil

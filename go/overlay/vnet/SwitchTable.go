@@ -24,6 +24,8 @@ import (
 	"github.com/saichler/l8utils/go/utils/strings"
 )
 
+// SwitchTable manages the routing and connection state for a VNet switch.
+// It maintains mappings between node UUIDs, their connections, and the services they provide.
 type SwitchTable struct {
 	conns         *Connections
 	services      *Services
