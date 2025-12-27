@@ -24,6 +24,7 @@ import (
 	"github.com/saichler/l8bus/go/overlay/health"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8health"
+	"github.com/saichler/l8utils/go/utils/logger"
 )
 
 // CPUTracker tracks CPU usage for the current process by sampling /proc stats.
@@ -81,6 +82,11 @@ func (this *KeepAlive) sendState() {
 	stats.LastMsgTime = this.vnic.healthStatistics.LastMsgTime.Load()
 	stats.MemoryUsage = memoryUsage()
 	stats.CpuUsage = this.cpuTracker.GetCPUUsage()
+
+	// If memory usage exceeds 2GB, dump pprof heap profile
+	if stats.MemoryUsage > 2*1024*1024*1024 {
+		logger.DumpPprofToFile(this.vnic.resources.SysConfig().LocalAlias)
+	}
 
 	hp := &l8health.L8Health{}
 	hp.AUuid = this.vnic.resources.SysConfig().LocalUuid
