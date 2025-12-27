@@ -110,7 +110,7 @@ func (this *VNet) Start() error {
 }
 
 func (this *VNet) start(err *error) {
-	this.resources.Logger().Info("VNet.start: Starting VNet ")
+	this.resources.Logger().Debug("VNet.start: Starting VNet ")
 	if this.resources.SysConfig().VnetPort == 0 {
 		er := errors.New("Switch Port does not have a port defined")
 		err = &er
@@ -131,7 +131,7 @@ func (this *VNet) start(err *error) {
 			continue
 		}
 		if this.running {
-			this.resources.Logger().Info("Accepted socket connection...")
+			this.resources.Logger().Debug("Accepted socket connection...")
 			go this.connect(conn)
 		}
 	}
@@ -144,7 +144,7 @@ func (this *VNet) bind() error {
 		return this.resources.Logger().Error("Unable to bind to port ",
 			this.resources.SysConfig().VnetPort, e.Error())
 	}
-	this.resources.Logger().Info("Bind Successfully to port ",
+	this.resources.Logger().Debug("Bind Successfully to port ",
 		this.resources.SysConfig().VnetPort)
 	this.socket = socket
 	return nil
@@ -196,7 +196,7 @@ func (this *VNet) notifyNewVNic(vnic ifs.IVNic) {
 
 // Shutdown gracefully stops the VNet, closing all connections and releasing resources.
 func (this *VNet) Shutdown() {
-	this.resources.Logger().Info("Shutdown called!")
+	this.resources.Logger().Debug("Shutdown called!")
 	this.running = false
 	this.socket.Close()
 	this.switchTable.shutdown()

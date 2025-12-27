@@ -49,10 +49,10 @@ func newConnections(vnetUuid string, routeTable *RouteTable, logger ifs.ILogger)
 
 // addInternal registers an internal VNic connection, shutting down any existing connection with the same UUID.
 func (this *Connections) addInternal(uuid string, vnic ifs.IVNic) {
-	this.logger.Info("Adding internal with alias ", vnic.Resources().SysConfig().RemoteAlias)
+	this.logger.Debug("Adding internal with alias ", vnic.Resources().SysConfig().RemoteAlias)
 	exist, ok := this.internal.Load(uuid)
 	if ok {
-		this.logger.Info("Internal Connection ", uuid, " already exists, shutting down")
+		this.logger.Debug("Internal Connection ", uuid, " already exists, shutting down")
 		existVnic := exist.(ifs.IVNic)
 		existVnic.Shutdown()
 		this.internal.Delete(uuid)
@@ -63,10 +63,10 @@ func (this *Connections) addInternal(uuid string, vnic ifs.IVNic) {
 
 // addExternalVnet registers an external VNet connection, shutting down any existing connection with the same UUID.
 func (this *Connections) addExternalVnet(uuid string, vnic ifs.IVNic) {
-	this.logger.Info("Adding external with alias ", vnic.Resources().SysConfig().RemoteAlias)
+	this.logger.Debug("Adding external with alias ", vnic.Resources().SysConfig().RemoteAlias)
 	exist, ok := this.externalVnet.Load(uuid)
 	if ok {
-		this.logger.Info("External vnet ", uuid, " already exists, shutting down")
+		this.logger.Debug("External vnet ", uuid, " already exists, shutting down")
 		existVnic := exist.(ifs.IVNic)
 		existVnic.Shutdown()
 		this.externalVnet.Delete(uuid)
@@ -77,10 +77,10 @@ func (this *Connections) addExternalVnet(uuid string, vnic ifs.IVNic) {
 
 // addExternalVnic registers an external VNic connection, shutting down any existing connection with the same UUID.
 func (this *Connections) addExternalVnic(uuid string, vnic ifs.IVNic) {
-	this.logger.Info("Adding external vnic with alias ", vnic.Resources().SysConfig().RemoteAlias)
+	this.logger.Debug("Adding external vnic with alias ", vnic.Resources().SysConfig().RemoteAlias)
 	exist, ok := this.externalVnic.Load(uuid)
 	if ok {
-		this.logger.Info("External vnic ", uuid, " already exists, shutting down")
+		this.logger.Debug("External vnic ", uuid, " already exists, shutting down")
 		existVnic := exist.(ifs.IVNic)
 		existVnic.Shutdown()
 		this.externalVnic.Delete(uuid)
@@ -179,7 +179,7 @@ func (this *Connections) allExternalVnets() map[string]ifs.IVNic {
 
 // shutdownConnection closes the connection with the given UUID from both internal and external maps.
 func (this *Connections) shutdownConnection(uuid string) {
-	this.logger.Info("Shutting down connection ", uuid)
+	this.logger.Debug("Shutting down connection ", uuid)
 	conn, ok := this.internal.Load(uuid)
 	if ok {
 		conn.(ifs.IVNic).Shutdown()

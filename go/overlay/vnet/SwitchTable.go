@@ -116,7 +116,7 @@ func (this *SwitchTable) monitor() {
 			this.conns.shutdownConnection(uuid)
 			hp := health.HealthOf(uuid, this.switchService.resources)
 			if hp.Status != l8health.L8HealthState_Down {
-				this.switchService.resources.Logger().Info("Update health status to Down")
+				this.switchService.resources.Logger().Debug("Update health status to Down")
 				hp.Status = l8health.L8HealthState_Down
 				hs, _ := health.HealthService(this.switchService.resources)
 				hs.Patch(object.New(nil, hp), this.switchService.vnic)

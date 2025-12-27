@@ -43,7 +43,7 @@ func NewDiscovery(vnet *VNet) *Discovery {
 // and initiating connections to discovered peer VNets.
 func (this *Discovery) Discover() {
 	if !protocol.Discovery_Enabled {
-		this.vnet.resources.Logger().Info("Discovery is disabled, machine IP is ", ipsegment.MachineIP)
+		this.vnet.resources.Logger().Debug("Discovery is disabled, machine IP is ", ipsegment.MachineIP)
 		return
 	}
 	addr, err := net.ResolveUDPAddr("udp", strings.New(":", int(this.vnet.resources.SysConfig().VnetPort-2)).String())
@@ -81,7 +81,7 @@ func (this *Discovery) discoveryRx() {
 			if ip != ipsegment.MachineIP && ip != "127.0.0.1" {
 				_, ok := this.discovered[ip]
 				if stdstrings.Compare(ip, ipsegment.MachineIP) == -1 && !ok {
-					this.vnet.resources.Logger().Info("Trying to connect to peer at ", ip)
+					this.vnet.resources.Logger().Debug("Trying to connect to peer at ", ip)
 					err = this.vnet.ConnectNetworks(ip, this.vnet.resources.SysConfig().VnetPort)
 					if err != nil {
 						this.vnet.resources.Logger().Error("Discovery: ", err.Error())

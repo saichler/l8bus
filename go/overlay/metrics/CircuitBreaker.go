@@ -223,7 +223,7 @@ func (cb *CircuitBreaker) transitionToClosed() {
 	atomic.StoreInt64(&cb.failures, 0)
 	atomic.StoreInt64(&cb.successes, 0)
 	
-	cb.logger.Info("Circuit breaker", cb.name, "transitioned to CLOSED state")
+	cb.logger.Debug("Circuit breaker", cb.name, "transitioned to CLOSED state")
 	cb.updateMetrics()
 }
 
@@ -247,7 +247,7 @@ func (cb *CircuitBreaker) transitionToHalfOpen() {
 	atomic.StoreInt32(&cb.state, int32(HalfOpenState))
 	atomic.StoreInt64(&cb.successes, 0)
 	
-	cb.logger.Info("Circuit breaker", cb.name, "transitioned to HALF-OPEN state")
+	cb.logger.Debug("Circuit breaker", cb.name, "transitioned to HALF-OPEN state")
 	cb.updateMetrics()
 }
 

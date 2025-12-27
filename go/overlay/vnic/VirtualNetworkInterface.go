@@ -171,7 +171,7 @@ func (this *VirtualNetworkInterface) connect() error {
 		fmt.Println("Remote nic")
 	}
 
-	this.resources.Logger().Info("Trying to connect to vnet at IP - ", destination)
+	this.resources.Logger().Debug("Trying to connect to vnet at IP - ", destination)
 	// Try to dial to the switch
 	conn, err := this.resources.Security().CanDial(destination, this.resources.SysConfig().VnetPort)
 	if err != nil {
@@ -188,7 +188,7 @@ func (this *VirtualNetworkInterface) connect() error {
 	}
 	this.conn = conn
 	this.resources.SysConfig().Address = conn.LocalAddr().String()
-	this.resources.Logger().Info("Connected!")
+	this.resources.Logger().Debug("Connected!")
 	return nil
 }
 
@@ -220,7 +220,7 @@ func (this *VirtualNetworkInterface) receiveConnection() {
 // Shutdown gracefully stops the VNic, closing the connection and cleaning up
 // all resources including circuit breakers and sub-components.
 func (this *VirtualNetworkInterface) Shutdown() {
-	this.resources.Logger().Info("Shutdown was called on ", this.resources.SysConfig().LocalAlias)
+	this.resources.Logger().Debug("Shutdown was called on ", this.resources.SysConfig().LocalAlias)
 	this.running = false
 	if this.conn != nil {
 		this.conn.Close()
@@ -274,7 +274,7 @@ func (this *VirtualNetworkInterface) reconnect() {
 	}
 	this.last_reconnect_attempt = time.Now().Unix()
 
-	this.resources.Logger().Info("***** Trying to reconnect to ", this.resources.SysConfig().RemoteAlias, " *****")
+	this.resources.Logger().Debug("***** Trying to reconnect to ", this.resources.SysConfig().RemoteAlias, " *****")
 
 	if this.conn != nil {
 		this.conn.Close()
@@ -284,7 +284,7 @@ func (this *VirtualNetworkInterface) reconnect() {
 	if err != nil {
 		this.resources.Logger().Error("***** Failed to reconnect to ", this.resources.SysConfig().RemoteAlias, " *****")
 	} else {
-		this.resources.Logger().Info("***** Reconnected to ", this.resources.SysConfig().RemoteAlias, " *****")
+		this.resources.Logger().Debug("***** Reconnected to ", this.resources.SysConfig().RemoteAlias, " *****")
 	}
 }
 
