@@ -14,6 +14,7 @@
 package metrics
 
 import (
+	"context"
 	"errors"
 	"sync"
 	"sync/atomic"
@@ -126,16 +127,26 @@ func (cb *CircuitBreaker) Execute(fn func() (interface{}, error)) (interface{}, 
 		map[string]string{"name": cb.name, "state": state.String()})
 	requestCounter.Inc()
 
-	// Execute with timeout
+	// Execute with timeout using context for proper cancellation
+	ctx, cancel := context.WithTimeout(context.Background(), cb.config.Timeout)
+	defer cancel()
+
 	resultChan := make(chan interface{}, 1)
 	errorChan := make(chan error, 1)
 
 	go func() {
 		result, err := fn()
-		if err != nil {
-			errorChan <- err
-		} else {
-			resultChan <- result
+		// Check if context was cancelled before sending to channels
+		// This prevents goroutine from blocking on channel send after timeout
+		select {
+		case <-ctx.Done():
+			return // Timeout already fired, exit without sending
+		default:
+			if err != nil {
+				errorChan <- err
+			} else {
+				resultChan <- result
+			}
 		}
 	}()
 
@@ -146,7 +157,7 @@ func (cb *CircuitBreaker) Execute(fn func() (interface{}, error)) (interface{}, 
 	case err := <-errorChan:
 		cb.recordFailure()
 		return nil, err
-	case <-time.After(cb.config.Timeout):
+	case <-ctx.Done():
 		cb.recordFailure()
 		return nil, errors.New("circuit breaker: operation timeout")
 	}
