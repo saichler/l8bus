@@ -64,7 +64,6 @@ type VirtualNetworkInterface struct {
 	circuitBreakerName    string
 	metricsRegistry       *metrics.MetricsRegistry
 	connected             bool
-	serviceLinks          *sync.Map
 }
 
 // NewVirtualNetworkInterface creates a new VNic instance. If conn is nil, the VNic

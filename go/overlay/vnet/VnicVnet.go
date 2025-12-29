@@ -19,7 +19,6 @@ import (
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8health"
 	"github.com/saichler/l8types/go/types/l8notify"
-	"github.com/saichler/l8types/go/types/l8services"
 )
 
 // VnicVnet provides a VNic interface implementation for the VNet itself,
@@ -245,34 +244,6 @@ func (this *VnicVnet) Running() bool {
 	return false
 }
 
-func (this *VnicVnet) RegisterServiceLink(link *l8services.L8ServiceLink) {
-	panic("implement me")
-}
-
-/*
-	func mergeServices(hp *l8health.L8Health, services *l8services.L8Services) {
-		if hp.Services == nil {
-			hp.Services = services
-			return
-
-		}
-		for serviceName, serviceAreas := range services.ServiceToAreas {
-			_, ok := hp.Services.ServiceToAreas[serviceName]
-			if !ok {
-				hp.Services.ServiceToAreas[serviceName] = serviceAreas
-				continue
-			}
-			if hp.Services.ServiceToAreas[serviceName].Areas == nil {
-				hp.Services.ServiceToAreas[serviceName].Areas = serviceAreas.Areas
-				continue
-			}
-			for svArea, score := range serviceAreas.Areas {
-				serviceArea := svArea
-				hp.Services.ServiceToAreas[serviceName].Areas[serviceArea] = score
-			}
-		}
-	}
-*/
 // SetResponse sets the response for a pending request on the source connection.
 func (this *VnicVnet) SetResponse(msg *ifs.Message, pb ifs.IElements) {
 	_, conn := this.vnet.switchTable.conns.getConnection(msg.Source(), true)

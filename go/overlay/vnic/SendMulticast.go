@@ -23,17 +23,6 @@ func (this *VirtualNetworkInterface) Multicast(serviceName string, serviceArea b
 // multicast is the internal implementation for sending messages to service instances
 // based on the specified multicast mode (All, Proximity, RoundRobin, Leader, Local).
 func (this *VirtualNetworkInterface) multicast(priority ifs.Priority, multicastMode ifs.MulticastMode, serviceName string, serviceArea byte, action ifs.Action, any interface{}) error {
-	if this.serviceLinks != nil {
-		key := LinkKeyByAttr(serviceName, serviceArea, multicastMode, false)
-		exist, ok := this.serviceLinks.Load(key)
-		if ok {
-			link := exist.(*txServiceLink)
-			if link.BatchMode() {
-				link.Send(action, any)
-				return nil
-			}
-		}
-	}
 	elems, err := createElements(any, this.resources)
 	if err != nil {
 		return err
