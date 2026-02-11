@@ -85,7 +85,7 @@ func (this *KeepAlive) sendState() {
 
 	// If memory usage exceeds 2GB, dump pprof heap profile
 	if stats.MemoryUsage > 2*1024*1024*1024 {
-		logger.DumpPprofToFile(this.vnic.resources.SysConfig().LocalAlias)
+		logger.DumpPprofToFile(this.vnic.resources.SysConfig().LogsDirectory, this.vnic.resources.SysConfig().LocalAlias)
 	}
 
 	hp := &l8health.L8Health{}
