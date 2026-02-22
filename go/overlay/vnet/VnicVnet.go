@@ -14,6 +14,7 @@
 package vnet
 
 import (
+	"fmt"
 	"github.com/saichler/l8bus/go/overlay/health"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
@@ -70,6 +71,9 @@ func (this *VnicVnet) Unicast(destination string, serviceName string, serviceAre
 		return nil
 	}
 	_, conn := this.vnet.switchTable.conns.getConnection(destination, true)
+	if conn == nil {
+		return fmt.Errorf("no connection found for destination %s", destination)
+	}
 	conn.SendMessage(bts)
 	return nil
 }
@@ -247,6 +251,9 @@ func (this *VnicVnet) Running() bool {
 // SetResponse sets the response for a pending request on the source connection.
 func (this *VnicVnet) SetResponse(msg *ifs.Message, pb ifs.IElements) {
 	_, conn := this.vnet.switchTable.conns.getConnection(msg.Source(), true)
+	if conn == nil {
+		return
+	}
 	conn.SetResponse(msg, pb)
 }
 
