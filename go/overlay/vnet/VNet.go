@@ -245,7 +245,7 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 		}
 		//Incase the destination is the vnet after the service sele
 		if destination == this.resources.SysConfig().LocalUuid {
-			go this.vnetServiceRequest(data, vnic)
+			this.addServiceRequest(data, vnic)
 			return
 		}
 		//The destination is a single port
@@ -272,7 +272,7 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 			serviceName == "tokens" ||
 			serviceName == "users" ||
 			serviceName == "roles") && source != this.resources.SysConfig().LocalUuid {
-			go this.vnetServiceRequest(data, vnic)
+			this.addServiceRequest(data, vnic)
 		}
 		return
 	}
