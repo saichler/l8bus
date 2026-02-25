@@ -59,9 +59,6 @@ func (this *VNet) publishRoutes() {
 	for _, external := range allExternal {
 		external.SendMessage(routesData)
 	}
-	for uuid := range allExternal {
-		go this.sendHealthReport(uuid)
-	}
 }
 
 // publishRemovedRoutes broadcasts route removal messages to all external VNet connections.
