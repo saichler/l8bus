@@ -16,6 +16,7 @@ package vnet
 import (
 	"errors"
 	"fmt"
+	"github.com/saichler/l8utils/go/utils/queues"
 	"net"
 	"time"
 
@@ -37,14 +38,15 @@ import (
 // distributed nodes in the Layer8 overlay network. It acts as a central hub
 // for message routing, service discovery, and health monitoring.
 type VNet struct {
-	resources   ifs.IResources
-	socket      net.Listener
-	running     bool
-	ready       bool
-	switchTable *SwitchTable
-	protocol    *protocol.Protocol
-	discovery   *Discovery
-	vnic        *VnicVnet
+	resources               ifs.IResources
+	socket                  net.Listener
+	running                 bool
+	ready                   bool
+	switchTable             *SwitchTable
+	protocol                *protocol.Protocol
+	discovery               *Discovery
+	vnic                    *VnicVnet
+	vnetServiceRequestQueue *queues.Queue
 }
 
 // NewVNet creates and initializes a new VNet instance. It registers required
@@ -55,6 +57,7 @@ func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 	resources.Registry().Register(&l8web.L8Empty{})
 	resources.Registry().Register(&l8health.L8Top{})
 	net := &VNet{}
+	net.vnetServiceRequestQueue = queues.NewQueue("vnetServiceRequest", int(resources2.DEFAULT_QUEUE_SIZE))
 	net.resources = resources
 	net.resources.Set(net)
 	net.vnic = newVnicVnet(net)
@@ -62,6 +65,7 @@ func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 	net.running = true
 	net.resources.SysConfig().LocalUuid = ifs.NewUuid()
 	net.switchTable = newSwitchTable(net)
+	go net.processServiceRequest()
 
 	secService, ok := net.resources.Security().(ifs.ISecurityProviderActivate)
 	if ok {
@@ -232,7 +236,7 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 	if destination != "" {
 		//The destination is the vnet
 		if destination == this.resources.SysConfig().LocalUuid {
-			go this.vnetServiceRequest(data, vnic)
+			this.addServiceRequest(data, vnic)
 			return
 		}
 

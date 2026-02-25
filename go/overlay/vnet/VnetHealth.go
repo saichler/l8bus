@@ -41,7 +41,6 @@ func (this *VNet) addHealthForVNic(config *l8sysconfig.L8SysConfig) {
 		hs.Post(object.New(nil, hp), nil)
 	} else {
 		hp.Services = config.Services
-		//this.mergeServices(hp, config)
 		hs.Patch(object.New(nil, hp), nil)
 	}
 }

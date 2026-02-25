@@ -17,6 +17,25 @@ import (
 	"github.com/saichler/l8types/go/ifs"
 )
 
+type ServiceRequestEntry struct {
+	vnic ifs.IVNic
+	data []byte
+}
+
+func (this *VNet) addServiceRequest(data []byte, vnic ifs.IVNic) {
+	this.vnetServiceRequestQueue.Add(&ServiceRequestEntry{vnic, data})
+}
+
+func (this *VNet) processServiceRequest() {
+	for this.running {
+		sr := this.vnetServiceRequestQueue.Next()
+		if sr != nil {
+			srr := sr.(*ServiceRequestEntry)
+			this.vnetServiceRequest(srr.data, srr.vnic)
+		}
+	}
+}
+
 // vnetServiceRequest handles service requests received by the VNet, routing them to the
 // appropriate service handler based on the message action and type.
 func (this *VNet) vnetServiceRequest(data []byte, vnic ifs.IVNic) {
