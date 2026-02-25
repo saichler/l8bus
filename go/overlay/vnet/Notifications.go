@@ -14,13 +14,9 @@
 package vnet
 
 import (
-	"time"
-
-	"github.com/saichler/l8bus/go/overlay/health"
 	"github.com/saichler/l8bus/go/overlay/protocol"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
-	"github.com/saichler/l8types/go/types/l8health"
 	"github.com/saichler/l8types/go/types/l8notify"
 	"github.com/saichler/l8types/go/types/l8system"
 )
@@ -39,41 +35,6 @@ func (this *VNet) PropertyChangeNotification(set *l8notify.L8NotificationSet) {
 		-1, -1, -1, -1, -1, 0, false, "")
 
 	go this.HandleData(syncData, nil)
-}
-
-// publisLocalHealth broadcasts health information for all local and external connections to external VNets.
-func (this *VNet) publisLocalHealth() {
-	time.Sleep(time.Second)
-	vnetUuid := this.resources.SysConfig().LocalUuid
-	vnetName := this.resources.SysConfig().LocalAlias
-
-	local := this.switchTable.conns.allInternals()
-	ext := this.switchTable.conns.allExternalVnets()
-
-	this.resources.Logger().Debug("Vnet ", vnetName, " publish health ", len(local), " ext ", len(ext))
-
-	if len(local) > 0 {
-		hps := make([]*l8health.L8Health, 0)
-		for uuid, _ := range local {
-			hp := health.HealthOf(uuid, this.resources)
-			hps = append(hps, hp)
-		}
-		localHealth := health.HealthOf(vnetUuid, this.resources)
-		hps = append(hps, localHealth)
-		for extUuid, _ := range ext {
-			extHealth := health.HealthOf(extUuid, this.resources)
-			hps = append(hps, extHealth)
-		}
-
-		nextId := this.protocol.NextMessageNumber()
-		sync, _ := this.protocol.CreateMessageFor("", health.ServiceName, 0, ifs.P1, ifs.M_All,
-			ifs.PATCH, vnetUuid, vnetUuid, object.New(nil, hps), false, false,
-			nextId, ifs.NotATransaction, "", "",
-			-1, -1, -1, -1, -1, 0, false, "")
-		for _, conn := range ext {
-			conn.SendMessage(sync)
-		}
-	}
 }
 
 // publishRoutes broadcasts the current route table to all external VNet connections.
@@ -98,7 +59,9 @@ func (this *VNet) publishRoutes() {
 	for _, external := range allExternal {
 		external.SendMessage(routesData)
 	}
-	go this.publisLocalHealth()
+	for uuid := range allExternal {
+		go this.sendHealthReport(uuid)
+	}
 }
 
 // publishRemovedRoutes broadcasts route removal messages to all external VNet connections.

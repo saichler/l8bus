@@ -62,6 +62,12 @@ func (this *KeepAlive) run() {
 	if this.vnic.resources.SysConfig().KeepAliveIntervalSeconds == 0 {
 		return
 	}
+	// Send first keepalive after 1 second for fast initial health propagation
+	time.Sleep(time.Second)
+	if !this.vnic.running {
+		return
+	}
+	this.sendState()
 	for this.vnic.running {
 		for i := 0; i < int(this.vnic.resources.SysConfig().KeepAliveIntervalSeconds*10); i++ {
 			time.Sleep(time.Millisecond * 100)
