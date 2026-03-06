@@ -188,7 +188,12 @@ func (this *VirtualNetworkInterface) connect() error {
 		return errors.New("local UUID is empty, cannot validate connection")
 	}
 	this.syncServicesWithConfig()
+	// Save local services before the handshake because ExecuteProtocol
+	// overwrites SysConfig().Services with the remote side's service list.
+	// Restoring afterward prevents contamination on reconnect.
+	localServices := this.resources.SysConfig().Services
 	err = this.resources.Security().ValidateConnection(conn, this.resources.SysConfig())
+	this.resources.SysConfig().Services = localServices
 	if err != nil {
 		return errors.New(strings.New("Error validating connection: ", err.Error()).String())
 	}
