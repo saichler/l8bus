@@ -94,10 +94,25 @@ func (this *VnicVnet) Request(destination string, serviceName string, area byte,
 	return conn.Request(destination, serviceName, area, action, data, timeout, returnAttributes...)
 }
 
-// Reply is not implemented for VnicVnet.
+// Reply sends a response back to the source VNic that originated the request.
 func (this *VnicVnet) Reply(msg *ifs.Message, elements ifs.IElements) error {
-	panic("implement me")
-	return nil
+	reply := msg.CloneReply(this.vnet.resources.SysConfig().LocalUuid, this.vnet.resources.SysConfig().RemoteUuid)
+	data, err := this.vnet.protocol.CreateMessageForm(reply, elements)
+	if err != nil {
+		this.vnet.resources.Logger().Error(err)
+		return err
+	}
+	hp := health.HealthOf(msg.Source(), this.vnet.resources)
+	alias := " No Alias Yet"
+	if hp != nil {
+		alias = hp.Alias
+	}
+	this.vnet.resources.Logger().Debug("Replying to ", msg.Source(), " ", alias)
+	_, conn := this.vnet.switchTable.conns.getConnection(msg.Source(), true)
+	if conn == nil {
+		return fmt.Errorf("no connection found for source %s", msg.Source())
+	}
+	return conn.SendMessage(data)
 }
 
 // Multicast sends a message to all connections hosting the specified service.
