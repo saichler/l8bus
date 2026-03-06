@@ -144,9 +144,16 @@ func (this *VirtualNetworkInterface) Start() {
 }
 
 func (this *VirtualNetworkInterface) connectToSwitch() {
-	err := this.connect()
-	if err != nil {
-		panic(err)
+	for this.running {
+		err := this.connect()
+		if err == nil {
+			break
+		}
+		this.resources.Logger().Error("Failed to connect to vnet: ", err.Error(), ", retrying in 5 seconds...")
+		time.Sleep(time.Second * 5)
+	}
+	if !this.running {
+		return
 	}
 	this.components.start()
 	this.connected = true
@@ -178,7 +185,7 @@ func (this *VirtualNetworkInterface) connect() error {
 	}
 	// Verify that the switch accepts this connection
 	if this.resources.SysConfig().LocalUuid == "" {
-		panic("Couldn't connect")
+		return errors.New("local UUID is empty, cannot validate connection")
 	}
 	this.syncServicesWithConfig()
 	err = this.resources.Security().ValidateConnection(conn, this.resources.SysConfig())
