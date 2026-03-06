@@ -34,7 +34,7 @@ const (
 // the local node's health information and exposes a web API for health queries.
 func Activate(vnic ifs.IVNic, voter bool) {
 	serviceArea := ServiceArea(vnic.Resources())
-	serviceConfig := ifs.NewServiceLevelAgreement(&base.BaseService{}, ServiceName, serviceArea, true, nil)
+	serviceConfig := ifs.NewServiceLevelAgreement(&base.BaseService{}, ServiceName, serviceArea, true, &HealthServiceCallback{})
 
 	services := &l8services.L8Services{}
 	services.ServiceToAreas = make(map[string]*l8services.L8ServiceAreas)
@@ -53,6 +53,7 @@ func Activate(vnic ifs.IVNic, voter bool) {
 
 	webService := web.New(ServiceName, serviceArea, vnic.Resources().SysConfig().VnetPort)
 	webService.AddEndpoint(&l8api.L8Query{}, ifs.GET, &l8health.L8HealthList{})
+	webService.AddEndpoint(&l8health.L8Health{}, ifs.GET, &l8health.L8Health{})
 	serviceConfig.SetWebService(webService)
 
 	base.Activate(serviceConfig, vnic)
