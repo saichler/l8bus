@@ -25,7 +25,6 @@ type ServiceRequestEntry struct {
 func (this *VNet) addServiceRequest(data []byte, vnic ifs.IVNic) {
 	if vnic == nil {
 		return
-		panic("vnic is nil")
 	}
 	this.vnetServiceRequestQueue.Add(&ServiceRequestEntry{vnic, data})
 }

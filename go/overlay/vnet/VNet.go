@@ -59,7 +59,7 @@ func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 	resources.Registry().Register(&l8web.L8Empty{})
 	resources.Registry().Register(&l8health.L8Top{})
 	net := &VNet{}
-	net.vnetServices = map[string]bool{health.ServiceName: true, "tokens": true, "users": true, "Creds": true, ifs.SystemServiceGroup: true}
+	net.vnetServices = map[string]bool{health.ServiceName: true, "tokens": true, "users": true, "roles": true, "Creds": true, ifs.SystemServiceGroup: true}
 	net.vnetServiceRequestQueue = queues.NewQueue("vnetServiceRequest", int(resources2.DEFAULT_QUEUE_SIZE))
 	net.resources = resources
 	net.resources.Set(net)

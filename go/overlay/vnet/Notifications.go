@@ -21,11 +21,9 @@ import (
 	"github.com/saichler/l8types/go/types/l8system"
 )
 
-// PropertyChangeNotification handles property change notifications from services (primarily health),
-// broadcasting the notification to local VNics in the network.
+// PropertyChangeNotification handles property change notifications from VNet services,
+// sending directly to all local VNics and external VNets.
 func (this *VNet) PropertyChangeNotification(set *l8notify.L8NotificationSet) {
-	//only health service will call this callback so check if the notification is from a local source
-	//if it is from local source, then just notify local vnics
 	protocol.MsgLog.AddLog(set.ServiceName, byte(set.ServiceArea), ifs.Notify)
 	vnetUuid := this.resources.SysConfig().LocalUuid
 	nextId := this.protocol.NextMessageNumber()
@@ -34,7 +32,12 @@ func (this *VNet) PropertyChangeNotification(set *l8notify.L8NotificationSet) {
 		nextId, ifs.NotATransaction, "", "",
 		-1, -1, -1, -1, -1, 0, false, "")
 
-	go this.HandleData(syncData, nil)
+	// Send directly to all local VNics
+	internals := this.switchTable.conns.allInternals()
+	this.uniCastToPorts(internals, syncData)
+	// Send to all peer VNets
+	externals := this.switchTable.conns.allExternalVnets()
+	this.uniCastToPorts(externals, syncData)
 }
 
 // publishRoutes broadcasts the current route table to all external VNet connections.
