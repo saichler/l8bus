@@ -26,27 +26,27 @@ var Discovery_Enabled = true
 // Protocol handles message creation, serialization, and sequence numbering
 // for the Layer8 overlay network communication.
 type Protocol struct {
-	sequence  atomic.Uint32
-	resources ifs.IResources
+	sequence atomic.Uint32
+	vnic     ifs.IVNic
 }
 
 // New creates a new Protocol instance with the given resources.
-func New(resources ifs.IResources) *Protocol {
+func New(vnic ifs.IVNic) *Protocol {
 	p := &Protocol{}
-	p.resources = resources
+	p.vnic = vnic
 	return p
 }
 
 // MessageOf deserializes raw bytes into a Message struct.
-func (this *Protocol) MessageOf(data []byte, resources ifs.IResources) (*ifs.Message, error) {
+func (this *Protocol) MessageOf(data []byte) (*ifs.Message, error) {
 	msg := &ifs.Message{}
-	_, err := msg.Unmarshal(data, this.resources)
+	_, err := msg.Unmarshal(data, this.vnic.Resources())
 	return msg, err
 }
 
 // ElementsOf extracts the payload elements from a message.
 func (this *Protocol) ElementsOf(msg *ifs.Message) (ifs.IElements, error) {
-	return ElementsOf(msg, this.resources)
+	return ElementsOf(msg, this.vnic.Resources())
 }
 
 // ElementsOf is a standalone function to extract payload elements from a message
@@ -96,7 +96,7 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 		return nil, err
 	}
 
-	msg, err := this.resources.Security().Message(aaaid)
+	msg, err := this.vnic.Resources().Security().Message(aaaid, this.vnic)
 	defer MsgLog.AddLog(serviceName, serviceArea, action)
 	if err != nil {
 		return nil, err
@@ -124,7 +124,7 @@ func (this *Protocol) CreateMessageFor(destination, serviceName string, serviceA
 		tr_replica,
 		tr_isReplica)
 
-	return msg.Marshal(nil, this.resources)
+	return msg.Marshal(nil, this.vnic.Resources())
 }
 
 // CreateMessageForm creates a message from an existing Message template with new payload elements.
@@ -141,5 +141,5 @@ func (this *Protocol) CreateMessageForm(msg *ifs.Message, o ifs.IElements) ([]by
 
 	//create the wrapping message for the destination
 	msg.SetData(data)
-	return msg.Marshal(nil, this.resources)
+	return msg.Marshal(nil, this.vnic.Resources())
 }

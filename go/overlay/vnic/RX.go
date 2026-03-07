@@ -100,7 +100,7 @@ func (this *RX) notifyRawDataListener() {
 			if this.vnic.resources.DataListener() != nil {
 				this.vnic.resources.DataListener().HandleData(data, this.vnic)
 			} else {
-				msg, err := this.vnic.protocol.MessageOf(data, this.vnic.resources)
+				msg, err := this.vnic.protocol.MessageOf(data)
 				if err != nil {
 					this.vnic.resources.Logger().Error(err)
 					continue
