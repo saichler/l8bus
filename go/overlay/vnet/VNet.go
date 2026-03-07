@@ -67,7 +67,7 @@ func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 	net.protocol = protocol.New(net.vnic)
 	net.running = true
 	net.resources.SysConfig().LocalUuid = ifs.NewUuid()
-	net.vnetUuid = ifs.NewUuid()
+	net.vnetUuid = net.resources.SysConfig().LocalUuid
 	net.switchTable = newSwitchTable(net)
 	go net.processServiceRequest()
 
