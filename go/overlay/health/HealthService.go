@@ -56,6 +56,8 @@ func Activate(vnic ifs.IVNic, voter bool) {
 	webService.AddEndpoint(&l8health.L8Health{}, ifs.GET, &l8health.L8Health{})
 	serviceConfig.SetWebService(webService)
 
+	serviceConfig.SetServiceGroup(ifs.SystemServiceGroup)
+
 	base.Activate(serviceConfig, vnic)
 }
 
