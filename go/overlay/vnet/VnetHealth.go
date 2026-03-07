@@ -34,6 +34,12 @@ func (this *VNet) addHealthForVNic(config *l8sysconfig.L8SysConfig) {
 	serviceData.ServiceUuid = config.RemoteUuid
 	this.switchTable.services.addService(serviceData)
 
+	sysGroupData := &l8system.L8ServiceData{}
+	sysGroupData.ServiceName = ifs.SystemServiceGroup
+	sysGroupData.ServiceArea = 0
+	sysGroupData.ServiceUuid = config.RemoteUuid
+	this.switchTable.services.addService(sysGroupData)
+
 	hp := health.HealthOf(config.RemoteUuid, this.resources)
 	hs, _ := health.HealthService(this.resources)
 	if hp == nil {
