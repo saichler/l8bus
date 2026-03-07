@@ -52,7 +52,7 @@ func (this *VnicVnet) Name() string {
 
 // SendMessage is not implemented for VnicVnet; use Unicast or Multicast instead.
 func (this *VnicVnet) SendMessage(data []byte) error {
-	panic("implement me")
+	//panic("implement me")
 	return nil
 }
 

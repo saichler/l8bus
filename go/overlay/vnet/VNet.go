@@ -47,6 +47,8 @@ type VNet struct {
 	discovery               *Discovery
 	vnic                    *VnicVnet
 	vnetServiceRequestQueue *queues.Queue
+	vnetServices            map[string]bool
+	vnetUuid                string
 }
 
 // NewVNet creates and initializes a new VNet instance. It registers required
@@ -57,6 +59,7 @@ func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 	resources.Registry().Register(&l8web.L8Empty{})
 	resources.Registry().Register(&l8health.L8Top{})
 	net := &VNet{}
+	net.vnetServices = map[string]bool{health.ServiceName: true, "tokens": true, "users": true, "Creds": true, ifs.SystemServiceGroup: true}
 	net.vnetServiceRequestQueue = queues.NewQueue("vnetServiceRequest", int(resources2.DEFAULT_QUEUE_SIZE))
 	net.resources = resources
 	net.resources.Set(net)
@@ -64,6 +67,7 @@ func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 	net.protocol = protocol.New(net.vnic)
 	net.running = true
 	net.resources.SysConfig().LocalUuid = ifs.NewUuid()
+	net.vnetUuid = ifs.NewUuid()
 	net.switchTable = newSwitchTable(net)
 	go net.processServiceRequest()
 
@@ -235,7 +239,7 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 
 	if destination != "" {
 		//The destination is the vnet
-		if destination == this.resources.SysConfig().LocalUuid {
+		if destination == this.vnetUuid {
 			this.addServiceRequest(data, vnic)
 			return
 		}
@@ -244,7 +248,7 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 			destination = this.switchTable.services.serviceFor(serviceName, serviceArea, source, multicastMode)
 		}
 		//Incase the destination is the vnet after the service sele
-		if destination == this.resources.SysConfig().LocalUuid {
+		if destination == this.vnetUuid {
 			this.addServiceRequest(data, vnic)
 			return
 		}
@@ -268,10 +272,8 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 	} else {
 		connections := this.switchTable.connectionsForService(serviceName, serviceArea, sourceVnet, multicastMode)
 		this.uniCastToPorts(connections, data)
-		if (serviceName == health.ServiceName ||
-			serviceName == "tokens" ||
-			serviceName == "users" ||
-			serviceName == "roles") && source != this.resources.SysConfig().LocalUuid {
+		_, ok := this.vnetServices[serviceName]
+		if ok && source != this.vnetUuid {
 			this.addServiceRequest(data, vnic)
 		}
 		return

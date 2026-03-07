@@ -23,6 +23,10 @@ type ServiceRequestEntry struct {
 }
 
 func (this *VNet) addServiceRequest(data []byte, vnic ifs.IVNic) {
+	if vnic == nil {
+		return
+		panic("vnic is nil")
+	}
 	this.vnetServiceRequestQueue.Add(&ServiceRequestEntry{vnic, data})
 }
 
@@ -72,7 +76,7 @@ func (this *VNet) vnetServiceRequest(data []byte, vnic ifs.IVNic) {
 		return
 	}
 	var resp ifs.IElements
-	if internal(msg) {
+	if this.internal(msg) {
 		resp = this.resources.Services().Handle(pb, msg.Action(), msg, this.vnic)
 	} else {
 		resp = this.resources.Services().Handle(pb, msg.Action(), msg, vnic)
@@ -99,12 +103,10 @@ func (this *VNet) LocalCount() int32 {
 }
 
 // internal checks if a message should be handled internally by the VNet's internal VNic.
-func internal(msg *ifs.Message) bool {
+func (this *VNet) internal(msg *ifs.Message) bool {
 	if msg.Action() >= ifs.MapR_POST && msg.Action() <= ifs.MapR_GET {
 		return true
 	}
-	if msg.ServiceName() == "users" || msg.ServiceName() == "roles" || msg.ServiceName() == "tokens" {
-		return true
-	}
-	return false
+	_, ok := this.vnetServices[msg.ServiceName()]
+	return ok
 }
