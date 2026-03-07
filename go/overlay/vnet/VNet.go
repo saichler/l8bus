@@ -61,7 +61,7 @@ func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 	net.resources = resources
 	net.resources.Set(net)
 	net.vnic = newVnicVnet(net)
-	net.protocol = protocol.New(net.resources)
+	net.protocol = protocol.New(net.vnic)
 	net.running = true
 	net.resources.SysConfig().LocalUuid = ifs.NewUuid()
 	net.switchTable = newSwitchTable(net)
@@ -209,7 +209,7 @@ func (this *VNet) Shutdown() {
 // Failed handles message delivery failures by creating and sending a failure
 // response back to the originating VNic with the specified error message.
 func (this *VNet) Failed(data []byte, vnic ifs.IVNic, failMsg string) {
-	msg, err := this.protocol.MessageOf(data, this.resources)
+	msg, err := this.protocol.MessageOf(data)
 	if err != nil {
 		this.resources.Logger().Error(err)
 		return

@@ -23,7 +23,7 @@ import (
 // systemMessageReceived handles incoming system control messages for route and service management.
 // It processes route additions/removals and service registrations from the network.
 func (this *VNet) systemMessageReceived(data []byte, vnic ifs.IVNic) {
-	msg, err := this.protocol.MessageOf(data, this.resources)
+	msg, err := this.protocol.MessageOf(data)
 	if err != nil {
 		this.resources.Logger().Error(err)
 		return

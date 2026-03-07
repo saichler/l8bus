@@ -39,7 +39,7 @@ func (this *VNet) processServiceRequest() {
 // vnetServiceRequest handles service requests received by the VNet, routing them to the
 // appropriate service handler based on the message action and type.
 func (this *VNet) vnetServiceRequest(data []byte, vnic ifs.IVNic) {
-	msg, err := this.protocol.MessageOf(data, this.resources)
+	msg, err := this.protocol.MessageOf(data)
 	if err != nil {
 		this.resources.Logger().Error(err)
 		return

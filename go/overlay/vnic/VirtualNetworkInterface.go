@@ -74,7 +74,7 @@ func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *Virtua
 	vnic.conn = conn
 	vnic.resources = resources
 	vnic.connMtx = &sync.Mutex{}
-	vnic.protocol = protocol.New(resources)
+	vnic.protocol = protocol.New(vnic)
 	vnic.components = newSubomponents()
 	vnic.components.addComponent(newRX(vnic))
 	vnic.components.addComponent(newTX(vnic))
