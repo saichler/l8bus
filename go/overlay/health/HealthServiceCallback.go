@@ -15,7 +15,9 @@ func (this *HealthServiceCallback) Before(any interface{}, action ifs.Action, no
 func (this *HealthServiceCallback) After(any interface{}, action ifs.Action, notify bool, vnic ifs.IVNic) (interface{}, bool, error) {
 	health, ok := any.(*l8health.L8Health)
 	if action == ifs.GET && ok {
-		health.PprofMemory, health.PprofCpu, _ = logger.DumpPprofToBytes()
+		if health.PprofCollect {
+			health.PprofMemory, health.PprofCpu, _ = logger.DumpPprofToBytes()
+		}
 		return health, true, nil
 	}
 	return nil, true, nil
