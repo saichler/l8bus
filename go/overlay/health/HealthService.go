@@ -57,7 +57,6 @@ func Activate(vnic ifs.IVNic, voter bool) {
 	serviceConfig.SetWebService(webService)
 
 	serviceConfig.SetServiceGroup(ifs.SystemServiceGroup)
-
 	base.Activate(serviceConfig, vnic)
 }
 

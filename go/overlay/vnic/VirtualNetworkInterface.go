@@ -149,7 +149,8 @@ func (this *VirtualNetworkInterface) connectToSwitch() {
 		if err == nil {
 			break
 		}
-		this.resources.Logger().Error("Failed to connect to vnet: ", err.Error(), ", retrying in 5 seconds...")
+		this.resources.Logger().Error("Failed to connect to vnet: ", this.resources.SysConfig().LocalAlias,
+			err.Error(), ", retrying in 5 seconds...")
 		time.Sleep(time.Second * 5)
 	}
 	if !this.running {
