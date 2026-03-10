@@ -101,6 +101,7 @@ func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 		hs.Put(object.NewNotify(hp), net.vnic)
 		net.resources.SysConfig().RemoteVnet = ""
 	}
+	go net.patchStatistics()
 	return net
 }
 
@@ -316,4 +317,19 @@ func (this *VNet) sendHealth(hp *l8health.L8Health) {
 // VnetVnic returns the internal VNic used by the VNet for its own service communication.
 func (this *VNet) VnetVnic() ifs.IVNic {
 	return this.vnic
+}
+
+func (this *VNet) patchStatistics() {
+	keepAliveInterval := this.resources.SysConfig().KeepAliveIntervalSeconds
+	if keepAliveInterval <= 30 {
+		keepAliveInterval = 30
+	}
+	for this.running {
+		time.Sleep(time.Second * time.Duration(keepAliveInterval))
+		hp := health.BaseHealthStats(this.resources)
+		hs, ok := health.HealthService(this.resources)
+		if ok {
+			hs.Patch(object.New(nil, hp), this.vnic)
+		}
+	}
 }
