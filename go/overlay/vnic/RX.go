@@ -125,8 +125,12 @@ func (this *RX) notifyRawDataListener() {
 				//This is a reply message, should not find a handler
 				//and just notify
 				if msg.Reply() {
-					request := this.vnic.requests.GetRequest(msg.Sequence(), this.vnic.resources.SysConfig().LocalUuid)
-					request.SetResponse(pb)
+					if msg.FailMessage() != "" {
+						this.handleMessage(msg, pb)
+					} else {
+						request := this.vnic.requests.GetRequest(msg.Sequence(), this.vnic.resources.SysConfig().LocalUuid)
+						request.SetResponse(pb)
+					}
 					continue
 				}
 				// Otherwise call the handler per the action & the type

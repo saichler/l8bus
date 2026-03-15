@@ -67,7 +67,7 @@ func (this *VnicVnet) Unicast(destination string, serviceName string, serviceAre
 		return err
 	}
 	if destination == this.Resources().SysConfig().LocalUuid {
-		go this.vnet.HandleData(bts, this)
+		this.vnet.addVnetTask(QHandleData, bts, this)
 		return nil
 	}
 	_, conn := this.vnet.switchTable.conns.getConnection(destination, true)
@@ -142,7 +142,7 @@ func (this *VnicVnet) Multicast(serviceName string, serviceArea byte, action ifs
 		myUuid, myUuid, object.New(nil, any), false, false, this.vnet.protocol.NextMessageNumber(),
 		ifs.NotATransaction, "", "", -1, -1, -1, -1,
 		-1, 0, false, "")
-	go this.vnet.HandleData(data, this)
+	this.vnet.addVnetTask(QHandleData, data, this)
 	return err
 }
 

@@ -38,17 +38,19 @@ import (
 // distributed nodes in the Layer8 overlay network. It acts as a central hub
 // for message routing, service discovery, and health monitoring.
 type VNet struct {
-	resources               ifs.IResources
-	socket                  net.Listener
-	running                 bool
-	ready                   bool
-	switchTable             *SwitchTable
-	protocol                *protocol.Protocol
-	discovery               *Discovery
-	vnic                    *VnicVnet
-	vnetServiceRequestQueue *queues.Queue
-	vnetServices            map[string]bool
-	vnetUuid                string
+	resources        ifs.IResources
+	socket           net.Listener
+	running          bool
+	ready            bool
+	switchTable      *SwitchTable
+	protocol         *protocol.Protocol
+	discovery        *Discovery
+	vnic             *VnicVnet
+	vnetServiceTasks *queues.Queue
+	vnetSystemTasks  *queues.Queue
+	handleDataTasks  *queues.Queue
+	vnetServices     map[string]bool
+	vnetUuid         string
 }
 
 // NewVNet creates and initializes a new VNet instance. It registers required
@@ -60,7 +62,9 @@ func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 	resources.Registry().Register(&l8health.L8Top{})
 	net := &VNet{}
 	net.vnetServices = map[string]bool{health.ServiceName: true, "tokens": true, "users": true, "roles": true, "Creds": true, ifs.SystemServiceGroup: true}
-	net.vnetServiceRequestQueue = queues.NewQueue("vnetServiceRequest", int(resources2.DEFAULT_QUEUE_SIZE))
+	net.vnetServiceTasks = queues.NewQueue("vnetServiceTasks", int(resources2.DEFAULT_QUEUE_SIZE))
+	net.vnetSystemTasks = queues.NewQueue("vnetSystemTasks", queues.NO_LIMIT)
+	net.handleDataTasks = queues.NewQueue("vnicVnetUnicastTasks", int(resources2.DEFAULT_QUEUE_SIZE))
 	net.resources = resources
 	net.resources.Set(net)
 	net.vnic = newVnicVnet(net)
@@ -69,7 +73,9 @@ func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 	net.resources.SysConfig().LocalUuid = ifs.NewUuid()
 	net.vnetUuid = net.resources.SysConfig().LocalUuid
 	net.switchTable = newSwitchTable(net)
-	go net.processServiceRequest()
+	go net.processTasks(net.vnetSystemTasks, net.systemMessageReceived)
+	go net.processTasks(net.vnetServiceTasks, net.vnetServiceRequest)
+	go net.processTasks(net.handleDataTasks, net.HandleData)
 
 	secService, ok := net.resources.Security().(ifs.ISecurityProviderActivate)
 	if ok {
@@ -234,14 +240,14 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 	protocol.MsgLog.AddLog(serviceName, serviceArea, ifs.Handle)
 
 	if serviceName == ifs.SysMsg && serviceArea == ifs.SysAreaPrimary {
-		go this.systemMessageReceived(data, vnic)
+		this.addVnetTask(QSystem, data, vnic)
 		return
 	}
 
 	if destination != "" {
 		//The destination is the vnet
 		if destination == this.vnetUuid {
-			this.addServiceRequest(data, vnic)
+			this.addVnetTask(QService, data, vnic)
 			return
 		}
 
@@ -250,7 +256,7 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 		}
 		//Incase the destination is the vnet after the service sele
 		if destination == this.vnetUuid {
-			this.addServiceRequest(data, vnic)
+			this.addVnetTask(QService, data, vnic)
 			return
 		}
 		//The destination is a single port
@@ -275,7 +281,7 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 		this.uniCastToPorts(connections, data)
 		_, ok := this.vnetServices[serviceName]
 		if ok && source != this.vnetUuid {
-			this.addServiceRequest(data, vnic)
+			this.addVnetTask(QService, data, vnic)
 		}
 		return
 	}
