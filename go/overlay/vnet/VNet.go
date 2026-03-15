@@ -320,7 +320,7 @@ func (this *VNet) sendHealth(hp *l8health.L8Health) {
 		ifs.POST, vnetUuid, vnetUuid, object.New(nil, hp), false, false,
 		nextId, ifs.NotATransaction, "", "",
 		-1, -1, -1, -1, -1, 0, false, "")
-	go this.HandleData(h, nil)
+	this.addVnetTask(QHandleData, h, this.vnic)
 }
 
 // VnetVnic returns the internal VNic used by the VNet for its own service communication.
