@@ -57,7 +57,7 @@ func (this *SwitchTable) addVNic(vnic ifs.IVNic) {
 	// If it is local, add it to the internal map
 	if isLocal && !config.ForceExternal {
 		this.conns.addInternal(config.RemoteUuid, vnic)
-		go this.switchService.sendHealthReport(config.RemoteUuid)
+		this.switchService.addVnetTask(QHealthReport, []byte(config.RemoteUuid), this.switchService.vnic)
 	} else {
 		// otherwise, add it to the external connections
 		this.conns.addExternalVnet(config.RemoteUuid, vnic)

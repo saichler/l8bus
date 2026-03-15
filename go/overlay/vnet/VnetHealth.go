@@ -100,8 +100,8 @@ func (this *VNet) mergeServices(hp *l8health.L8Health, config *l8sysconfig.L8Sys
 }*/
 
 // sendHealthReport sends a complete health report to the specified destination VNic.
-func (this *VNet) sendHealthReport(uuid string) {
-	time.Sleep(time.Second)
+func (this *VNet) sendHealthReport(data []byte, vnic ifs.IVNic) {
+	uuid := string(data)
 	all := health.All(this.resources)
 	this.vnic.Unicast(uuid, health.ServiceName, 0, ifs.PATCH, all)
 }

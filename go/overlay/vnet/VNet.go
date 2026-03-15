@@ -49,6 +49,7 @@ type VNet struct {
 	vnetServiceTasks *queues.Queue
 	vnetSystemTasks  *queues.Queue
 	handleDataTasks  *queues.Queue
+	healthReport     *queues.Queue
 	vnetServices     map[string]bool
 	vnetUuid         string
 }
@@ -65,6 +66,7 @@ func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 	net.vnetServiceTasks = queues.NewQueue("vnetServiceTasks", int(resources2.DEFAULT_QUEUE_SIZE))
 	net.vnetSystemTasks = queues.NewQueue("vnetSystemTasks", queues.NO_LIMIT)
 	net.handleDataTasks = queues.NewQueue("vnicVnetUnicastTasks", int(resources2.DEFAULT_QUEUE_SIZE))
+	net.healthReport = queues.NewQueue("healthReport", int(resources2.DEFAULT_QUEUE_SIZE))
 	net.resources = resources
 	net.resources.Set(net)
 	net.vnic = newVnicVnet(net)
@@ -76,6 +78,7 @@ func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 	go net.processTasks(net.vnetSystemTasks, net.systemMessageReceived)
 	go net.processTasks(net.vnetServiceTasks, net.vnetServiceRequest)
 	go net.processTasks(net.handleDataTasks, net.HandleData)
+	go net.processTasks(net.healthReport, net.sendHealthReport)
 
 	secService, ok := net.resources.Security().(ifs.ISecurityProviderActivate)
 	if ok {

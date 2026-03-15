@@ -13,9 +13,10 @@ type VnetTask struct {
 type QueueDest int
 
 const (
-	QSystem     QueueDest = 1
-	QService    QueueDest = 2
-	QHandleData QueueDest = 3
+	QSystem       QueueDest = 1
+	QService      QueueDest = 2
+	QHandleData   QueueDest = 3
+	QHealthReport QueueDest = 4
 )
 
 func (this *VNet) addVnetTask(dest QueueDest, data []byte, vnic ifs.IVNic) {
@@ -29,6 +30,8 @@ func (this *VNet) addVnetTask(dest QueueDest, data []byte, vnic ifs.IVNic) {
 		this.vnetServiceTasks.Add(&VnetTask{vnic: vnic, data: data})
 	case QHandleData:
 		this.handleDataTasks.Add(&VnetTask{vnic: vnic, data: data})
+	case QHealthReport:
+		this.healthReport.Add(&VnetTask{vnic: vnic, data: data})
 	}
 }
 
