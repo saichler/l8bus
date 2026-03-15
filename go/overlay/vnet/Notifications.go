@@ -33,8 +33,7 @@ func (this *VNet) PropertyChangeNotification(set *l8notify.L8NotificationSet) {
 		ifs.Notify, vnetUuid, vnetUuid, object.New(nil, set), false, false,
 		nextId, ifs.NotATransaction, "", "",
 		-1, -1, -1, -1, -1, 0, false, "")
-
-	go this.HandleData(syncData, nil)
+	this.addVnetTask(QHandleData, syncData, this.vnic)
 }
 
 // publishRoutes broadcasts the current route table to all external VNet connections.
