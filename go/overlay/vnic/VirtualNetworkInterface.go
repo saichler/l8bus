@@ -267,7 +267,7 @@ func (this *VirtualNetworkInterface) SendMessage(data []byte) error {
 // ServiceAPI returns an API interface for communicating with a specific service.
 // It supports GET, POST, PUT, DELETE operations with request/reply semantics.
 func (this *VirtualNetworkInterface) ServiceAPI(serviceName string, serviceArea byte) ifs.ServiceAPI {
-	return newAPI(serviceName, serviceArea, false, false)
+	return NewAPI(serviceName, serviceArea, this, false, false)
 }
 
 // Resources returns the IResources instance for this VNic.

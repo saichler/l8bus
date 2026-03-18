@@ -22,41 +22,40 @@ import (
 type VnicAPI struct {
 	serviceName string
 	serviceArea byte
-	vnic        *VirtualNetworkInterface
+	vnic        ifs.IVNic
 	leader      bool
 	all         bool
 }
 
-func (v VnicAPI) Post(i interface{}) ifs.IElements {
+func (v VnicAPI) request(action ifs.Action, data interface{}) ifs.IElements {
+	return v.vnic.Request("", v.serviceName, v.serviceArea, action, data, 30)
+}
 
-	//TODO implement me
-	panic("implement me")
+func (v VnicAPI) Post(i interface{}) ifs.IElements {
+	return v.request(ifs.POST, i)
 }
 
 func (v VnicAPI) Put(i interface{}) ifs.IElements {
-	//TODO implement me
-	panic("implement me")
+	return v.request(ifs.PUT, i)
 }
 
 func (v VnicAPI) Patch(i interface{}) ifs.IElements {
-	//TODO implement me
-	panic("implement me")
+	return v.request(ifs.PATCH, i)
 }
 
 func (v VnicAPI) Delete(i interface{}) ifs.IElements {
-	//TODO implement me
-	panic("implement me")
+	return v.request(ifs.DELETE, i)
 }
 
 func (v VnicAPI) Get(s string) ifs.IElements {
-	//TODO implement me
-	panic("implement me")
+	return v.request(ifs.GET, s)
 }
 
-func newAPI(serviceName string, serviceArea byte, leader, all bool) ifs.ServiceAPI {
+func NewAPI(serviceName string, serviceArea byte, vnic ifs.IVNic, leader, all bool) ifs.ServiceAPI {
 	api := &VnicAPI{}
 	api.serviceName = serviceName
 	api.serviceArea = serviceArea
+	api.vnic = vnic
 	api.leader = leader
 	api.all = all
 	return api

@@ -16,6 +16,7 @@ package vnet
 import (
 	"fmt"
 	"github.com/saichler/l8bus/go/overlay/health"
+	"github.com/saichler/l8bus/go/overlay/vnic"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8health"
@@ -216,8 +217,7 @@ func (this *VnicVnet) Forward(msg *ifs.Message, destination string) ifs.IElement
 }
 
 func (this *VnicVnet) ServiceAPI(serviceName string, area byte) ifs.ServiceAPI {
-	panic("implement me")
-	return nil
+	return vnic.NewAPI(serviceName, area, this, false, false)
 }
 
 // Resources returns the IResources from the parent VNet.
