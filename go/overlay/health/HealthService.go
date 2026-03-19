@@ -100,6 +100,36 @@ func All(r ifs.IResources) map[string]*l8health.L8Health {
 	return result
 }
 
+// ServiceCatalog returns a unified map of all services across all nodes in the cluster.
+// The result maps serviceName -> L8ServiceAreas (with Areas and Models populated).
+// This aggregates data from all health records, merging areas and models.
+func ServiceCatalog(r ifs.IResources) map[string]*l8services.L8ServiceAreas {
+	result := make(map[string]*l8services.L8ServiceAreas)
+	allHealth := All(r)
+	for _, hp := range allHealth {
+		if hp.Services == nil || hp.Services.ServiceToAreas == nil {
+			continue
+		}
+		for svcName, svcAreas := range hp.Services.ServiceToAreas {
+			existing, ok := result[svcName]
+			if !ok {
+				existing = &l8services.L8ServiceAreas{
+					Areas:  make(map[int32]bool),
+					Models: make(map[int32]string),
+				}
+				result[svcName] = existing
+			}
+			for area, available := range svcAreas.Areas {
+				existing.Areas[area] = available
+			}
+			for area, model := range svcAreas.Models {
+				existing.Models[area] = model
+			}
+		}
+	}
+	return result
+}
+
 // ServiceArea returns the service area for health based on the resources configuration.
 // Area 0 is for primary/local VNet, Area 1 is for remote/secondary VNet.
 func ServiceArea(r ifs.IResources) byte {
