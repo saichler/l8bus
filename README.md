@@ -108,16 +108,18 @@ This repository contains the Go implementation of the Layer8 overlay network in 
 
 ### Core Features
 - **Virtual Network Overlay**: TCP-based virtual networking layer with VNet switches and VNic interfaces
-- **Smart Service Routing**: Multiple routing algorithms — Proximity, Round Robin, Local, and Leader — for flexible load distribution
+- **Smart Service Routing**: Six routing algorithms — Proximity, Round Robin, Local, Leader, Unicast, and Multicast — for flexible load distribution
 - **Multicast Messaging**: Full multicast support for efficient one-to-many communication patterns
-- **MapReduce Framework**: Integrated MapR capabilities for distributed data processing and parallel computation
 - **Service Discovery**: UDP-based automatic peer discovery and service registration
 - **Health Monitoring**: Distributed health scoring with CPU/memory tracking, participant discovery, and leader election
-- **Circuit Breaker**: Three-state circuit breaker pattern (Closed → Open → Half-Open) with configurable failure thresholds
-- **Metrics Collection**: Real-time performance monitoring with counters, gauges, and histograms
+- **Circuit Breaker**: Three-state circuit breaker pattern (Closed → Open → Half-Open) with configurable failure thresholds, reset timeout, concurrency limits, and half-open recovery
+- **Metrics Collection**: Real-time performance monitoring with counters, gauges, and histograms supporting multi-dimensional labels
+- **Connection Health**: Per-connection health scoring with failure detection and recovery tracking
 - **Connection Management**: Automatic reconnection, connection pooling, and external NIC support
 - **Property Change Notifications**: Event-driven notification system for service state changes
 - **Route Table Management**: Dynamic route propagation across multi-VNet topologies
+- **Queue-Based Task Processing**: Dedicated queues for service tasks, system tasks, data handling, and health reporting for non-blocking event processing
+- **Dynamic Plugin System**: Runtime `.so` plugin loading with MD5-based caching and lifecycle management
 - **Service Groups**: System-level service grouping for coordinated service management
 
 ### Architecture
@@ -125,7 +127,7 @@ This repository contains the Go implementation of the Layer8 overlay network in 
 ```
 l8bus/go/
 ├── overlay/
-│   ├── vnet/        # Virtual Network Switch (12 files)
+│   ├── vnet/        # Virtual Network Switch (13 files, ~1,837 lines)
 │   │   ├── VNet.go              - Central switch, TCP listener, lifecycle management
 │   │   ├── SwitchTable.go       - Connection + service + route table aggregation
 │   │   ├── Connect.go           - VNic connection handling and handshake
@@ -137,9 +139,10 @@ l8bus/go/
 │   │   ├── VnetHealth.go        - Health record management per VNic
 │   │   ├── VnetService.go       - Serialized VNet service request processing
 │   │   ├── VNetSystem.go        - System message handling (routes, services)
+│   │   ├── VnetTasks.go         - Queue-based task processing helpers
 │   │   └── VnicVnet.go          - VNet-side VNic connection wrapper
 │   │
-│   ├── vnic/        # Virtual Network Interface (12 files)
+│   ├── vnic/        # Virtual Network Interface (12 files, ~1,368 lines)
 │   │   ├── VirtualNetworkInterface.go - Main VNic struct and lifecycle
 │   │   ├── API.go               - Public API (Unicast, Multicast, Request)
 │   │   ├── SendAlgo.go          - Routing algorithms (Proximity, RoundRobin, Local, Leader)
@@ -153,22 +156,22 @@ l8bus/go/
 │   │   ├── Notifications.go     - VNic-level notification handling
 │   │   └── SubComponents.go     - Internal component initialization
 │   │
-│   ├── health/      # Health & Leader Election (4 files)
+│   ├── health/      # Health & Leader Election (4 files, ~342 lines)
 │   │   ├── HealthService.go         - Health service (CRUD + cache)
 │   │   ├── HealthServiceCallback.go - Merge logic, leader election, notifications
 │   │   ├── HealthStats.go           - CPU/memory tracking via /proc
 │   │   └── RoundRobin.go            - Round-robin participant selection
 │   │
-│   ├── metrics/     # Performance Monitoring (3 files)
+│   ├── metrics/     # Performance Monitoring (3 files, ~981 lines)
 │   │   ├── MetricsCollector.go  - Registry with counters, gauges, histograms
 │   │   ├── CircuitBreaker.go    - Circuit breaker pattern + manager
 │   │   └── ConnectionHealth.go  - Connection-level health scoring
 │   │
-│   ├── protocol/    # Message Serialization (2 files)
+│   ├── protocol/    # Message Serialization (2 files, ~249 lines)
 │   │   ├── Protocol.go          - Message creation, serialization, deserialization
 │   │   └── MessageCount.go      - Per-service message counting
 │   │
-│   └── plugins/     # Dynamic Plugin Loading (2 files)
+│   └── plugins/     # Dynamic Plugin Loading (2 files, ~170 lines)
 │       ├── PluginCenter.go      - .so plugin discovery and loading
 │       └── PluginService.go     - Plugin service activation and lifecycle
 │
@@ -177,7 +180,7 @@ l8bus/go/
 
 ### Routing Algorithms
 
-The VNic provides multiple message delivery strategies:
+The VNic provides six message delivery strategies:
 
 | Algorithm | Method | Description |
 |-----------|--------|-------------|
@@ -197,15 +200,26 @@ Each algorithm has a fire-and-forget variant and a synchronous `Request` variant
 - **Health States**: Up / Down status per node, with start time and service list
 - **Leader Election**: Deterministic leader selection based on earliest registered participant
 - **Circuit Breaker**: Configurable failure threshold (default 5), reset timeout (30s), concurrency limit (100), and success threshold (3) for half-open recovery
+- **Connection Health**: Per-connection health scoring with failure detection, recovery tracking, and automatic state management
+
+### Metrics System
+
+The metrics package provides a thread-safe registry for tracking application performance:
+
+- **Counters**: Monotonically increasing values (e.g., request counts, errors)
+- **Gauges**: Point-in-time values (e.g., active connections, queue depth)
+- **Histograms**: Distribution of values (e.g., latency, message sizes)
+- **Labels**: Multi-dimensional metric tagging for fine-grained analysis
+- **Global Registry**: Singleton pattern for application-wide metric collection
 
 ### Dependencies
-- Go 1.25.4
+- Go 1.26.1
 - Layer8 ecosystem libraries (l8types, l8utils, l8services, l8srlz, l8test)
 - Google UUID for unique identifiers
 - Protocol Buffers for serialization
 
 ### Project Statistics
-- **35 source files**, ~4,900 lines of Go code (excluding vendor and tests)
+- **44 source files**, ~5,600 lines of Go code (excluding vendor and tests)
 - **8 test files** with integration tests covering overlay, messaging, keep-alive, leader election, scaling, and external VNic scenarios
 - Licensed under Apache 2.0
 
@@ -216,5 +230,3 @@ go build ./...          # Compile all packages
 ./test.sh               # Run unit/integration tests with coverage
 ./scale-test.sh         # Run scale/load tests
 ```
-
-# Detail documenting is WIP...
