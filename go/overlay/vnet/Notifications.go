@@ -14,6 +14,8 @@
 package vnet
 
 import (
+	"fmt"
+
 	"github.com/saichler/l8bus/go/overlay/protocol"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
@@ -93,6 +95,15 @@ func (this *VNet) publishSystemMessage(sysmsg *l8system.L8SystemMessage) {
 		-1, -1, -1, -1, -1, 0, false, "")
 
 	allExternal := this.switchTable.conns.allExternalVnets()
+	svcData := sysmsg.GetServiceData()
+	if svcData != nil {
+		fmt.Printf("[VNET-FWD-SVCADD] vnet=%s service=(%s,%d) externalVnets=%d\n",
+			this.resources.SysConfig().LocalAlias, svcData.ServiceName,
+			svcData.ServiceArea, len(allExternal))
+	} else {
+		fmt.Printf("[VNET-FWD-SYSMSG] vnet=%s action=%v externalVnets=%d\n",
+			this.resources.SysConfig().LocalAlias, sysmsg.Action, len(allExternal))
+	}
 	for _, external := range allExternal {
 		external.SendMessage(sysmsgData)
 	}

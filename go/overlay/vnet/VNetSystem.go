@@ -14,6 +14,8 @@
 package vnet
 
 import (
+	"fmt"
+
 	"github.com/saichler/l8bus/go/overlay/health"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
@@ -54,6 +56,9 @@ func (this *VNet) systemMessageReceived(data []byte, vnic ifs.IVNic) {
 		return
 	case l8system.L8SystemAction_Service_Add:
 		serviceData := systemMessage.GetServiceData()
+		fmt.Printf("[VNET-RECV-SVCADD] vnet=%s service=(%s,%d) uuid=%s publish=%v\n",
+			this.resources.SysConfig().LocalAlias, serviceData.ServiceName,
+			serviceData.ServiceArea, serviceData.ServiceUuid, systemMessage.Publish)
 		this.switchTable.services.addService(serviceData)
 		if systemMessage.Publish {
 			this.publishSystemMessage(systemMessage)
