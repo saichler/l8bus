@@ -26,9 +26,10 @@ import (
 // Discovery handles peer VNet discovery using UDP broadcast.
 // It enables automatic detection and connection to other VNet switches on the local network.
 type Discovery struct {
-	vnet       *VNet
-	conn       *net.UDPConn
-	discovered map[string]bool
+	vnet         *VNet
+	conn         *net.UDPConn
+	discovered   map[string]bool
+	dnsDiscovery *DNSDiscovery
 }
 
 // NewDiscovery creates a new Discovery instance for the given VNet.
@@ -36,12 +37,20 @@ func NewDiscovery(vnet *VNet) *Discovery {
 	ds := &Discovery{}
 	ds.vnet = vnet
 	ds.discovered = make(map[string]bool)
+	dnsName := vnet.resources.SysConfig().DiscoveryDnsName
+	if dnsName != "" {
+		ds.dnsDiscovery = NewDNSDiscovery(vnet, dnsName)
+	}
 	return ds
 }
 
 // Discover starts the discovery process by listening for UDP broadcasts
 // and initiating connections to discovered peer VNets.
 func (this *Discovery) Discover() {
+	if this.dnsDiscovery != nil {
+		go this.dnsDiscovery.Discover()
+	}
+
 	if !protocol.Discovery_Enabled {
 		this.vnet.resources.Logger().Debug("Discovery is disabled, machine IP is ", ipsegment.MachineIP)
 		return
@@ -80,7 +89,7 @@ func (this *Discovery) discoveryRx() {
 		if n == 3 {
 			if ip != ipsegment.MachineIP && ip != "127.0.0.1" {
 				_, ok := this.discovered[ip]
-				if stdstrings.Compare(ip, ipsegment.MachineIP) == -1 && !ok {
+				if stdstrings.Compare(ip, ipsegment.MachineIP) == -1 && !ok && !this.vnet.switchTable.conns.isConnected(ip) {
 					this.vnet.resources.Logger().Debug("Trying to connect to peer at ", ip)
 					err = this.vnet.ConnectNetworks(ip, this.vnet.resources.SysConfig().VnetPort)
 					if err != nil {
