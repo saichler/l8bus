@@ -14,7 +14,6 @@
 package vnet
 
 import (
-	"fmt"
 	"math"
 	"strings"
 	"sync"
@@ -181,7 +180,6 @@ func (this *Services) serviceFor(serviceName string, serviceArea byte, source st
 		})
 	}
 	if result == "" {
-		fmt.Println()
 	}
 	return result
 }

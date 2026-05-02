@@ -15,7 +15,6 @@ package vnet
 
 import (
 	"errors"
-	"fmt"
 	"github.com/saichler/l8utils/go/utils/queues"
 	"net"
 	"time"
@@ -84,7 +83,6 @@ func NewVNet(resources ifs.IResources, hasSecondary ...bool) *VNet {
 	if ok {
 		secService.Activate(net.vnic)
 	} else {
-		fmt.Println("Security provider is not activate!")
 	}
 
 	health.Activate(net.vnic, true)

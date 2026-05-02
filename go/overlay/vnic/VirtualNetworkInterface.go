@@ -15,7 +15,6 @@ package vnic
 
 import (
 	"errors"
-	"fmt"
 	"net"
 	"os"
 	"sync"
@@ -175,7 +174,6 @@ func (this *VirtualNetworkInterface) connect() error {
 			destination = strings.New(subnet, ".1").String()
 		}
 	} else {
-		fmt.Println("Remote nic")
 	}
 
 	this.resources.Logger().Debug("Trying to connect to vnet at IP - ", destination)
@@ -315,7 +313,6 @@ func (this *VirtualNetworkInterface) WaitForConnection() {
 	if ok {
 		secService.Activate(this)
 	} else {
-		fmt.Println("Security provider is not activate!")
 	}
 }
 
