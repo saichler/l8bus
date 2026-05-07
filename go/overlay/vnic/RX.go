@@ -14,6 +14,7 @@
 package vnic
 
 import (
+	"fmt"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/nets"
@@ -107,6 +108,7 @@ func (this *RX) notifyRawDataListener() {
 				}
 				pb, err := this.vnic.protocol.ElementsOf(msg)
 				if err != nil {
+					fmt.Printf("[WS-DEBUG-RX] ElementsOf error: svc=%s area=%d action=%d err=%v\n", msg.ServiceName(), msg.ServiceArea(), msg.Action(), err)
 					this.vnic.resources.Logger().Error(err)
 					if msg.Request() {
 						resp := object.NewError(err.Error())
