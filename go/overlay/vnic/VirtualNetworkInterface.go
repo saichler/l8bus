@@ -121,7 +121,7 @@ func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *Virtua
 			vnic.resources.Services().Activate(sla, vnic)
 		}
 	}
-
+	vnic.resources.Events().SetVNic(vnic)
 	return vnic
 }
 

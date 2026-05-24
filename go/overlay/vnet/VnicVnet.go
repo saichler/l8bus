@@ -32,7 +32,9 @@ type VnicVnet struct {
 
 // newVnicVnet creates a new VnicVnet wrapper for the given VNet.
 func newVnicVnet(vnet *VNet) *VnicVnet {
-	return &VnicVnet{vnet: vnet}
+	v := &VnicVnet{vnet: vnet}
+	v.vnet.resources.Events().SetVNic(v)
+	return v
 }
 
 // Start is not implemented for VnicVnet as it operates through the parent VNet.
