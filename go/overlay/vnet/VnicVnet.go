@@ -35,6 +35,7 @@ func newVnicVnet(vnet *VNet) *VnicVnet {
 	v := &VnicVnet{vnet: vnet}
 	v.vnet.resources.Events().SetVNic(v)
 	v.vnet.resources.Notify().SetVNic(v)
+	v.vnet.resources.Integration().SetVNic(v)
 	return v
 }
 
