@@ -122,6 +122,7 @@ func NewVirtualNetworkInterface(resources ifs.IResources, conn net.Conn) *Virtua
 		}
 	}
 	vnic.resources.Events().SetVNic(vnic)
+	vnic.resources.Notify().SetVNic(vnic)
 	return vnic
 }
 

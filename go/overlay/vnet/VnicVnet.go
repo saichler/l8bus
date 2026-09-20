@@ -34,6 +34,7 @@ type VnicVnet struct {
 func newVnicVnet(vnet *VNet) *VnicVnet {
 	v := &VnicVnet{vnet: vnet}
 	v.vnet.resources.Events().SetVNic(v)
+	v.vnet.resources.Notify().SetVNic(v)
 	return v
 }
 
