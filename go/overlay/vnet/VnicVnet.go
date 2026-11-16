@@ -62,12 +62,17 @@ func (this *VnicVnet) SendMessage(data []byte) error {
 }
 
 // Unicast sends a message to a specific destination VNic by UUID.
-func (this *VnicVnet) Unicast(destination string, serviceName string, serviceArea byte, action ifs.Action, data interface{}) error {
+// An optional AAA ID is placed in the message header.
+func (this *VnicVnet) Unicast(destination string, serviceName string, serviceArea byte, action ifs.Action, data interface{}, aaaId ...string) error {
+	token := ""
+	if len(aaaId) > 0 {
+		token = aaaId[0]
+	}
 	elems := object.New(nil, data)
 	bts, err := this.vnet.protocol.CreateMessageFor(destination, serviceName, serviceArea, ifs.P1, ifs.M_All, action,
 		this.Resources().SysConfig().LocalUuid, this.Resources().SysConfig().LocalUuid, elems,
 		false, false, this.vnet.protocol.NextMessageNumber(), ifs.NotATransaction,
-		"", "", -1, -1, -1, -1, -1, 0, false, "")
+		"", "", -1, -1, -1, -1, -1, 0, false, token)
 	if err != nil {
 		return err
 	}

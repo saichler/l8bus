@@ -20,14 +20,15 @@ import (
 )
 
 // Unicast sends a message to a specific destination VNic by UUID.
+// An optional AAA ID is placed in the message header, the same as Request.
 func (this *VirtualNetworkInterface) Unicast(destination, serviceName string, serviceArea byte,
-	action ifs.Action, any interface{}) error {
-	return this.unicast(destination, serviceName, serviceArea, action, any, ifs.P8, ifs.M_All)
+	action ifs.Action, any interface{}, aaaId ...string) error {
+	return this.unicast(destination, serviceName, serviceArea, action, any, ifs.P8, ifs.M_All, aaaId...)
 }
 
 // unicast is the internal implementation for sending a message to a specific destination.
 func (this *VirtualNetworkInterface) unicast(destination, serviceName string, serviceArea byte,
-	action ifs.Action, any interface{}, priority ifs.Priority, multicastMode ifs.MulticastMode) error {
+	action ifs.Action, any interface{}, priority ifs.Priority, multicastMode ifs.MulticastMode, aaaId ...string) error {
 
 	if destination == "" {
 		destination = ifs.DESTINATION_Single
@@ -37,9 +38,13 @@ func (this *VirtualNetworkInterface) unicast(destination, serviceName string, se
 	if err != nil {
 		return err
 	}
+	token := ""
+	if len(aaaId) > 0 {
+		token = aaaId[0]
+	}
 	return this.components.TX().Unicast(destination, serviceName, serviceArea, action, elems, priority, multicastMode,
 		false, false, this.protocol.NextMessageNumber(), ifs.NotATransaction, "", "",
-		-1, -1, -1, -1, -1, 0, false, "")
+		-1, -1, -1, -1, -1, 0, false, token)
 }
 
 // Request sends a request to a destination and waits for a response with timeout.
