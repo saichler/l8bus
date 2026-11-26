@@ -15,6 +15,7 @@ package vnet
 
 import (
 	"errors"
+	"fmt"
 	"github.com/saichler/l8utils/go/utils/queues"
 	"net"
 	"time"
@@ -254,6 +255,10 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 
 		if destination == ifs.DESTINATION_Single {
 			destination = this.switchTable.services.serviceFor(serviceName, serviceArea, source, multicastMode)
+			if serviceName == "Events" {
+				fmt.Println("DEBUG-EVT l8bus VNet.HandleData single -> dest=", destination, "source=", source,
+					"vnet=", this.vnetUuid)
+			}
 		}
 		//Incase the destination is the vnet after the service sele
 		if destination == this.vnetUuid {
@@ -262,6 +267,9 @@ func (this *VNet) HandleData(data []byte, vnic ifs.IVNic) {
 		}
 		//The destination is a single port
 		_, p := this.switchTable.conns.getConnection(destination, true)
+		if serviceName == "Events" {
+			fmt.Println("DEBUG-EVT l8bus VNet.HandleData dest=", destination, "portFound=", p != nil)
+		}
 		if p == nil {
 			this.Failed(data, vnic, strings.New("Cannot find destination port for ", destination).String())
 			return

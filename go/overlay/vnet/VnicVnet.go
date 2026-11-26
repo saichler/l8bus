@@ -81,6 +81,9 @@ func (this *VnicVnet) Unicast(destination string, serviceName string, serviceAre
 		return nil
 	}
 	_, conn := this.vnet.switchTable.conns.getConnection(destination, true)
+	if serviceName == "Events" {
+		fmt.Println("DEBUG-EVT l8bus VnicVnet.Unicast dest=", destination, "connFound=", conn != nil)
+	}
 	if conn == nil {
 		return fmt.Errorf("no connection found for destination %s", destination)
 	}
