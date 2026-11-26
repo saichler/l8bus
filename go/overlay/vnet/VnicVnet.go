@@ -68,6 +68,11 @@ func (this *VnicVnet) Unicast(destination string, serviceName string, serviceAre
 	if len(aaaId) > 0 {
 		token = aaaId[0]
 	}
+	// No destination: send to a provider of the service, as VNet.HandleData does.
+	if destination == "" {
+		destination = this.vnet.switchTable.services.serviceFor(serviceName, serviceArea,
+			this.Resources().SysConfig().LocalUuid, ifs.M_All)
+	}
 	elems := object.New(nil, data)
 	bts, err := this.vnet.protocol.CreateMessageFor(destination, serviceName, serviceArea, ifs.P1, ifs.M_All, action,
 		this.Resources().SysConfig().LocalUuid, this.Resources().SysConfig().LocalUuid, elems,
