@@ -14,7 +14,6 @@
 package vnic
 
 import (
-	"fmt"
 	"github.com/saichler/l8bus/go/overlay/health"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
@@ -43,14 +42,9 @@ func (this *VirtualNetworkInterface) unicast(destination, serviceName string, se
 	if len(aaaId) > 0 {
 		token = aaaId[0]
 	}
-	err = this.components.TX().Unicast(destination, serviceName, serviceArea, action, elems, priority, multicastMode,
+	return this.components.TX().Unicast(destination, serviceName, serviceArea, action, elems, priority, multicastMode,
 		false, false, this.protocol.NextMessageNumber(), ifs.NotATransaction, "", "",
 		-1, -1, -1, -1, -1, 0, false, token)
-	if serviceName == "Events" {
-		fmt.Println("DEBUG-EVT l8bus vnic.unicast alias=", this.resources.SysConfig().LocalAlias,
-			"dest=", destination, "action=", action, "err=", err)
-	}
-	return err
 }
 
 // Request sends a request to a destination and waits for a response with timeout.
